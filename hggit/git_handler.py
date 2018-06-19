@@ -1414,9 +1414,12 @@ class GitHandler(object):
                     changes.append((head + suffix, hgsha))
                 else:
                     bm = self.repo[bms[head]]
-                    if bm.ancestor(self.repo[hgsha]) == bm:
-                        # fast forward
-                        changes.append((head + suffix, hgsha))
+                    try:
+                        if bm.ancestor(self.repo[hgsha]) == bm:
+                            # fast forward
+                            changes.append((head + suffix, hgsha))
+                    except error.FilteredRepoLookupError:
+                        pass
 
             if heads:
                 util.updatebookmarks(self.repo, changes)
