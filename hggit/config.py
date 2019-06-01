@@ -30,3 +30,5 @@ CONFIG_DEFAULTS = {
 for section, items in CONFIG_DEFAULTS.items():
     for item, default in items.items():
         eh.configitem(section, item, default=default)
+
+eh.configitem(b'git', br'export-additional-refs\..*', generic=True)
