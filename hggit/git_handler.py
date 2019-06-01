@@ -28,10 +28,12 @@ from mercurial import (
     context,
     encoding,
     error,
+    formatter,
     hg,
     obsutil,
     phases,
     pycompat,
+    templatekw,
     url,
     util as hgutil,
     scmutil,
@@ -1707,6 +1709,27 @@ class GitHandler(object):
 
             return [(_filter_bm(bm), bm, n) for bm, n in bms.items()]
 
+    def _get_additional_refs(self):
+        """Return additional refs generated from configuration."""
+        keys = {
+            key.rsplit(b':', 1)[0]
+            for key, _ in self.ui.configitems(b'git')
+            if key.startswith(b'export-additional-refs.')
+        }
+        for key in keys:
+            settings = self.ui.configsuboptions(b'git', key)[1]
+            revset = scmutil.revrange(self.repo, [settings[b'revset']])
+            templater = formatter.maketemplater(
+                self.ui,
+                settings[b'template'],
+                resources=formatter.templateresources(self.ui, self.repo),
+            )
+            for rev in revset:
+                ctx = self.repo[rev]
+                mapping = templatekw.keywords.copy()
+                mapping[b'ctx'] = ctx
+                yield templater.renderdefault(mapping), ctx.hex()
+
     def _ensure_unique_refs(self, exportable):
         """Ensure that each ref is used for only one changeset."""
         ref2nodes = {}
@@ -1755,6 +1778,8 @@ class GitHandler(object):
 
         for tag, sha in self.tags.items():
             res[sha].tags.add(LOCAL_TAG_PREFIX + tag)
+        for ref, sha in self._get_additional_refs():
+            res[sha].heads.add(ref)
         self._ensure_unique_refs(res)
         return res
 
