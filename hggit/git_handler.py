@@ -1707,6 +1707,22 @@ class GitHandler(object):
 
             return [(_filter_bm(bm), bm, n) for bm, n in bms.items()]
 
+    def _ensure_unique_refs(self, exportable):
+        """Ensure that each ref is used for only one changeset."""
+        ref2nodes = {}
+        for node, refs in exportable.items():
+            for ref in refs:
+                ref2nodes.setdefault(ref, set()).add(node)
+        non_unique = [
+            (ref, nodes) for ref, nodes in ref2nodes.items() if len(nodes) > 1
+        ]
+        if non_unique:
+            lines = [_(b"ref(s) used for multiple changesets:")] + [
+                b"  %s -> %s" % (ref, b", ".join(sorted(nodes)))
+                for ref, nodes in non_unique
+            ]
+            raise error.Abort(b"\n".join(lines))
+
     def get_exportable(self):
         class heads_tags(object):
             def __init__(self):
@@ -1739,6 +1755,7 @@ class GitHandler(object):
 
         for tag, sha in self.tags.items():
             res[sha].tags.add(LOCAL_TAG_PREFIX + tag)
+        self._ensure_unique_refs(res)
         return res
 
     def import_tags(self, refs):
