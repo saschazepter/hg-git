@@ -15,6 +15,19 @@ except ImportError:
     except ImportError:
         from mercurial.peer import peerrepository
 
+namespaceapi = False
+try:
+    from mercurial import templatekw
+    from mercurial.namespaces import (
+        namespace,
+        namespaces
+    )
+    namespaceapi = True
+    gitcolumn='gitbookmark'
+    gitcolumn='bookmark'
+except ImportError:
+    pass
+
 
 class basegitrepo(peerrepository):
     def __init__(self, ui, path, create, intents=None, **kwargs):
@@ -23,6 +36,16 @@ class basegitrepo(peerrepository):
         self._ui = ui
         self.path = path
         self.localrepo = None
+        if namespaceapi:
+            self.namemap = None
+            columns = templatekw.getlogcolumns()
+            n = namespace("gitbookmarks", templatename="gitbookmark",
+                          logfmt=columns[gitcolumn],
+                          listnames=self.lazynames,
+                          namemap=self.lazynamemap, nodemap=self.lazynodemap,
+                          builtin=True)
+            self.names = namespaces()
+            self.names.addnamespace(n)
 
     _peercapabilities = ['lookup']
 
@@ -49,6 +72,40 @@ class basegitrepo(peerrepository):
 
     def heads(self):
         return []
+
+    def populaterefs(self):
+        if self.localrepo is None:
+            return False
+        if self.strippedrefs is not None:
+            return True
+        handler = self.localrepo.githandler
+        result = handler.fetch_pack(self.path, heads=[])
+        # map any git shas that exist in hg to hg shas
+        self.strippedrefs = {
+            ref[11:]: handler.map_hg_get(val) or val
+            for ref, val in result.refs.iteritems()
+            if ref.startswith('refs/heads/')
+        }
+        return True
+
+    def lazynames(self):
+        if not self.populaterefs():
+            return None
+        return self.namemap.keys()
+
+    def lazynamemap(self, name):
+        if not self.populaterefs():
+            return None
+        if not name in self.namemap:
+            return None
+        return self.namemap[name]
+
+    def lazynodemap(self, node):
+        if not self.populaterefs():
+            return None
+        if not node in self.namemap:
+            return None
+        return self.namemap[node]
 
     def listkeys(self, namespace):
         if namespace == 'namespaces':
