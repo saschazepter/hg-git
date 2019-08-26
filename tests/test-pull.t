@@ -50,11 +50,13 @@ no-op pull with added bookmark
   $ hg -R hgrepo pull -r epsilon
   pulling from $TESTTMP/gitrepo
   no changes found
+  adding bookmark epsilon
 
 pull a branch
   $ hg -R hgrepo pull -r beta
   pulling from $TESTTMP/gitrepo
   importing git objects into hg
+  adding bookmark beta
   (run 'hg update' to get a working copy)
   $ hg -R hgrepo log --graph
   o  changeset:   1:7fe02317c63d
@@ -89,6 +91,8 @@ pull everything else
   $ hg -R hgrepo pull
   pulling from $TESTTMP/gitrepo
   importing git objects into hg
+  adding bookmark delta
+  updating bookmark master
   (run 'hg heads' to see heads, 'hg merge' to merge)
   $ hg -R hgrepo log --graph
   o  changeset:   3:6f898ad1f3e1
@@ -139,6 +143,8 @@ pull the merge
   $ hg -R hgrepo pull
   pulling from $TESTTMP/gitrepo
   importing git objects into hg
+  deleting bookmark beta
+  updating bookmark master
   (run 'hg update' to get a working copy)
   $ hg -R hgrepo log --graph
   o    changeset:   4:a02330f767a4
@@ -199,6 +205,8 @@ ensure that releases/v1 and releases/v2 are pulled but not notreleases/v1
   $ hg -R hgrepo pull -r 'releases/*'
   pulling from $TESTTMP/gitrepo
   importing git objects into hg
+  adding bookmark releases/v1
+  adding bookmark releases/v2
   (run 'hg heads .' to see heads, 'hg merge' to merge)
   $ hg -R hgrepo log --graph
   o  changeset:   6:a3f95e150b0a
@@ -306,6 +314,7 @@ also add an annotated tag
   $ hg -R hgrepo pull
   pulling from $TESTTMP/gitrepo
   importing git objects into hg
+  updating bookmark master
   (run 'hg heads .' to see heads, 'hg merge' to merge)
   $ hg -R hgrepo heads
   changeset:   9:e103a73f33be
