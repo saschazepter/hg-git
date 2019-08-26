@@ -92,6 +92,8 @@ test shared repositories
   $ hg -R hgrepo-shared pull gitrepo
   pulling from gitrepo
   no changes found
+  adding bookmark beta
+  adding bookmark master
   $ hg -R hgrepo-shared push gitrepo
   pushing to gitrepo
   searching for changes

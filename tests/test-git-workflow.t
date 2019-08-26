@@ -50,6 +50,7 @@ do some work
 get things back to hg
   $ hg gimport
   importing git objects into hg
+  updating bookmark master
   $ hg log --graph --debug | grep -v phase:
   o  changeset:   1:9f124f3c1fc29a14f5eb027c24811b0ac9d5ff10
   |  bookmark:    master
@@ -115,6 +116,7 @@ gimport support for git.mindate
   > git commit -m newcommit > /dev/null || echo "git commit error"
   $ hg gimport
   importing git objects into hg
+  updating bookmark master
   $ hg log --graph
   o  changeset:   3:3d10b7289d79
   |  bookmark:    master

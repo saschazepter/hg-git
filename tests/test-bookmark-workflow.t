@@ -222,6 +222,9 @@ This changed in 3.4 to start showing changed and deleted bookmarks again.
   $ hg pull
   pulling from $TESTTMP/gitremoterepo
   importing git objects into hg
+  not updating changed bookmark b1
+  adding bookmark b3
+  adding bookmark b4
   (run 'hg update' to get a working copy)
   $ cd ..
 
@@ -235,6 +238,7 @@ Delete a branch, but with the bookmark elsewhere, it remains
   $ hg pull
   pulling from $TESTTMP/gitremoterepo
   no changes found
+  not deleting changed bookmark b1
   $ hggitstate
     4 0ac7ec7b4113 fcfd2c0262db "add epsilon" bookmarks: [b4]
     3 03769a650ded 55b133e1d558 "add delta" bookmarks: [b3 master]
@@ -251,6 +255,7 @@ But with the bookmark unmoved, it disappears!
   $ hg pull
   pulling from $TESTTMP/gitremoterepo
   no changes found
+  updating bookmark b1
   $ cd ../gitremoterepo
   $ git branch -d b1
   Deleted branch b1 (was 9497a4e).
@@ -258,6 +263,7 @@ But with the bookmark unmoved, it disappears!
   $ hg pull
   pulling from $TESTTMP/gitremoterepo
   no changes found
+  deleting bookmark b1
   $ hggitstate
     4 0ac7ec7b4113 fcfd2c0262db "add epsilon" bookmarks: [b4]
     3 03769a650ded 55b133e1d558 "add delta" bookmarks: [b3 master]

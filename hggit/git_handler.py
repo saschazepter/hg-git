@@ -1420,9 +1420,16 @@ class GitHandler(object):
                 else:
                     hgsha = None
 
-                if head not in bms:
+                if bms.get(head) == hgsha:
+                    self.ui.debug(_("bookmark %s is up-to-date\n") % head)
+
+                elif head not in bms:
                     # new branch
                     changes.append((head + suffix, hgsha))
+
+                    # only log additions on subsequent pulls
+                    if self.remote_refs:
+                        self.ui.status(_("adding bookmark %s\n") % head)
 
                 elif sha is None:
                     bm = self.repo[bms[head]]
@@ -1431,12 +1438,22 @@ class GitHandler(object):
                     # only delete unmoved bookmarks
                     if cur == bm.node():
                         changes.append((head + suffix, hgsha))
+                        self.ui.status(_("deleting bookmark %s\n") % head)
+                    else:
+                        self.ui.status(
+                            _("not deleting changed bookmark %s\n") % head
+                        )
 
                 else:
                     bm = self.repo[bms[head]]
                     if bm.ancestor(self.repo[hgsha]) == bm:
                         # fast forward
                         changes.append((head + suffix, hgsha))
+                        self.ui.status(_("updating bookmark %s\n") % head)
+                    else:
+                        self.ui.status(
+                            _("not updating changed bookmark %s\n") % head
+                        )
 
             if heads:
                 util.updatebookmarks(self.repo, changes)
