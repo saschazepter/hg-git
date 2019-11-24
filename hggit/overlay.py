@@ -41,10 +41,10 @@ class overlaymanifest(object):
 
     def keys(self):
         self.load()
-        return self._map.keys()
+        return list(self._map.keys())
 
     def iterkeys(self):
-        return iter(self.keys())
+        return iter(list(self.keys()))
 
     def load(self):
         if self._map is not None:
@@ -80,7 +80,7 @@ class overlaymanifest(object):
             return self.copy()
 
         mf = self.copy()
-        for fn in mf.keys():
+        for fn in list(mf.keys()):
             if not match(fn):
                 del mf[fn]
         return mf
@@ -348,7 +348,7 @@ class overlayrevlog(object):
             return self.base.ancestor(a, b)
         ancs = ancestor.ancestors(self.parentrevs, a, b)
         if ancs:
-            return min(map(self.node, ancs))
+            return min(list(map(self.node, ancs)))
         return nullid
 
     def parentrevs(self, rev):
