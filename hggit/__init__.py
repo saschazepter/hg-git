@@ -75,12 +75,15 @@ configtable = {}
 try:
     from mercurial import registrar
     command = registrar.command(cmdtable)
+except (ImportError, AttributeError):
+    command = cmdutil.command(cmdtable)
+
+try:
     configitem = registrar.configitem(configtable)
     compat.registerconfigs(configitem)
     templatekeyword = registrar.templatekeyword()
 
 except (ImportError, AttributeError):
-    command = cmdutil.command(cmdtable)
     templatekeyword = compat.templatekeyword()
 
 # support for `hg clone git://github.com/defunkt/facebox.git`
