@@ -94,7 +94,7 @@ class GitProgress(object):
                 if not self._progress:
                     self._progress = compat.makeprogress(self.ui, topic)
 
-                pos, total = map(int, m.group(1, 2))
+                pos, total = list(map(int, m.group(1, 2)))
                 self._progress.update(pos, total=total)
             else:
                 self.flush(msg)
@@ -743,7 +743,7 @@ class GitHandler(object):
         # Git native extra items always come first, followed by hg renames,
         # followed by hg extra keys
         git_extraitems = []
-        for key, value in extra.items():
+        for key, value in list(extra.items()):
             m = RE_GIT_EXTRA_KEY.match(key)
             if m is not None:
                 git_extraitems.append((int(m.group(1)), m.group(2), value))
@@ -1207,7 +1207,7 @@ class GitHandler(object):
         # parents function for walking, and older versions of dulwich don't
         # like that.
         haveheads = list(self.git.refs.as_dict(b'refs/remotes/').values())
-        haveheads.extend(self.git.refs.as_dict(b'refs/heads/').values())
+        haveheads.extend(list(self.git.refs.as_dict(b'refs/heads/').values()))
         graphwalker = self.git.get_graph_walker(heads=haveheads)
 
         def determine_wants(refs):
@@ -1605,7 +1605,7 @@ class GitHandler(object):
         gitmodules_content = self.git[gitmodules_sha].data
         fo = io.BytesIO(gitmodules_content)
         tt = dul_config.ConfigFile.from_file(fo)
-        for section in tt.keys():
+        for section in list(tt.keys()):
             section_kind, section_name = section
             if section_kind == b'submodule':
                 sm_path = tt.get(section, b'path')
