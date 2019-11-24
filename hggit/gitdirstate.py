@@ -214,7 +214,7 @@ class gitdirstate(dirstate.dirstate):
         # step 3: report unseen items in the dmap hash
         if not skipstep3 and not exact:
             if not results and matchalways:
-                visit = dmap.keys()
+                visit = list(dmap.keys())
             else:
                 visit = [f for f in dmap if f not in results and matchfn(f)]
             visit.sort()
@@ -244,4 +244,4 @@ class gitdirstate(dirstate.dirstate):
                 nf = next(iter(visit))
                 for st in util.statfiles([join(i) for i in visit]):
                     results[nf()] = st
-        return results.keys()
+        return list(results.keys())
