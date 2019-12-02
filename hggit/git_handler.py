@@ -1724,7 +1724,29 @@ class GitHandler(object):
             ua = 'git/20x6 (hg-git ; uses dulwich and hg ; like git-core)'
             config = dul_config.ConfigDict()
             config.set(b'http', b'useragent', ua)
-            return client.HttpGitClient(uri, config=config), uri
+
+            pmgr = compat.passwordmgr(self.ui)
+            username = None
+            password = None
+            pool_manager = None
+            try:
+                username, password = pmgr.find_user_password(None, uri)
+                pool_manager = client.default_urllib3_manager(
+                    dul_config.StackedConfig.default()
+                )
+            except:
+                return client.HttpGitClient(uri), uri
+
+            return (
+                client.HttpGitClient(
+                    uri,
+                    config=config,
+                    pool_manager=pool_manager,
+                    username=username,
+                    password=password,
+                ),
+                uri,
+            )
 
         # if its not git or git+ssh, try a local url..
         return client.SubprocessGitClient(), uri
