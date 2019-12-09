@@ -1676,11 +1676,11 @@ class GitHandler(object):
         >>> mockrepo.path = ''
         >>> g = GitHandler(mockrepo, ui())
         >>> tp = g.get_transport_and_path
-        >>> client, url = tp('http://fqdn.com/test.git')
+        >>> client, url = tp('https://github.com/schacon/hg-git.git', readonly=True)
         >>> print isinstance(client, HttpGitClient)
         True
         >>> print url
-        http://fqdn.com/test.git
+        https://github.com/schacon/hg-git.git
         >>> client, url = tp('git@fqdn.com:user/repo.git')
         >>> print isinstance(client, SSHGitClient)
         True
