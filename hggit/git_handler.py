@@ -1197,7 +1197,7 @@ class GitHandler(object):
         return new_refs
 
     def fetch_pack(self, remote_name, heads=None):
-        localclient, path = self.get_transport_and_path(remote_name)
+        localclient, path = self.get_transport_and_path(remote_name, readonly=True)
 
         # The dulwich default walk only checks refs/heads/. We also want to
         # consider remotes when doing discovery, so we build our own list. We
@@ -1662,7 +1662,7 @@ class GitHandler(object):
         except UnicodeDecodeError:
             return string.decode('ascii', 'replace').encode('utf-8')
 
-    def get_transport_and_path(self, uri):
+    def get_transport_and_path(self, uri, readonly=False):
         """Method that sets up the transport (either ssh or http(s))
 
         Tests:
@@ -1725,28 +1725,37 @@ class GitHandler(object):
             config = dul_config.ConfigDict()
             config.set(b'http', b'useragent', ua)
 
-            pmgr = compat.passwordmgr(self.ui)
-            username = None
-            password = None
-            pool_manager = None
-            try:
+            def create_client_with_password():
+                pmgr = compat.passwordmgr(self.ui)
                 username, password = pmgr.find_user_password(None, uri)
                 pool_manager = client.default_urllib3_manager(
                     dul_config.StackedConfig.default()
                 )
-            except:
-                return client.HttpGitClient(uri), uri
-
-            return (
-                client.HttpGitClient(
+                return client.HttpGitClient(
                     uri,
                     config=config,
                     pool_manager=pool_manager,
                     username=username,
                     password=password,
-                ),
-                uri,
-            )
+                )
+
+            if not readonly:
+                return create_client_with_password(), uri
+            else:
+                local_client = client.HttpGitClient(
+                    uri,
+                    config=config,
+                    pool_manager=None,
+                    username=None,
+                    password=None,
+                )
+                try:
+                    # a public repository?
+                    local_client.get_refs("")
+                except GitProtocolError:
+                    local_client = create_client_with_password()
+
+            return local_client, uri
 
         # if its not git or git+ssh, try a local url..
         return client.SubprocessGitClient(), uri
