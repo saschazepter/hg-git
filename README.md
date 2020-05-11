@@ -1,10 +1,8 @@
 Hg-Git Mercurial Plugin
 =======================
 
-* Homepage: https://hg-git.github.io/
 * https://foss.heptapod.net/mercurial/hg-git (primary)
 * https://bitbucket.org/durin42/hg-git (deprecated)
-* https://github.com/schacon/hg-git (mirror)
 
 This is the Hg-Git plugin for Mercurial, adding the ability to push
 and pull to/from a Git server repository from Hg.  This means you can
