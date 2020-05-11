@@ -2,7 +2,7 @@ Hg-Git Mercurial Plugin
 =======================
 
 * Homepage: https://hg-git.github.io/
-* https://dev.heptapod.net/mercurial/hg-git (primary)
+* https://foss.heptapod.net/mercurial/hg-git (primary)
 * https://bitbucket.org/durin42/hg-git (deprecated)
 * https://github.com/schacon/hg-git (mirror)
 
