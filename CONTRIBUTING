@@ -21,8 +21,3 @@ their full guidelines. Key differences are (by rule number):
 0:
 Mailing list: hg-git@googlegroups.com
 Archives: https://groups.google.com/forum/#!forum/hg-git
-
-Pull requests are generally not noticed more than once every few
-months. If you do a pull request, I'm still going to expect you to
-have a clean history, and to be willing to rework history so it's
-clean before I push the "merge" button.
