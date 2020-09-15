@@ -166,8 +166,7 @@ pull the merge
   | |    summary:     add delta
   | |
   o |  changeset:   1:7fe02317c63d
-  |/   bookmark:    beta
-  |    tag:         t_beta
+  |/   tag:         t_beta
   |    user:        test <test@example.org>
   |    date:        Mon Jan 01 00:00:11 2007 +0000
   |    summary:     add beta
@@ -242,8 +241,7 @@ ensure that releases/v1 and releases/v2 are pulled but not notreleases/v1
   | |    summary:     add delta
   | |
   o |  changeset:   1:7fe02317c63d
-  |/   bookmark:    beta
-  |    tag:         t_beta
+  |/   tag:         t_beta
   |    user:        test <test@example.org>
   |    date:        Mon Jan 01 00:00:11 2007 +0000
   |    summary:     add beta
