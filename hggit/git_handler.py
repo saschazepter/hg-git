@@ -296,7 +296,7 @@ class GitHandler(object):
         refs = self.git.refs.as_dict()
         filteredrefs = self.filter_min_date(refs)
         self.import_git_objects(remote_name, filteredrefs)
-        self.update_hg_bookmarks(refs)
+        self.update_hg_bookmarks(remote_name, refs)
 
     def fetch(self, remote, heads):
         result = self.fetch_pack(remote.path, heads)
@@ -312,7 +312,7 @@ class GitHandler(object):
                                                                  heads))
             imported = self.import_git_objects(remote_name, filteredrefs)
             self.import_tags(result.refs)
-            self.update_hg_bookmarks(result.refs)
+            self.update_hg_bookmarks(remote_name, result.refs)
 
             try:
                 symref = result.symrefs[b'HEAD']
@@ -1545,33 +1545,65 @@ class GitHandler(object):
         self.export_commits()
         self.save_tags()
 
-    def _get_heads(self, refs):
+    def _get_heads(self, remote_name, refs):
         """get a {head → hg-bin-sha} mapping
 
-        (This function return binary node id)"""
+        We generally assume that `refs` contains all the refs in the
+        server, not just the ones we are pulling.
+
+        Please note that this function returns binary node ids.
+
+        """
         heads = {}
+
         for ref, git_sha in refs.items():
             if not ref.startswith(LOCAL_BRANCH_PREFIX):
                 continue
+
             h = ref[len(LOCAL_BRANCH_PREFIX):]
             hg_sha = self.map_hg_get(git_sha)
-            # refs contains all the refs in the server,
-            # not just the ones we are pulling
+
             if hg_sha is not None:
                 heads[h] = bin(hg_sha)
 
+        # detect deletions; do this last to retain ordering
+        if remote_name is not None:
+            prefix = remote_name + b'/'
+            for remote_ref in self.remote_refs:
+                if remote_ref.startswith(prefix):
+                    h = remote_ref[len(prefix):]
+                    heads.setdefault(h, None)
+
         return heads
 
-    def update_hg_bookmarks(self, refs):
+    def update_hg_bookmarks(self, remote_name, refs):
         try:
             bms = self.repo._bookmarks
-
             changes = []
-            for head, hgsha in self._get_heads(refs).items():
+
+            for head, hgsha in self._get_heads(remote_name, refs).items():
                 bm = head + (self.branch_bookmark_suffix or b'')
 
                 if bms.get(bm) == hgsha:
                     self.ui.debug(_("bookmark %s is up-to-date\n") % bm)
+
+                elif hgsha is None:
+                    if not self.ui.configbool(
+                        b'git', b'pull-prune-bookmarks',
+                    ):
+                        self.ui.debug("ignoring deleted bookmark %s\n" % bm)
+                        continue
+
+                    cur = self.remote_refs.get(b'%s/%s' % (remote_name, head))
+
+                    # only delete unmoved bookmarks
+                    if cur == bms[bm]:
+                        changes.append((bm, None))
+                        self.ui.status(_("deleting bookmark %s\n") % bm)
+                    else:
+                        self.ui.status(
+                            _("not deleting diverged bookmark %s\n") % bm
+                        )
 
                 elif bm not in bms:
                     # new branch
