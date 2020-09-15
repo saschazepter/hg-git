@@ -269,7 +269,7 @@ class GitHandler(object):
         filteredrefs = self.filter_min_date(refs)
         try:
             self.import_git_objects(remote_name, filteredrefs)
-            self.update_hg_bookmarks(refs)
+            self.update_hg_bookmarks(remote_name, refs)
         finally:
             self.save_map(self.map_file)
 
@@ -287,7 +287,7 @@ class GitHandler(object):
                                                                  heads))
             imported = self.import_git_objects(remote_name, filteredrefs)
             self.import_tags(result.refs)
-            self.update_hg_bookmarks(result.refs)
+            self.update_hg_bookmarks(remote_name, result.refs)
 
             try:
                 symref = result.symrefs[b'HEAD']
@@ -1392,12 +1392,17 @@ class GitHandler(object):
                                 self.tags[ref_name] = sha
         self.save_tags()
 
-    def update_hg_bookmarks(self, refs):
+    def update_hg_bookmarks(self, remote_name, refs):
         try:
             bms = self.repo._bookmarks
 
             heads = dict([(ref[11:], refs[ref]) for ref in refs
                           if ref.startswith(b'refs/heads/')])
+
+            for remote_ref in self.remote_refs:
+                if remote_name and remote_ref.startswith(remote_name + b'/'):
+                    head = remote_ref[len(remote_name) + 1:]
+                    heads.setdefault(head, None)
 
             suffix = self.branch_bookmark_suffix or b''
             changes = []
@@ -1407,13 +1412,26 @@ class GitHandler(object):
 
                 # refs contains all the refs in the server, not just
                 # the ones we are pulling
-                hgsha = self.map_hg_get(sha)
-                if hgsha is None:
-                    continue
-                hgsha = bin(hgsha)
+                if sha:
+                    hgsha = self.map_hg_get(sha)
+                    if hgsha is None:
+                        continue
+                    hgsha = bin(hgsha)
+                else:
+                    hgsha = None
+
                 if head not in bms:
                     # new branch
                     changes.append((head + suffix, hgsha))
+
+                elif sha is None:
+                    bm = self.repo[bms[head]]
+                    cur = self.remote_refs.get(b'%s/%s' % (remote_name, head))
+
+                    # only delete unmoved bookmarks
+                    if cur == bm.node():
+                        changes.append((head + suffix, hgsha))
+
                 else:
                     bm = self.repo[bms[head]]
                     if bm.ancestor(self.repo[hgsha]) == bm:
