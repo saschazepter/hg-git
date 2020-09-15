@@ -325,24 +325,6 @@ class GitHandler(object):
 
         self.save_map(self.map_file)
 
-        # also mark public any branches the user specified
-        blist = [self.repo._bookmarks[branch] for branch in
-                 self.ui.configlist(b'git', b'public')]
-        if rnode and self.ui.configbool(b'hggit', b'usephases'):
-            blist.append(rnode)
-
-        if blist:
-            lock = self.repo.lock()
-            try:
-                tr = self.repo.transaction(b"phase")
-                phases.advanceboundary(self.repo, tr, phases.public,
-                                       blist)
-                tr.close()
-            finally:
-                if tr is not None:
-                    tr.release()
-                lock.release()
-
         if imported == 0:
             return 0
 
@@ -1464,6 +1446,10 @@ class GitHandler(object):
 
     def update_remote_branches(self, remote_name, refs):
         remote_refs = self.remote_refs
+
+        want_published = self.ui.configlist(b'git', b'public')
+        should_publish = []
+
         # since we re-write all refs for this remote each time, prune
         # all entries matching this remote from our refs list now so
         # that we avoid any stale refs hanging around forever
@@ -1475,11 +1461,18 @@ class GitHandler(object):
                     os.unlink(os.path.join(self.gitdir, b'refs/remotes', t))
 
         for ref_name, sha in compat.iteritems(refs):
+            hgsha = self.map_hg_get(sha)
+            if hgsha is None or hgsha not in self.repo:
+                continue
+
             if ref_name.startswith(b'refs/heads'):
-                hgsha = self.map_hg_get(sha)
-                if hgsha is None or hgsha not in self.repo:
-                    continue
                 head = ref_name[11:]
+
+                # mark public any branches the user specified
+                if self.ui.configbool(b'hggit', b'usephases'):
+                    if head in want_published or not want_published:
+                        should_publish.append(bin(hgsha))
+
                 remote_refs[b'/'.join((remote_name, head))] = bin(hgsha)
                 # TODO(durin42): what is this doing?
                 new_ref = b'refs/remotes/%s/%s' % (remote_name, head)
@@ -1487,6 +1480,11 @@ class GitHandler(object):
             elif (ref_name.startswith(b'refs/tags') and not
                   ref_name.endswith(b'^{}')):
                 self.git.refs[ref_name] = sha
+
+        if should_publish:
+            with self.repo.lock(), self.repo.transaction(b"phase") as tr:
+                phases.advanceboundary(self.repo, tr, phases.public,
+                                       should_publish)
 
     # UTILITY FUNCTIONS
 
