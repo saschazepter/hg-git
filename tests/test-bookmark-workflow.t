@@ -12,19 +12,6 @@ locally is only to provide a test fixture.
 Load commonly used test logic
   $ . "$TESTDIR/testutil"
 
-  $ gitstate()
-  > {
-  >     git log --format="  %h \"%s\" refs:%d" $@ | sed 's/HEAD, //'
-  > }
-  $ hgstate()
-  > {
-  >     hg log --template "  {rev} {node|short} \"{desc}\" bookmarks: [{bookmarks}]\n" $@
-  > }
-  $ hggitstate()
-  > {
-  >     hg log --template "  {rev} {node|short} {gitnode|short} \"{desc}\" bookmarks: [{bookmarks}] ({phase})\n" $@
-  > }
-
 Initialize remote hg and git repos with equivalent initial contents
   $ hg init hgremoterepo
   $ cd hgremoterepo
@@ -33,7 +20,7 @@ Initialize remote hg and git repos with equivalent initial contents
   >     echo $f > $f; hg add $f; fn_hg_commit -m "add $f"
   > done
   $ hg bookmark -r 1 b1
-  $ hgstate
+  $ fn_hg_state
     3 e13efaebbf5d "add delta" bookmarks: [master]
     2 79c2b4d7c021 "add gamma" bookmarks: []
     1 a7b2ac5cbfff "add beta" bookmarks: [b1]
@@ -45,7 +32,7 @@ Initialize remote hg and git repos with equivalent initial contents
   >     echo $f > $f; git add $f; fn_git_commit -m "add $f"
   > done
   $ git branch b1 master~2
-  $ gitstate
+  $ fn_git_state
     a6f0c96 "add delta" refs: (HEAD -> master)
     50eec90 "add gamma" refs:
     7fe1d3e "add beta" refs: (b1)
@@ -55,7 +42,7 @@ Initialize remote hg and git repos with equivalent initial contents
 Cloning transfers all bookmarks from remote to local
   $ hg clone -q hgremoterepo purehglocalrepo
   $ cd purehglocalrepo
-  $ hgstate
+  $ fn_hg_state
     3 e13efaebbf5d "add delta" bookmarks: [master]
     2 79c2b4d7c021 "add gamma" bookmarks: []
     1 a7b2ac5cbfff "add beta" bookmarks: [b1]
@@ -63,7 +50,7 @@ Cloning transfers all bookmarks from remote to local
   $ cd ..
   $ hg clone -q gitremoterepo hggitlocalrepo --config hggit.usephases=True
   $ cd hggitlocalrepo
-  $ hggitstate
+  $ fn_hggit_state
     3 57bd6fdbfc89 a6f0c9606388 "add delta" bookmarks: [master] (public)
     2 8e6f0b6e003b 50eec9088321 "add gamma" bookmarks: [] (public)
     1 06243e99b1c7 7fe1d3ee3c97 "add beta" bookmarks: [b1] (public)
@@ -131,7 +118,7 @@ Bookmarks on new revs
   $ hg bookmark -r master b4
   $ hg update -q b4
   $ echo epsilon > epsilon; hg add epsilon; fn_hg_commit -m 'add epsilon'
-  $ hgstate
+  $ fn_hg_state
     4 a0deb1724eba "add epsilon" bookmarks: [b4]
     3 e13efaebbf5d "add delta" bookmarks: [b3 master]
     2 79c2b4d7c021 "add gamma" bookmarks: []
@@ -141,7 +128,7 @@ Bookmarks on new revs
   $ cd purehglocalrepo
   $ hg bookmark -fr 2 b1
   $ hg bookmark -r 0 b2
-  $ hgstate
+  $ fn_hg_state
     3 e13efaebbf5d "add delta" bookmarks: [master]
     2 79c2b4d7c021 "add gamma" bookmarks: [b1]
     1 a7b2ac5cbfff "add beta" bookmarks: []
@@ -172,7 +159,7 @@ This changed in 3.4 to start showing changed and deleted bookmarks again.
   $ echo epsilon > epsilon
   $ git add epsilon
   $ fn_git_commit -m 'add epsilon'
-  $ gitstate
+  $ fn_git_state
     0692ae9 "add epsilon" refs: (HEAD -> b4)
     a6f0c96 "add delta" refs: (master, b3)
     50eec90 "add gamma" refs:
@@ -182,7 +169,7 @@ This changed in 3.4 to start showing changed and deleted bookmarks again.
   $ cd hggitlocalrepo
   $ hg bookmark -fr 2 b1
   $ hg bookmark -r 0 b2
-  $ hgstate
+  $ fn_hg_state
     3 57bd6fdbfc89 "add delta" bookmarks: [master]
     2 8e6f0b6e003b "add gamma" bookmarks: [b1]
     1 06243e99b1c7 "add beta" bookmarks: []
@@ -227,7 +214,7 @@ Delete a branch, but with the bookmark elsewhere, it remains
   pulling from $TESTTMP/gitremoterepo
   no changes found
   not deleting diverged bookmark b1
-  $ hggitstate
+  $ fn_hggit_state
     4 5a854f9ca5d9 0692ae9f6aef "add epsilon" bookmarks: [b4] (draft)
     3 57bd6fdbfc89 a6f0c9606388 "add delta" bookmarks: [b3 master] (public)
     2 8e6f0b6e003b 50eec9088321 "add gamma" bookmarks: [] (public)
@@ -252,7 +239,7 @@ But with the bookmark unmoved, it disappears!
   pulling from $TESTTMP/gitremoterepo
   no changes found
   deleting bookmark b1
-  $ hggitstate
+  $ fn_hggit_state
     4 5a854f9ca5d9 0692ae9f6aef "add epsilon" bookmarks: [b4] (draft)
     3 57bd6fdbfc89 a6f0c9606388 "add delta" bookmarks: [b3 master] (public)
     2 8e6f0b6e003b 50eec9088321 "add gamma" bookmarks: [] (public)
@@ -278,7 +265,7 @@ Now push the new branch
 Verify that phase restriction works as expected
 
   $ cd gitremoterepo
-  $ gitstate
+  $ fn_git_state
     0692ae9 "add epsilon" refs: (HEAD -> b4)
     a6f0c96 "add delta" refs: (master, b3)
     50eec90 "add gamma" refs:
@@ -308,7 +295,7 @@ Verify that phase restriction works as expected
 
 The new branches shouldn't be published!
 
-  $ hggitstate
+  $ fn_hggit_state
     5 9d36e6184837 29550a664fc6 "add zeta" bookmarks: [b5] (draft)
     4 5a854f9ca5d9 0692ae9f6aef "add epsilon" bookmarks: [b4] (draft)
     3 57bd6fdbfc89 a6f0c9606388 "add delta" bookmarks: [b3 master] (public)
@@ -345,7 +332,7 @@ Now, merge the other
   importing git objects into hg
   updating bookmark master
   (run 'hg update' to get a working copy)
-  $ hggitstate
+  $ fn_hggit_state
     6 78d000decab1 58fcef5c774c "Merge branch 'b5'" bookmarks: [master] (public)
     5 9d36e6184837 29550a664fc6 "add zeta" bookmarks: [b5] (public)
     4 5a854f9ca5d9 0692ae9f6aef "add epsilon" bookmarks: [b4] (public)

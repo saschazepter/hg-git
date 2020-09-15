@@ -97,3 +97,19 @@ for p in sys.argv[1:]:
   open(p, 'w')
 EOF
 }
+
+# Functions for easily dumping the state
+fn_git_state()
+{
+    git log --format="  %h \"%s\" refs:%d" $@ | sed 's/HEAD, //'
+}
+
+fn_hg_state()
+{
+    hg log --template "  {rev} {node|short} \"{desc}\" bookmarks: [{bookmarks}]\n" $@
+}
+
+fn_hggit_state()
+{
+    hg log --template "  {rev} {node|short} {gitnode|short} \"{desc}\" bookmarks: [{bookmarks}] ({phase})\n" $@
+}
