@@ -146,6 +146,7 @@ And pull that:
   $ hg pull
   pulling from $TESTTMP/repo.git
   no changes found
+  not deleting diverged bookmark otherbranch
   $ hg state
   *  otherbranch tip 4:f4bd265a9d39e5c4da2c0a752de5ea70335199c5
   |  add gamma
