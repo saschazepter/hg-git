@@ -37,7 +37,7 @@ Load commonly used test logic
   > }
   $ hggitstate()
   > {
-  >     hg log --template "  {rev} {node|short} {gitnode|short} \"{desc}\" bookmarks: [{bookmarks}]\n" $@
+  >     hg log --template "  {rev} {node|short} {gitnode|short} \"{desc}\" bookmarks: [{bookmarks}] ({phase})\n" $@
   > }
 
 Initialize remote hg and git repos with equivalent initial contents
@@ -79,10 +79,10 @@ Cloning transfers all bookmarks from remote to local
   $ hg clone -q gitremoterepo hggitlocalrepo --config hggit.usephases=True
   $ cd hggitlocalrepo
   $ hggitstate
-    3 03769a650ded 55b133e1d558 "add delta" bookmarks: [master]
-    2 ca33a262eb46 d338971a96e2 "add gamma" bookmarks: []
-    1 7fe02317c63d 9497a4ee62e1 "add beta" bookmarks: [b1]
-    0 ff7a2f2d8d70 7eeab2ea75ec "add alpha" bookmarks: []
+    3 03769a650ded 55b133e1d558 "add delta" bookmarks: [master] (public)
+    2 ca33a262eb46 d338971a96e2 "add gamma" bookmarks: [] (public)
+    1 7fe02317c63d 9497a4ee62e1 "add beta" bookmarks: [b1] (public)
+    0 ff7a2f2d8d70 7eeab2ea75ec "add alpha" bookmarks: [] (public)
 
 Make sure that master is public
   $ hg phase -r master
@@ -243,11 +243,11 @@ Delete a branch, but with the bookmark elsewhere, it remains
   no changes found
   not deleting diverged bookmark b1
   $ hggitstate
-    4 0ac7ec7b4113 fcfd2c0262db "add epsilon" bookmarks: [b4]
-    3 03769a650ded 55b133e1d558 "add delta" bookmarks: [b3 master]
-    2 ca33a262eb46 d338971a96e2 "add gamma" bookmarks: []
-    1 7fe02317c63d 9497a4ee62e1 "add beta" bookmarks: []
-    0 ff7a2f2d8d70 7eeab2ea75ec "add alpha" bookmarks: [b1 b2]
+    4 0ac7ec7b4113 fcfd2c0262db "add epsilon" bookmarks: [b4] (draft)
+    3 03769a650ded 55b133e1d558 "add delta" bookmarks: [b3 master] (public)
+    2 ca33a262eb46 d338971a96e2 "add gamma" bookmarks: [] (public)
+    1 7fe02317c63d 9497a4ee62e1 "add beta" bookmarks: [] (public)
+    0 ff7a2f2d8d70 7eeab2ea75ec "add alpha" bookmarks: [b1 b2] (public)
   $ cd ..
 
 But with the bookmark unmoved, it disappears!
@@ -268,9 +268,98 @@ But with the bookmark unmoved, it disappears!
   no changes found
   deleting bookmark b1
   $ hggitstate
-    4 0ac7ec7b4113 fcfd2c0262db "add epsilon" bookmarks: [b4]
-    3 03769a650ded 55b133e1d558 "add delta" bookmarks: [b3 master]
-    2 ca33a262eb46 d338971a96e2 "add gamma" bookmarks: []
-    1 7fe02317c63d 9497a4ee62e1 "add beta" bookmarks: []
-    0 ff7a2f2d8d70 7eeab2ea75ec "add alpha" bookmarks: [b2]
+    4 0ac7ec7b4113 fcfd2c0262db "add epsilon" bookmarks: [b4] (draft)
+    3 03769a650ded 55b133e1d558 "add delta" bookmarks: [b3 master] (public)
+    2 ca33a262eb46 d338971a96e2 "add gamma" bookmarks: [] (public)
+    1 7fe02317c63d 9497a4ee62e1 "add beta" bookmarks: [] (public)
+    0 ff7a2f2d8d70 7eeab2ea75ec "add alpha" bookmarks: [b2] (public)
+  $ cd ..
+
+Now push the new branch
+
+  $ cd hggitlocalrepo
+  $ hg push
+  pushing to $TESTTMP/gitremoterepo
+  searching for changes
+  adding reference refs/heads/b2
+  $ cd ..
+
+Verify that phase restriction works as expected
+
+  $ cd gitremoterepo
+  $ gitstate
+    fcfd2c0 "add epsilon" refs: (HEAD -> b4)
+    55b133e "add delta" refs: (master, b3)
+    d338971 "add gamma" refs:
+    9497a4e "add beta" refs:
+    7eeab2e "add alpha" refs: (b2)
+  $ git checkout -b b5 b2
+  Switched to a new branch 'b5'
+  $ echo zeta > zeta; git add zeta; gitcommit -m 'add zeta'
+  $ cd ../hggitlocalrepo
+  $ cat >> .hg/hgrc <<EOF
+  > [extensions]
+  > rebase =
+  > [experimental]
+  > evolution.createmarkers = yes
+  > # required by mercurial 4.3
+  > evolution = all
+  > [hggit]
+  > usephases = yes
+  > [git]
+  > public = master
+  > EOF
+  $ hg pull
+  pulling from $TESTTMP/gitremoterepo
+  importing git objects into hg
+  adding bookmark b5
+  (run 'hg heads' to see heads, 'hg merge' to merge)
+
+The new branches shouldn't be published!
+
+  $ hggitstate
+    5 7ab447d0494f 2b8593c2d63c "add zeta" bookmarks: [b5] (draft)
+    4 0ac7ec7b4113 fcfd2c0262db "add epsilon" bookmarks: [b4] (draft)
+    3 03769a650ded 55b133e1d558 "add delta" bookmarks: [b3 master] (public)
+    2 ca33a262eb46 d338971a96e2 "add gamma" bookmarks: [] (public)
+    1 7fe02317c63d 9497a4ee62e1 "add beta" bookmarks: [] (public)
+    0 ff7a2f2d8d70 7eeab2ea75ec "add alpha" bookmarks: [b2] (public)
+
+Now, do a fast-forward merge one of them, and verify that it gets
+published, but that nothing else does
+
+  $ cd ../gitremoterepo
+  $ git checkout master
+  Switched to branch 'master'
+  $ git merge -q b4
+  $ cd ../hggitlocalrepo
+  $ hg pull
+  pulling from $TESTTMP/gitremoterepo
+  no changes found
+  updating bookmark master
+  $ hg phase b5
+  5: draft
+  $ hg phase master
+  4: public
+
+Now, merge the other
+
+  $ cd ../gitremoterepo
+  $ git checkout master
+  Already on 'master'
+  $ git merge -q b5
+  $ cd ../hggitlocalrepo
+  $ hg pull
+  pulling from $TESTTMP/gitremoterepo
+  importing git objects into hg
+  updating bookmark master
+  (run 'hg update' to get a working copy)
+  $ hggitstate
+    6 7ac86d6e9d1d 842c1e660ab3 "Merge branch 'b5'" bookmarks: [master] (public)
+    5 7ab447d0494f 2b8593c2d63c "add zeta" bookmarks: [b5] (public)
+    4 0ac7ec7b4113 fcfd2c0262db "add epsilon" bookmarks: [b4] (public)
+    3 03769a650ded 55b133e1d558 "add delta" bookmarks: [b3] (public)
+    2 ca33a262eb46 d338971a96e2 "add gamma" bookmarks: [] (public)
+    1 7fe02317c63d 9497a4ee62e1 "add beta" bookmarks: [] (public)
+    0 ff7a2f2d8d70 7eeab2ea75ec "add alpha" bookmarks: [b2] (public)
   $ cd ..
