@@ -1401,7 +1401,10 @@ class GitHandler(object):
 
             suffix = self.branch_bookmark_suffix or b''
             changes = []
-            for head, sha in compat.iteritems(heads):
+
+            for head in sorted(heads):
+                sha = heads[head]
+
                 # refs contains all the refs in the server, not just
                 # the ones we are pulling
                 hgsha = self.map_hg_get(sha)
@@ -1432,6 +1435,10 @@ class GitHandler(object):
         for t in list(remote_refs):
             if t.startswith(remote_name + b'/'):
                 del remote_refs[t]
+
+                if b'refs/heads/' + t[len(remote_name) + 1:] not in refs:
+                    os.unlink(os.path.join(self.gitdir, b'refs/remotes', t))
+
         for ref_name, sha in compat.iteritems(refs):
             if ref_name.startswith(b'refs/heads'):
                 hgsha = self.map_hg_get(sha)
