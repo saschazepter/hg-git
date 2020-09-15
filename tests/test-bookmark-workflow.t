@@ -281,6 +281,11 @@ Now push the new branch
   $ hg push
   pushing to $TESTTMP/gitremoterepo
   searching for changes
+  no changes found
+  [1]
+  $ hg push -B b2
+  pushing to $TESTTMP/gitremoterepo
+  searching for changes
   adding reference refs/heads/b2
   $ cd ..
 

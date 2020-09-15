@@ -10,7 +10,6 @@ from mercurial.utils import stringutil
 eh = exthelper.exthelper()
 
 
-@eh.revsetpredicate(b'fromgit')
 def revset_fromgit(repo, subset, x):
     '''``fromgit()``
     Select changesets that originate from Git.

@@ -24,7 +24,7 @@ Load commonly used test logic
   $ hg book -r . delt#a
   $ hg book -r . epsil*on
 
-  $ hg push
+  $ hg push --new-branch
   pushing to $TESTTMP/gitrepo
   warning: not exporting tag 'bet*a' due to invalid name
   warning: not exporting bookmark 'epsil*on' due to invalid name
