@@ -161,6 +161,7 @@ pull the merge
   pulling from $TESTTMP/gitrepo
   importing git objects into hg
   updating bookmark master
+  deleting bookmark beta
   (run 'hg update' to get a working copy)
   $ hg -R hgrepo tags | grep default/beta
   default/beta                       1:7fe02317c63d
@@ -195,8 +196,7 @@ pull the merge
   | |    summary:     add delta
   | |
   o |  changeset:   1:7fe02317c63d
-  |/   bookmark:    beta
-  |    tag:         t_beta
+  |/   tag:         t_beta
   |    user:        test <test@example.org>
   |    date:        Mon Jan 01 00:00:11 2007 +0000
   |    summary:     add beta
@@ -273,8 +273,7 @@ ensure that releases/v1 and releases/v2 are pulled but not notreleases/v1
   | |    summary:     add delta
   | |
   o |  changeset:   1:7fe02317c63d
-  |/   bookmark:    beta
-  |    tag:         t_beta
+  |/   tag:         t_beta
   |    user:        test <test@example.org>
   |    date:        Mon Jan 01 00:00:11 2007 +0000
   |    summary:     add beta
@@ -311,19 +310,19 @@ also add an annotated tag
   $ GIT_COMMITTER_DATE="2009-02-01 00:00:00 +0000" \
   > git tag -a -m 'tagging oldtag' oldtag
   $ cd ..
+  $ hg -R hgrepo pull --config git.pull-prune-bookmarks=no
+  pulling from $TESTTMP/gitrepo
+  no changes found
+
+Master is now filtered, so it's deleted by default
+
   $ hg -R hgrepo pull
   pulling from $TESTTMP/gitrepo
   no changes found
+  deleting bookmark master
   $ hg -R hgrepo log -r master
-  changeset:   4:a02330f767a4
-  bookmark:    master
-  tag:         default/master
-  parent:      3:6f898ad1f3e1
-  parent:      1:7fe02317c63d
-  user:        test <test@example.org>
-  date:        Mon Jan 01 00:00:13 2007 +0000
-  summary:     Merge branch 'beta'
-  
+  abort: unknown revision 'master'!? (re)
+  [255]
 
   $ cd gitrepo
   $ git checkout -q master
@@ -339,7 +338,7 @@ also add an annotated tag
   $ hg -R hgrepo pull
   pulling from $TESTTMP/gitrepo
   importing git objects into hg
-  updating bookmark master
+  adding bookmark master
   (run 'hg heads .' to see heads, 'hg merge' to merge)
   $ hg -R hgrepo heads
   changeset:   9:e103a73f33be

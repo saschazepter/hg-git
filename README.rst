@@ -310,6 +310,13 @@ what's on the remote.
 
 This option is enabled by default.
 
+``git.pull-prune-bookmarks``
+--------------
+
+On pull, delete any unchanged bookmarks removed on the remote.
+
+This option is enabled by default.
+
 ``git.renamelimit``
 -------------------
 
