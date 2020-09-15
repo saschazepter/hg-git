@@ -27,8 +27,28 @@ Load commonly used test logic
   $ hg add gamma
   $ fn_hg_commit -m 'add gamma'
 
+we shouldn't create branches for bookmarks willy-nilly
   $ hg book -r 1 beta
   $ hg push -r beta
+  pushing to $TESTTMP/gitrepo
+  searching for changes
+  no changes found
+  [1]
+
+...without --new-branch
+  $ hg push --new-branch -r beta
+  pushing to $TESTTMP/gitrepo
+  searching for changes
+  adding objects
+  added 1 commits with 1 trees and 1 blobs
+  adding reference refs/heads/beta
+
+...or --bookmark
+  $ cd ../gitrepo
+  $ git branch -D beta
+  Deleted branch beta (was 0f378ab).
+  $ cd ../hgrepo
+  $ hg push -B beta
   pushing to $TESTTMP/gitrepo
   searching for changes
   adding objects
