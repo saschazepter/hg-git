@@ -20,7 +20,7 @@ from mercurial.i18n import _
 from mercurial.node import hex, bin, nullid
 from mercurial.utils import dateutil
 from mercurial import (
-    bookmarks,
+    bookmarks as bookmarksmod,
     commands,
     context,
     encoding,
@@ -346,7 +346,7 @@ class GitHandler(object):
                     bms = [rhead + suffix]
 
                 if bms:
-                    bookmarks.activate(self.repo, bms[0])
+                    bookmarksmod.activate(self.repo, bms[0])
 
         if imported == 0:
             return 0
@@ -381,7 +381,9 @@ class GitHandler(object):
         def changed(refs):
             old_refs.update(refs)
             exportable = self.get_exportable()
-            new_refs.update(self.get_changed_refs(refs, exportable, True))
+            new_refs.update(
+                self.get_changed_refs(refs, exportable, True, False, ())
+            )
             return refs  # always return the same refs to make the send a no-op
 
         try:
@@ -419,9 +421,10 @@ class GitHandler(object):
             raise error.Abort(_(b"git remote error: ")
                               + pycompat.sysbytes(str(e)))
 
-    def push(self, remote, revs, force):
+    def push(self, remote, revs, force, newbranch, bookmarks):
         self.export_commits()
-        old_refs, new_refs = self.upload_pack(remote, revs, force)
+        old_refs, new_refs = self.upload_pack(remote, revs, force,
+                                              newbranch, bookmarks)
         remote_name = self.remote_name(remote, True)
 
         if not isinstance(new_refs, dict):
@@ -1125,7 +1128,7 @@ class GitHandler(object):
 
     # PACK UPLOADING AND FETCHING
 
-    def upload_pack(self, remote, revs, force):
+    def upload_pack(self, remote, revs, force, newbranch, bookmarks):
         old_refs = {}
         change_totals = {}
 
@@ -1143,7 +1146,8 @@ class GitHandler(object):
                                           b" it doesn't have a bookmark" %
                                           self.repo[rev])
                     exportable[rev] = all_exportable[rev]
-            return self.get_changed_refs(refs, exportable, force)
+            return self.get_changed_refs(refs, exportable, force,
+                                         newbranch or not old_refs, bookmarks)
 
         def genpack(have, want, progress=None, ofs_delta=True):
             commits = []
@@ -1195,7 +1199,7 @@ class GitHandler(object):
             raise error.Abort(_(b"git remote error: ")
                               + pycompat.sysbytes(str(e)))
 
-    def get_changed_refs(self, refs, exportable, force):
+    def get_changed_refs(self, refs, exportable, force, newbranch, bookmarks):
         new_refs = refs.copy()
 
         # The remote repo is empty and the local one doesn't have
@@ -1214,7 +1218,7 @@ class GitHandler(object):
                     tip = hex(tip)
                     commands.bookmark(self.ui, self.repo, b'master',
                                       rev=tip, force=True)
-                    bookmarks.activate(self.repo, b'master')
+                    bookmarksmod.activate(self.repo, b'master')
                     new_refs[LOCAL_BRANCH_PREFIX + b'master'] = (
                         self.map_git_get(tip)
                     )
@@ -1255,6 +1259,12 @@ class GitHandler(object):
                     gitobj = self.git.get_object(self.git.refs[ref])
                     if isinstance(gitobj, Tag):
                         new_refs[ref] = gitobj.id
+                    elif (
+                        ref.startswith(LOCAL_BRANCH_PREFIX) and
+                        ref[len(LOCAL_BRANCH_PREFIX):] not in bookmarks and
+                        not newbranch
+                    ):
+                        self.ui.debug(b'skipping new remote branch %s\n' % ref)
                     else:
                         new_refs[ref] = self.map_git_get(ctx.hex())
                 elif new_refs[ref] in self._map_git:

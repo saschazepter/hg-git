@@ -226,7 +226,6 @@ def exchangepull(
         return orig(repo, remote, heads, force, bookmarks=bookmarks, **kwargs)
 
 
-# TODO figure out something useful to do with the newbranch param
 @eh.wrapfunction(exchange, b'push')
 @util.transform_notgit
 def exchangepush(
@@ -250,7 +249,9 @@ def exchangepush(
             bookmarks,
             **pycompat.strkwargs(opargs or {}),
         )
-        pushop.cgresult = repo.githandler.push(remote.path, revs, force)
+        pushop.cgresult = repo.githandler.push(
+            remote.path, revs, force, newbranch, bookmarks,
+        )
         return pushop
     else:
         return orig(
