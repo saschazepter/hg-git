@@ -219,4 +219,64 @@ This changed in 3.4 to start showing changed and deleted bookmarks again.
   comparing with $TESTTMP/gitremoterepo
   searching for changed bookmarks
      b2                        ff7a2f2d8d70
+  $ hg pull
+  pulling from $TESTTMP/gitremoterepo
+  importing git objects into hg
+  (run 'hg update' to get a working copy)
+  $ cd ..
+
+Delete a branch, but with the bookmark elsewhere, it remains
+
+  $ cd gitremoterepo
+  $ git branch -d b1
+  Deleted branch b1 (was 9497a4e).
+  $ cd ../hggitlocalrepo
+  $ hg book -fr b2 b1
+  $ hg pull
+  pulling from $TESTTMP/gitremoterepo
+  no changes found
+  $ hggitstate
+    4 0ac7ec7b4113 fcfd2c0262db "add epsilon" bookmarks: [b4]
+    3 03769a650ded 55b133e1d558 "add delta" bookmarks: [b3 master]
+    2 ca33a262eb46 d338971a96e2 "add gamma" bookmarks: []
+    1 7fe02317c63d 9497a4ee62e1 "add beta" bookmarks: []
+    0 ff7a2f2d8d70 7eeab2ea75ec "add alpha" bookmarks: [b1 b2]
+  $ cd ..
+
+But with the bookmark unmoved, it disappears!
+
+  $ cd gitremoterepo
+  $ git branch b1 9497a4e
+  $ cd ../hggitlocalrepo
+  $ hg pull
+  pulling from $TESTTMP/gitremoterepo
+  no changes found
+  $ cd ../gitremoterepo
+  $ git branch -d b1
+  Deleted branch b1 (was 9497a4e).
+  $ cd ../hggitlocalrepo
+  $ hg pull
+  pulling from $TESTTMP/gitremoterepo
+  no changes found
+  $ hggitstate
+    4 0ac7ec7b4113 fcfd2c0262db "add epsilon" bookmarks: [b4]
+    3 03769a650ded 55b133e1d558 "add delta" bookmarks: [b3 master]
+    2 ca33a262eb46 d338971a96e2 "add gamma" bookmarks: []
+    1 7fe02317c63d 9497a4ee62e1 "add beta" bookmarks: [b1]
+    0 ff7a2f2d8d70 7eeab2ea75ec "add alpha" bookmarks: [b2]
+  $ cd ..
+
+Now verify that we can't push a new branch without --new-branch
+
+  $ cd hggitlocalrepo
+  $ hg push
+  pushing to $TESTTMP/gitremoterepo
+  searching for changes
+  adding reference refs/heads/b2
+  $ hg push --new-branch
+  pushing to $TESTTMP/gitremoterepo
+  searching for changes
+  adding reference refs/heads/b1
+  no changes found
+  [1]
   $ cd ..
