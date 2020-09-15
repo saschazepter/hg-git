@@ -363,3 +363,45 @@ Now, merge the other
     1 7fe02317c63d 9497a4ee62e1 "add beta" bookmarks: [] (public)
     0 ff7a2f2d8d70 7eeab2ea75ec "add alpha" bookmarks: [b2] (public)
   $ cd ..
+
+Push a branch, rebase it, and verify that it doesn't break anything
+
+  $ cd hggitlocalrepo
+  $ hg up b2
+  0 files updated, 0 files merged, 3 files removed, 0 files unresolved
+  (activating bookmark b2)
+  $ echo eta > eta
+  $ hg add eta
+  $ hgcommit -m 'add eta'
+  $ hg push --new-branch
+  pushing to $TESTTMP/gitremoterepo
+  searching for changes
+  adding objects
+  added 1 commits with 1 trees and 1 blobs
+  updating reference refs/heads/b2
+  $ hg rebase -r b2 -d 1
+  rebasing 7:9e8055335502 "add eta" (*b2*) (glob)
+  $ hg pull
+  pulling from $TESTTMP/gitremoterepo
+  no changes found
+  not updating diverged bookmark b2
+  $ hg book -d b2
+  $ hg pull
+  pulling from $TESTTMP/gitremoterepo
+  no changes found
+  adding bookmark b2
+  $ hg log -r b2 --template '{obsolete}\n'
+  obsolete
+  $ hg book -f -r tip b2
+  $ hg push
+  pushing to $TESTTMP/gitremoterepo
+  searching for changes
+  abort: pushing refs/heads/b2 overwrites 067fc3a2bd1a
+  [255]
+  $ hg push -fr b2
+  pushing to $TESTTMP/gitremoterepo
+  searching for changes
+  adding objects
+  added 1 commits with 1 trees and 1 blobs
+  updating reference refs/heads/b2
+  $ cd ..
