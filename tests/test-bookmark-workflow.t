@@ -262,7 +262,7 @@ But with the bookmark unmoved, it disappears!
     4 0ac7ec7b4113 fcfd2c0262db "add epsilon" bookmarks: [b4]
     3 03769a650ded 55b133e1d558 "add delta" bookmarks: [b3 master]
     2 ca33a262eb46 d338971a96e2 "add gamma" bookmarks: []
-    1 7fe02317c63d 9497a4ee62e1 "add beta" bookmarks: [b1]
+    1 7fe02317c63d 9497a4ee62e1 "add beta" bookmarks: []
     0 ff7a2f2d8d70 7eeab2ea75ec "add alpha" bookmarks: [b2]
   $ cd ..
 
@@ -276,7 +276,6 @@ Now verify that we can't push a new branch without --new-branch
   $ hg push --new-branch
   pushing to $TESTTMP/gitremoterepo
   searching for changes
-  adding reference refs/heads/b1
   no changes found
   [1]
   $ cd ..
