@@ -53,7 +53,7 @@ Add a commit with multiple extra fields
      branch=default hg-git-rename-source=git
   
 Make sure legacy extra (in commit message, after '--HG--') doesn't break
-  $ hg push -r b1 --config git.debugextrainmessage=1
+  $ hg push --new-branch -r b1 --config git.debugextrainmessage=1
   pushing to $TESTTMP/gitrepo
   searching for changes
   adding objects
@@ -93,7 +93,7 @@ Test some nutty filenames
   |  bbbbbbb=databbb branch=default yyyyyyy=datayyy
   |
 #endif
-  $ hg push -r b2 -r b3
+  $ hg push --new-branch -r b2 -r b3
   pushing to $TESTTMP/gitrepo
   searching for changes
   adding objects

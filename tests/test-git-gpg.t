@@ -61,7 +61,7 @@ Hg clone it
   2 files updated, 0 files merged, 0 files removed, 0 files unresolved
 
   $ cd hgrepo
-  $ hg push ../gitrepo2 -B signed
+  $ hg push ../gitrepo2 --new-branch -r signed
   pushing to ../gitrepo2
   searching for changes
   adding objects
