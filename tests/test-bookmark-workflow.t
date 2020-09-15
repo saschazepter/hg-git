@@ -320,7 +320,7 @@ Verify that phase restriction works as expected
 The new branches shouldn't be published!
 
   $ hggitstate
-    5 7ab447d0494f 2b8593c2d63c "add zeta" bookmarks: [b5] (public)
+    5 7ab447d0494f 2b8593c2d63c "add zeta" bookmarks: [b5] (draft)
     4 0ac7ec7b4113 fcfd2c0262db "add epsilon" bookmarks: [b4] (draft)
     3 03769a650ded 55b133e1d558 "add delta" bookmarks: [b3 master] (public)
     2 ca33a262eb46 d338971a96e2 "add gamma" bookmarks: [] (public)
@@ -340,7 +340,7 @@ published, but that nothing else does
   no changes found
   updating bookmark master
   $ hg phase b5
-  5: public
+  5: draft
   $ hg phase master
   4: public
 
