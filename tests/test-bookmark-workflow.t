@@ -59,7 +59,7 @@ Initialize remote hg and git repos with equivalent initial contents
   $ for f in alpha beta gamma delta; do
   >     echo $f > $f; git add $f; gitcommit -m "add $f"
   > done
-  $ git branch b1 9497a4e
+  $ git branch b1 master~2
   $ gitstate
     55b133e "add delta" refs: (*master) (glob)
     d338971 "add gamma" refs:
@@ -253,7 +253,7 @@ Delete a branch, but with the bookmark elsewhere, it remains
 But with the bookmark unmoved, it disappears!
 
   $ cd gitremoterepo
-  $ git branch b1 9497a4e
+  $ git branch b1 master~2
   $ cd ../hggitlocalrepo
   $ hg pull
   pulling from $TESTTMP/gitremoterepo
