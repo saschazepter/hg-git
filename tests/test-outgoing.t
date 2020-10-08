@@ -36,6 +36,7 @@ Load commonly used test logic
   comparing with */gitrepo (glob)
   changeset:   1:47580592d3d6
   bookmark:    beta
+  git node:    0f378ab6c2c6
   user:        test
   date:        Mon Jan 01 00:00:11 2007 +0000
   summary:     add beta
@@ -43,6 +44,7 @@ Load commonly used test logic
   changeset:   2:953796e1cfd8
   bookmark:    master
   tag:         tip
+  git node:    f8e6765efc7a
   user:        test
   date:        Mon Jan 01 00:00:12 2007 +0000
   summary:     add gamma
@@ -51,6 +53,7 @@ Load commonly used test logic
   comparing with */gitrepo (glob)
   changeset:   1:47580592d3d6
   bookmark:    beta
+  git node:    0f378ab6c2c6
   user:        test
   date:        Mon Jan 01 00:00:11 2007 +0000
   summary:     add beta
@@ -59,6 +62,7 @@ Load commonly used test logic
   comparing with */gitrepo (glob)
   changeset:   1:47580592d3d6
   bookmark:    beta
+  git node:    0f378ab6c2c6
   user:        test
   date:        Mon Jan 01 00:00:11 2007 +0000
   summary:     add beta
@@ -66,6 +70,7 @@ Load commonly used test logic
   changeset:   2:953796e1cfd8
   bookmark:    master
   tag:         tip
+  git node:    f8e6765efc7a
   user:        test
   date:        Mon Jan 01 00:00:12 2007 +0000
   summary:     add gamma
@@ -105,12 +110,14 @@ let's pull and try again
   comparing with */gitrepo (glob)
   changeset:   1:47580592d3d6
   bookmark:    beta
+  git node:    0f378ab6c2c6
   user:        test
   date:        Mon Jan 01 00:00:11 2007 +0000
   summary:     add beta
   
   changeset:   2:953796e1cfd8
   bookmark:    master
+  git node:    f8e6765efc7a
   user:        test
   date:        Mon Jan 01 00:00:12 2007 +0000
   summary:     add gamma
@@ -119,6 +126,7 @@ let's pull and try again
   comparing with */gitrepo (glob)
   changeset:   1:47580592d3d6
   bookmark:    beta
+  git node:    0f378ab6c2c6
   user:        test
   date:        Mon Jan 01 00:00:11 2007 +0000
   summary:     add beta
@@ -127,12 +135,14 @@ let's pull and try again
   comparing with */gitrepo (glob)
   changeset:   1:47580592d3d6
   bookmark:    beta
+  git node:    0f378ab6c2c6
   user:        test
   date:        Mon Jan 01 00:00:11 2007 +0000
   summary:     add beta
   
   changeset:   2:953796e1cfd8
   bookmark:    master
+  git node:    f8e6765efc7a
   user:        test
   date:        Mon Jan 01 00:00:12 2007 +0000
   summary:     add gamma

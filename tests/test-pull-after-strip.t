@@ -30,6 +30,7 @@ clone a tag
      tag:         alpha
      tag:         default/master
      tag:         tip
+     git node:    7eeab2ea75ec
      user:        test <test@example.org>
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha
@@ -44,6 +45,7 @@ clone a branch
   |  bookmark:    beta
   |  tag:         default/beta
   |  tag:         tip
+  |  git node:    9497a4ee62e1
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:11 2007 +0000
   |  summary:     add beta
@@ -52,6 +54,7 @@ clone a branch
      bookmark:    master
      tag:         alpha
      tag:         default/master
+     git node:    7eeab2ea75ec
      user:        test <test@example.org>
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha
@@ -84,11 +87,13 @@ pull works after 'hg git-cleanup'
   |  bookmark:    beta
   |  tag:         default/beta
   |  tag:         tip
+  |  git node:    c4c17f3e3a70
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     add to beta
   |
   o  changeset:   1:7fe02317c63d
+  |  git node:    9497a4ee62e1
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:11 2007 +0000
   |  summary:     add beta
@@ -97,6 +102,7 @@ pull works after 'hg git-cleanup'
      bookmark:    master
      tag:         alpha
      tag:         default/master
+     git node:    7eeab2ea75ec
      user:        test <test@example.org>
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha

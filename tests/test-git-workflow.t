@@ -56,6 +56,7 @@ get things back to hg
   o  changeset:   1:9f124f3c1fc29a14f5eb027c24811b0ac9d5ff10
   |  bookmark:    master
   |  tag:         tip
+  |  git node:    fef06279bff0
   |  parent:      0:0221c246a56712c6aa64e5ee382244d8a471b1e2
   |  parent:      -1:0000000000000000000000000000000000000000
   |  manifest:    1:f0bd6fbafbaebe4bb59c35108428f6fce152431d
@@ -69,6 +70,7 @@ get things back to hg
   |
   |
   o  changeset:   0:0221c246a56712c6aa64e5ee382244d8a471b1e2
+     git node:    672a49b78d04
      parent:      -1:0000000000000000000000000000000000000000
      parent:      -1:0000000000000000000000000000000000000000
      manifest:    0:8b8a0e87dfd7a0706c0524afa8ba67e20544cbf0
@@ -100,11 +102,13 @@ gimport support for git.mindate
   o  changeset:   1:9f124f3c1fc2
   |  bookmark:    master
   |  tag:         tip
+  |  git node:    fef06279bff0
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:11 2007 +0000
   |  summary:     add beta
   |
   o  changeset:   0:0221c246a567
+     git node:    672a49b78d04
      user:        test
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha
@@ -122,21 +126,25 @@ gimport support for git.mindate
   o  changeset:   3:3d10b7289d79
   |  bookmark:    master
   |  tag:         tip
+  |  git node:    b2b7fc40eae3
   |  user:        test <test@example.org>
   |  date:        Wed Jan 01 00:00:00 2014 +0000
   |  summary:     newcommit
   |
   o  changeset:   2:befdecd14df5
+  |  git node:    ae03c5db877b
   |  user:        test <test@example.org>
   |  date:        Sat Mar 01 00:00:00 2014 +0000
   |  summary:     oldcommit
   |
   o  changeset:   1:9f124f3c1fc2
+  |  git node:    fef06279bff0
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:11 2007 +0000
   |  summary:     add beta
   |
   o  changeset:   0:0221c246a567
+     git node:    672a49b78d04
      user:        test
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha

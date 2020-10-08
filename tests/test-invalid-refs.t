@@ -45,18 +45,21 @@ Load commonly used test logic
   |  tag:         default/delt#a
   |  tag:         default/master
   |  tag:         tip
+  |  git node:    6850448d48ed
   |  user:        test
   |  date:        Mon Jan 01 00:00:13 2007 +0000
   |  summary:     Added tag gamm a for changeset 0b27ab2b3df6
   |
   o  changeset:   2:0b27ab2b3df6
   |  tag:         gamm a
+  |  git node:    ce52289c14b2
   |  user:        test
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     Added tag bet*a for changeset 491ceeb1b0f1
   |
   o  changeset:   1:491ceeb1b0f1
   |  tag:         bet*a
+  |  git node:    6d335c00a435
   |  user:        test
   |  date:        Mon Jan 01 00:00:11 2007 +0000
   |  summary:     Added tag alph#a for changeset ff7a2f2d8d70
@@ -65,6 +68,7 @@ Load commonly used test logic
      bookmark:    not-master
      tag:         alph#a
      tag:         default/not-master
+     git node:    7eeab2ea75ec
      user:        test <test@example.org>
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha
@@ -87,6 +91,7 @@ git should have only the valid tag alph#a but have full commit log including the
   |  tag:         default/delt#a
   |  tag:         default/master
   |  tag:         tip
+  |  git node:    6850448d48ed
   |  user:        test
   |  date:        Mon Jan 01 00:00:13 2007 +0000
   |  summary:     Added tag gamm a for changeset 0b27ab2b3df6
@@ -94,12 +99,14 @@ git should have only the valid tag alph#a but have full commit log including the
   o  changeset:   2:0b27ab2b3df6
   |  tag:         gamm a
   |  tag:         gamm_a
+  |  git node:    ce52289c14b2
   |  user:        test
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     Added tag bet*a for changeset 491ceeb1b0f1
   |
   o  changeset:   1:491ceeb1b0f1
   |  tag:         bet*a
+  |  git node:    6d335c00a435
   |  user:        test
   |  date:        Mon Jan 01 00:00:11 2007 +0000
   |  summary:     Added tag alph#a for changeset ff7a2f2d8d70
@@ -108,6 +115,7 @@ git should have only the valid tag alph#a but have full commit log including the
      bookmark:    not-master
      tag:         alph#a
      tag:         default/not-master
+     git node:    7eeab2ea75ec
      user:        test <test@example.org>
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha

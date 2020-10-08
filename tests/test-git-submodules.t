@@ -198,51 +198,61 @@ replace subrepo with symlink
   |  bookmark:    master
   |  tag:         default/master
   |  tag:         tip
+  |  git node:    15ba94929481
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     remove all subrepos
   |
   o  changeset:   8:1b71dd3e6033
+  |  git node:    d28364013fe1
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     replace subrepo with symlink
   |
   o  changeset:   7:e338dc0b9f64
+  |  git node:    e3288fa737d4
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     replace symlink with subrepo
   |
   o  changeset:   6:db94aa767571
+  |  git node:    2d1c135447d1
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     add symlink
   |
   o  changeset:   5:87bae50d72cb
+  |  git node:    88171163bf47
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     replace file with subrepo
   |
   o  changeset:   4:33729ae46d57
+  |  git node:    f6436a472da0
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     replace subrepo with file
   |
   o  changeset:   3:4d2f0f4fb53d
+  |  git node:    6e219527869f
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     add another subrepo
   |
   o  changeset:   2:620c9d5e9a98
+  |  git node:    a000567ceefb
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     change subrepo commit
   |
   o  changeset:   1:f20b40ad6da1
+  |  git node:    e42b08b3cb70
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:11 2007 +0000
   |  summary:     add subrepo
   |
   o  changeset:   0:ff7a2f2d8d70
+     git node:    7eeab2ea75ec
      user:        test <test@example.org>
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha
@@ -365,51 +375,61 @@ are the same is enough
   |  bookmark:    master
   |  tag:         default/master
   |  tag:         tip
+  |  git node:    15ba94929481
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     remove all subrepos
   |
   o  changeset:   8:1b71dd3e6033
+  |  git node:    d28364013fe1
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     replace subrepo with symlink
   |
   o  changeset:   7:e338dc0b9f64
+  |  git node:    e3288fa737d4
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     replace symlink with subrepo
   |
   o  changeset:   6:db94aa767571
+  |  git node:    2d1c135447d1
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     add symlink
   |
   o  changeset:   5:87bae50d72cb
+  |  git node:    88171163bf47
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     replace file with subrepo
   |
   o  changeset:   4:33729ae46d57
+  |  git node:    f6436a472da0
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     replace subrepo with file
   |
   o  changeset:   3:4d2f0f4fb53d
+  |  git node:    6e219527869f
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     add another subrepo
   |
   o  changeset:   2:620c9d5e9a98
+  |  git node:    a000567ceefb
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     change subrepo commit
   |
   o  changeset:   1:f20b40ad6da1
+  |  git node:    e42b08b3cb70
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:11 2007 +0000
   |  summary:     add subrepo
   |
   o  changeset:   0:ff7a2f2d8d70
+     git node:    7eeab2ea75ec
      user:        test <test@example.org>
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha

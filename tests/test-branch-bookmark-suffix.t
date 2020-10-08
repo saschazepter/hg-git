@@ -123,6 +123,7 @@ make sure the commit doesn't have an HG:rename-source annotation
   |  bookmark:    branch2_bookmark
   |  tag:         default/branch2
   |  tag:         tip
+  |  git node:    f8f8de5062ef
   |  parent:      1:600de9b6d498
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:13 2007 +0000
@@ -131,6 +132,7 @@ make sure the commit doesn't have an HG:rename-source annotation
   | o  changeset:   2:8211cade99e4
   | |  bookmark:    branch1_bookmark
   | |  tag:         default/branch1
+  | |  git node:    d8aef794b90f
   | |  parent:      0:40a840c1f8ae
   | |  user:        test <test@example.org>
   | |  date:        Mon Jan 01 00:00:12 2007 +0000
@@ -138,12 +140,14 @@ make sure the commit doesn't have an HG:rename-source annotation
   | |
   @ |  changeset:   1:600de9b6d498
   |/   branch:      branch2
+  |    git node:    288e92bacccc
   |    user:        test
   |    date:        Mon Jan 01 00:00:11 2007 +0000
   |    summary:     add f2
   |
   o  changeset:   0:40a840c1f8ae
      branch:      branch1
+     git node:    bbfe79acf62d
      user:        test
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add f1

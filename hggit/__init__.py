@@ -177,6 +177,9 @@ uisetup = eh.finaluisetup
 extsetup = eh.finalextsetup
 reposetup = eh.finalreposetup
 uipopulate = eh.finaluipopulate
+colortable = {
+    b'log.gitnode': b'dim',
+}
 
 for _mod in (
     commands,

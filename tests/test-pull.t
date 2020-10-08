@@ -35,6 +35,7 @@ pull a tag
      tag:         default/master
      tag:         t_alpha
      tag:         tip
+     git node:    7eeab2ea75ec
      user:        test <test@example.org>
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha
@@ -78,6 +79,7 @@ pull a branch
   |  bookmark:    beta
   |  tag:         default/beta
   |  tag:         tip
+  |  git node:    9497a4ee62e1
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:11 2007 +0000
   |  summary:     add beta
@@ -88,6 +90,7 @@ pull a branch
      tag:         default/epsilon
      tag:         default/master
      tag:         t_alpha
+     git node:    7eeab2ea75ec
      user:        test <test@example.org>
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha
@@ -114,6 +117,7 @@ pull everything else
   |  bookmark:    master
   |  tag:         default/master
   |  tag:         tip
+  |  git node:    cee7863e67ba
   |  parent:      0:ff7a2f2d8d70
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:13 2007 +0000
@@ -122,6 +126,7 @@ pull everything else
   | o  changeset:   2:678ebee93e38
   |/   bookmark:    delta
   |    tag:         default/delta
+  |    git node:    8cbeb817785f
   |    parent:      0:ff7a2f2d8d70
   |    user:        test <test@example.org>
   |    date:        Mon Jan 01 00:00:12 2007 +0000
@@ -131,6 +136,7 @@ pull everything else
   |/   bookmark:    beta
   |    tag:         default/beta
   |    tag:         t_beta
+  |    git node:    9497a4ee62e1
   |    user:        test <test@example.org>
   |    date:        Mon Jan 01 00:00:11 2007 +0000
   |    summary:     add beta
@@ -139,6 +145,7 @@ pull everything else
      bookmark:    epsilon
      tag:         default/epsilon
      tag:         t_alpha
+     git node:    7eeab2ea75ec
      user:        test <test@example.org>
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha
@@ -175,6 +182,7 @@ pull the merge
   |\   bookmark:    master
   | |  tag:         default/master
   | |  tag:         tip
+  | |  git node:    8642e887a094
   | |  parent:      3:6f898ad1f3e1
   | |  parent:      1:7fe02317c63d
   | |  user:        test <test@example.org>
@@ -182,6 +190,7 @@ pull the merge
   | |  summary:     Merge branch 'beta'
   | |
   | o  changeset:   3:6f898ad1f3e1
+  | |  git node:    cee7863e67ba
   | |  parent:      0:ff7a2f2d8d70
   | |  user:        test <test@example.org>
   | |  date:        Mon Jan 01 00:00:13 2007 +0000
@@ -190,6 +199,7 @@ pull the merge
   | | o  changeset:   2:678ebee93e38
   | |/   bookmark:    delta
   | |    tag:         default/delta
+  | |    git node:    8cbeb817785f
   | |    parent:      0:ff7a2f2d8d70
   | |    user:        test <test@example.org>
   | |    date:        Mon Jan 01 00:00:12 2007 +0000
@@ -197,6 +207,7 @@ pull the merge
   | |
   o |  changeset:   1:7fe02317c63d
   |/   tag:         t_beta
+  |    git node:    9497a4ee62e1
   |    user:        test <test@example.org>
   |    date:        Mon Jan 01 00:00:11 2007 +0000
   |    summary:     add beta
@@ -205,6 +216,7 @@ pull the merge
      bookmark:    epsilon
      tag:         default/epsilon
      tag:         t_alpha
+     git node:    7eeab2ea75ec
      user:        test <test@example.org>
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha
@@ -237,6 +249,7 @@ ensure that releases/v1 and releases/v2 are pulled but not notreleases/v1
   |  bookmark:    releases/v2
   |  tag:         default/releases/v2
   |  tag:         tip
+  |  git node:    5c721536153d
   |  parent:      4:a02330f767a4
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:15 2007 +0000
@@ -245,6 +258,7 @@ ensure that releases/v1 and releases/v2 are pulled but not notreleases/v1
   | o  changeset:   5:218b2d0660d3
   |/   bookmark:    releases/v1
   |    tag:         default/releases/v1
+  |    git node:    dd47ab74ed75
   |    user:        test <test@example.org>
   |    date:        Mon Jan 01 00:00:14 2007 +0000
   |    summary:     add zeta
@@ -252,6 +266,7 @@ ensure that releases/v1 and releases/v2 are pulled but not notreleases/v1
   o    changeset:   4:a02330f767a4
   |\   bookmark:    master
   | |  tag:         default/master
+  | |  git node:    8642e887a094
   | |  parent:      3:6f898ad1f3e1
   | |  parent:      1:7fe02317c63d
   | |  user:        test <test@example.org>
@@ -259,6 +274,7 @@ ensure that releases/v1 and releases/v2 are pulled but not notreleases/v1
   | |  summary:     Merge branch 'beta'
   | |
   | o  changeset:   3:6f898ad1f3e1
+  | |  git node:    cee7863e67ba
   | |  parent:      0:ff7a2f2d8d70
   | |  user:        test <test@example.org>
   | |  date:        Mon Jan 01 00:00:13 2007 +0000
@@ -267,6 +283,7 @@ ensure that releases/v1 and releases/v2 are pulled but not notreleases/v1
   | | o  changeset:   2:678ebee93e38
   | |/   bookmark:    delta
   | |    tag:         default/delta
+  | |    git node:    8cbeb817785f
   | |    parent:      0:ff7a2f2d8d70
   | |    user:        test <test@example.org>
   | |    date:        Mon Jan 01 00:00:12 2007 +0000
@@ -274,6 +291,7 @@ ensure that releases/v1 and releases/v2 are pulled but not notreleases/v1
   | |
   o |  changeset:   1:7fe02317c63d
   |/   tag:         t_beta
+  |    git node:    9497a4ee62e1
   |    user:        test <test@example.org>
   |    date:        Mon Jan 01 00:00:11 2007 +0000
   |    summary:     add beta
@@ -282,6 +300,7 @@ ensure that releases/v1 and releases/v2 are pulled but not notreleases/v1
      bookmark:    epsilon
      tag:         default/epsilon
      tag:         t_alpha
+     git node:    7eeab2ea75ec
      user:        test <test@example.org>
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha
@@ -345,6 +364,7 @@ Master is now filtered, so it's deleted by default
   bookmark:    master
   tag:         default/master
   tag:         tip
+  git node:    c7da9f1436f3
   user:        test <test@example.org>
   date:        Wed Jan 01 00:00:00 2014 +0000
   summary:     newcommit
@@ -352,6 +372,7 @@ Master is now filtered, so it's deleted by default
   changeset:   7:49713da8f665
   tag:         newtag
   tag:         oldtag
+  git node:    989ae42597b5
   parent:      4:a02330f767a4
   user:        test <test@example.org>
   date:        Sat Mar 01 00:00:00 2014 +0000
@@ -360,6 +381,7 @@ Master is now filtered, so it's deleted by default
   changeset:   6:a3f95e150b0a
   bookmark:    releases/v2
   tag:         default/releases/v2
+  git node:    5c721536153d
   parent:      4:a02330f767a4
   user:        test <test@example.org>
   date:        Mon Jan 01 00:00:15 2007 +0000
@@ -368,6 +390,7 @@ Master is now filtered, so it's deleted by default
   changeset:   5:218b2d0660d3
   bookmark:    releases/v1
   tag:         default/releases/v1
+  git node:    dd47ab74ed75
   user:        test <test@example.org>
   date:        Mon Jan 01 00:00:14 2007 +0000
   summary:     add zeta
@@ -375,6 +398,7 @@ Master is now filtered, so it's deleted by default
   changeset:   2:678ebee93e38
   bookmark:    delta
   tag:         default/delta
+  git node:    8cbeb817785f
   parent:      0:ff7a2f2d8d70
   user:        test <test@example.org>
   date:        Mon Jan 01 00:00:12 2007 +0000

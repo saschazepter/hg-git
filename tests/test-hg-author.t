@@ -110,46 +110,55 @@ Load commonly used test logic
   |  bookmark:    master
   |  tag:         default/master
   |  tag:         tip
+  |  git node:    2fe60ba69727
   |  user:        test >test@example.com>
   |  date:        Mon Jan 01 00:00:18 2007 +0000
   |  summary:     add theta
   |
   o  changeset:   7:0e2fb4d21667
+  |  git node:    9f2f7cafdbf2
   |  user:        test < test@example.com >
   |  date:        Mon Jan 01 00:00:17 2007 +0000
   |  summary:     add eta
   |
   o  changeset:   6:faa3aae96199
+  |  git node:    172a6f8d8064
   |  user:        test
   |  date:        Mon Jan 01 00:00:16 2007 +0000
   |  summary:     add zeta
   |
   o  changeset:   5:2cf6ad5a1afc
+  |  git node:    71badb8e343a
   |  user:        name <test@example.com
   |  date:        Mon Jan 01 00:00:15 2007 +0000
   |  summary:     add epsilon
   |
   o  changeset:   4:3131b2a71396
+  |  git node:    9a9ae7b7f310
   |  user:        name<test@example.com>
   |  date:        Mon Jan 01 00:00:14 2007 +0000
   |  summary:     add delta
   |
   o  changeset:   3:6b854d65d0d6
+  |  git node:    e4149a32e81e
   |  user:        <test@example.com>
   |  date:        Mon Jan 01 00:00:13 2007 +0000
   |  summary:     add gamma
   |
   o  changeset:   2:46303c652e79
+  |  git node:    fae95aef5889
   |  user:        test <test@example.com> (comment)
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     modify beta
   |
   o  changeset:   1:47580592d3d6
+  |  git node:    0f378ab6c2c6
   |  user:        test
   |  date:        Mon Jan 01 00:00:11 2007 +0000
   |  summary:     add beta
   |
   o  changeset:   0:ff7a2f2d8d70
+     git node:    7eeab2ea75ec
      user:        test <test@example.org>
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha
@@ -166,46 +175,55 @@ Load commonly used test logic
   |  bookmark:    master
   |  tag:         default/master
   |  tag:         tip
+  |  git node:    2fe60ba69727
   |  user:        test ?test@example.com <test ?test@example.com>
   |  date:        Mon Jan 01 00:00:18 2007 +0000
   |  summary:     add theta
   |
   o  changeset:   7:20310508f06d
+  |  git node:    9f2f7cafdbf2
   |  user:        test <test@example.com>
   |  date:        Mon Jan 01 00:00:17 2007 +0000
   |  summary:     add eta
   |
   o  changeset:   6:e3d81af8a8c1
+  |  git node:    172a6f8d8064
   |  user:        test
   |  date:        Mon Jan 01 00:00:16 2007 +0000
   |  summary:     add zeta
   |
   o  changeset:   5:78f609fd208f
+  |  git node:    71badb8e343a
   |  user:        name <test@example.com>
   |  date:        Mon Jan 01 00:00:15 2007 +0000
   |  summary:     add epsilon
   |
   o  changeset:   4:42fa61d57718
+  |  git node:    9a9ae7b7f310
   |  user:        name <test@example.com>
   |  date:        Mon Jan 01 00:00:14 2007 +0000
   |  summary:     add delta
   |
   o  changeset:   3:6b854d65d0d6
+  |  git node:    e4149a32e81e
   |  user:        <test@example.com>
   |  date:        Mon Jan 01 00:00:13 2007 +0000
   |  summary:     add gamma
   |
   o  changeset:   2:46303c652e79
+  |  git node:    fae95aef5889
   |  user:        test <test@example.com> (comment)
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     modify beta
   |
   o  changeset:   1:47580592d3d6
+  |  git node:    0f378ab6c2c6
   |  user:        test
   |  date:        Mon Jan 01 00:00:11 2007 +0000
   |  summary:     add beta
   |
   o  changeset:   0:ff7a2f2d8d70
+     git node:    7eeab2ea75ec
      user:        test <test@example.org>
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha
