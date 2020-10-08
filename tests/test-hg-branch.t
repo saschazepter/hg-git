@@ -46,11 +46,13 @@ Load commonly used test logic
   |  bookmark:    master
   |  tag:         default/master
   |  tag:         tip
+  |  git node:    dc800a8372b7
   |  user:        test
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     started branch gamma
   |
   o  changeset:   1:3baa67317a4d
+  |  git node:    ee10ed348a80
   |  user:        test
   |  date:        Mon Jan 01 00:00:11 2007 +0000
   |  summary:     rename alpha to beta
@@ -58,6 +60,7 @@ Load commonly used test logic
   o  changeset:   0:ff7a2f2d8d70
      bookmark:    not-master
      tag:         default/not-master
+     git node:    7eeab2ea75ec
      user:        test <test@example.org>
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha
@@ -72,11 +75,13 @@ Load commonly used test logic
   |  bookmark:    master
   |  tag:         default/master
   |  tag:         tip
+  |  git node:    dc800a8372b7
   |  user:        test
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     started branch gamma
   |
   o  changeset:   1:3baa67317a4d
+  |  git node:    ee10ed348a80
   |  user:        test
   |  date:        Mon Jan 01 00:00:11 2007 +0000
   |  summary:     rename alpha to beta
@@ -84,6 +89,7 @@ Load commonly used test logic
   o  changeset:   0:ff7a2f2d8d70
      bookmark:    not-master
      tag:         default/not-master
+     git node:    7eeab2ea75ec
      user:        test <test@example.org>
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha

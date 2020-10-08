@@ -38,12 +38,14 @@ Load commonly used test logic
   |  bookmark:    master
   |  tag:         default/master
   |  tag:         tip
+  |  git node:    bbae830cfd3f
   |  user:        test
   |  date:        Mon Jan 01 00:00:11 2007 +0000
   |  summary:     Added tag alpha for changeset ff7a2f2d8d70
   |
   o  changeset:   0:ff7a2f2d8d70
      tag:         alpha
+     git node:    7eeab2ea75ec
      user:        test <test@example.org>
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha
@@ -68,12 +70,14 @@ git should have the tag alpha
   |  bookmark:    master
   |  tag:         default/master
   |  tag:         tip
+  |  git node:    bbae830cfd3f
   |  user:        test
   |  date:        Mon Jan 01 00:00:11 2007 +0000
   |  summary:     Added tag alpha for changeset ff7a2f2d8d70
   |
   o  changeset:   0:ff7a2f2d8d70
      tag:         alpha
+     git node:    7eeab2ea75ec
      user:        test <test@example.org>
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha

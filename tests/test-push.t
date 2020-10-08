@@ -103,6 +103,7 @@ master and default/master should be diferent
   $ hg log -r master
   changeset:   2:953796e1cfd8
   bookmark:    master
+  git node:    f8e6765efc7a
   user:        test
   date:        Mon Jan 01 00:00:12 2007 +0000
   summary:     add gamma
@@ -111,6 +112,7 @@ master and default/master should be diferent
   changeset:   3:25eed24f5e8f
   tag:         default/master
   tag:         tip
+  git node:    d8e22ddb015d
   parent:      0:ff7a2f2d8d70
   user:        test <test@example.org>
   date:        Mon Jan 01 00:00:13 2007 +0000
@@ -168,6 +170,7 @@ hg-git issue103 -- directories can lose information at hg-git export time
   bookmark:    master
   tag:         default/master
   tag:         tip
+  git node:    432d33892bf4
   user:        test
   date:        Mon Jan 01 00:00:15 2007 +0000
   summary:     add dir1/beta
@@ -195,6 +198,7 @@ NB: the triple slashes are intentional, due to windows
   bookmark:    master
   tag:         default/master
   tag:         tip
+  git node:    432d33892bf4
   user:        test
   date:        Mon Jan 01 00:00:15 2007 +0000
   summary:     add dir1/beta

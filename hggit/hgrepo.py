@@ -1,9 +1,10 @@
 from __future__ import generator_stop
 
 from mercurial import exthelper
+from mercurial import namespaces
 from mercurial import repoview
 from mercurial import util as hgutil
-from mercurial.node import bin
+from mercurial.node import bin, hex
 
 from .git_handler import GitHandler
 from .gitrepo import gitrepo
@@ -70,6 +71,49 @@ def reposetup(ui, repo):
                 tagscache[tag] = bin(rev)
 
             return tagscache
+
+    # add namespaces for git commit & committer
+    if repo.local():
+        def namemap(repo, name):
+            r = repo.githandler.map_hg_get(name)
+            return [bin(r)] if r else []
+
+        def nodemap(repo, node):
+            r = repo.githandler.map_git_get(hex(node))
+            return [r] if r else []
+
+        def singlenode(repo, name):
+            r = repo.githandler.map_hg_get(name)
+            return bin(r) if r else None
+
+        def listnames(repo):
+            return repo.githandler._map_git
+
+        repo.names.addnamespace(namespaces.namespace(
+            name=b'gitnode',
+            templatename=b'gitnode',
+            colorname=b'gitnode',
+            logfmt=b'git node:    %.12s\n',
+            namemap=namemap,
+            nodemap=nodemap,
+            singlenode=singlenode,
+            listnames=listnames,
+        ))
+
+        def committer(repo, node):
+            ctx = repo[node]
+            extra = ctx.extra()
+            committer = extra.get(b'committer', b'').rsplit(b' ', 2)[0]
+
+            if committer and committer != ctx.user():
+                return [committer]
+            else:
+                return []
+
+        repo.names.addnamespace(namespaces.namespace(
+            name=b'committer', templatename=b'committer',
+            nodemap=committer, namemap=lambda repo, name: [],
+        ))
 
     repo.__class__ = hgrepo
 
