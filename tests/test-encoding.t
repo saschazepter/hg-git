@@ -54,10 +54,12 @@ The warning message changed in Git 1.8.0
   |  bookmark:    master
   |  tag:         default/master
   |  tag:         tip
+  |  git node:    51c509c1c7ee
+  |  committer:   test <test@example.org>
   |  parent:      2:8bc4d64940260d4a1e70b54c099d3a76c83ff41e
   |  parent:      -1:0000000000000000000000000000000000000000
   |  manifest:    3:ea49f93388380ead5601c8fcbfa187516e7c2ed8
-  |  user:        tést èncödîng <test@example.org>
+  |  user:        t\xc3\xa9st \xc3\xa8nc\xc3\xb6d\xc3\xaeng <test@example.org> (esc)
   |  date:        Mon Jan 01 00:00:13 2007 +0000
   |  files+:      delta
   |  extra:       branch=default
@@ -69,6 +71,8 @@ The warning message changed in Git 1.8.0
   |
   |
   o  changeset:   2:8bc4d64940260d4a1e70b54c099d3a76c83ff41e
+  |  git node:    bd576458238c
+  |  committer:   test <test@example.org>
   |  parent:      1:f35a3100b78e57a0f5e4589a438f952a14b26ade
   |  parent:      -1:0000000000000000000000000000000000000000
   |  manifest:    2:f580e7da3673c137370da2b931a1dee83590d7b4
@@ -83,6 +87,8 @@ The warning message changed in Git 1.8.0
   |
   |
   o  changeset:   1:f35a3100b78e57a0f5e4589a438f952a14b26ade
+  |  git node:    7a7e86fc1b24
+  |  committer:   test <test@example.org>
   |  parent:      0:87cd29b67a9159eec3b5495b0496ef717b2769f5
   |  parent:      -1:0000000000000000000000000000000000000000
   |  manifest:    1:f0bd6fbafbaebe4bb59c35108428f6fce152431d
@@ -97,6 +103,7 @@ The warning message changed in Git 1.8.0
   |
   |
   o  changeset:   0:87cd29b67a9159eec3b5495b0496ef717b2769f5
+     git node:    0530b75d8c20
      parent:      -1:0000000000000000000000000000000000000000
      parent:      -1:0000000000000000000000000000000000000000
      manifest:    0:8b8a0e87dfd7a0706c0524afa8ba67e20544cbf0

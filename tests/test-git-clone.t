@@ -23,11 +23,13 @@ Load commonly used test logic
   |  bookmark:    master
   |  tag:         default/master
   |  tag:         tip
+  |  git node:    9497a4ee62e1
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:11 2007 +0000
   |  summary:     add beta
   |
   o  changeset:   0:ff7a2f2d8d70
+     git node:    7eeab2ea75ec
      user:        test <test@example.org>
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha

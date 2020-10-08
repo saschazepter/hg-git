@@ -4,6 +4,7 @@ from mercurial.i18n import _
 from mercurial import (
     error,
     node,
+    namespaces,
     pycompat,
     ui,
     util as hgutil,

@@ -109,46 +109,55 @@ final manifest in git is just beta
   |  bookmark:    master
   |  tag:         default/master
   |  tag:         tip
+  |  git node:    5ee11eeae239
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:18 2007 +0000
   |  summary:     remove betalink
   |
   o  changeset:   7:a316d3a96c89
+  |  git node:    2c7b324faecc
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:17 2007 +0000
   |  summary:     replace file with symlink
   |
   o  changeset:   6:1804acb71f3e
+  |  git node:    ff0478d2ecc2
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:16 2007 +0000
   |  summary:     replace symlink with file
   |
   o  changeset:   5:e19c85becc87
+  |  git node:    5492e6e410e4
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:15 2007 +0000
   |  summary:     add symlink to beta
   |
   o  changeset:   4:0d3086c3f8c3
+  |  git node:    b991de8952c4
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:14 2007 +0000
   |  summary:     remove foo/bar
   |
   o  changeset:   3:b2406125ef5c
+  |  git node:    b0edaf0adac1
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:13 2007 +0000
   |  summary:     remove alpha
   |
   o  changeset:   2:8b3b2f4b4158
+  |  git node:    f2d0d5bfa905
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     add foo
   |
   o  changeset:   1:7fe02317c63d
+  |  git node:    9497a4ee62e1
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:11 2007 +0000
   |  summary:     add beta
   |
   o  changeset:   0:ff7a2f2d8d70
+     git node:    7eeab2ea75ec
      user:        test <test@example.org>
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha
@@ -242,46 +251,55 @@ test with rename detection enabled
   |  bookmark:    master
   |  tag:         default/master
   |  tag:         tip
+  |  git node:    5ee11eeae239
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:18 2007 +0000
   |  summary:     remove betalink
   |
   o  changeset:   7:a316d3a96c89
+  |  git node:    2c7b324faecc
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:17 2007 +0000
   |  summary:     replace file with symlink
   |
   o  changeset:   6:1804acb71f3e
+  |  git node:    ff0478d2ecc2
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:16 2007 +0000
   |  summary:     replace symlink with file
   |
   o  changeset:   5:e19c85becc87
+  |  git node:    5492e6e410e4
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:15 2007 +0000
   |  summary:     add symlink to beta
   |
   o  changeset:   4:0d3086c3f8c3
+  |  git node:    b991de8952c4
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:14 2007 +0000
   |  summary:     remove foo/bar
   |
   o  changeset:   3:b2406125ef5c
+  |  git node:    b0edaf0adac1
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:13 2007 +0000
   |  summary:     remove alpha
   |
   o  changeset:   2:8b3b2f4b4158
+  |  git node:    f2d0d5bfa905
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     add foo
   |
   o  changeset:   1:7fe02317c63d
+  |  git node:    9497a4ee62e1
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:11 2007 +0000
   |  summary:     add beta
   |
   o  changeset:   0:ff7a2f2d8d70
+     git node:    7eeab2ea75ec
      user:        test <test@example.org>
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha
