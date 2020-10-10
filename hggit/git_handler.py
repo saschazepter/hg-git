@@ -1216,6 +1216,10 @@ class GitHandler(object):
         new_refs = refs.copy()
         ignored_branches = set()
 
+        # replace the active bookmark with its name
+        bookmarks = tuple(b if b != b'.' else self.repo._bookmarks.active
+                          for b in bookmarks)
+
         # The remote repo is empty and the local one doesn't have
         # bookmarks/tags
         #
