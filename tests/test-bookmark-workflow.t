@@ -456,8 +456,9 @@ Try pushing the currently active bookmark
   $ hg push -B .
   pushing to $TESTTMP/gitremoterepo
   searching for changes
-  no changes found
-  [1]
+  adding objects
+  added 1 commits with 1 trees and 1 blobs
+  adding reference refs/heads/b2
   $ hg book -i
   $ hg push -B .
   abort: no active bookmark!? (re)
