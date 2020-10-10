@@ -32,6 +32,7 @@ we shouldn't create branches for bookmarks willy-nilly
   $ hg push -r beta
   pushing to $TESTTMP/gitrepo
   searching for changes
+  not adding bookmark beta
   no changes found
   [1]
 
