@@ -446,3 +446,20 @@ Then, reproduce explicitly:
   $ hg phase -r master
   6: public
   $ cd ..
+
+Try pushing the currently active bookmark
+
+  $ cd gitremoterepo
+  $ git branch -q -D b2
+  $ cd ../hggitlocalrepo
+  $ hg up -q b2
+  $ hg push -B .
+  pushing to $TESTTMP/gitremoterepo
+  searching for changes
+  no changes found
+  [1]
+  $ hg book -i
+  $ hg push -B .
+  abort: no active bookmark!? (re)
+  [255]
+  $ cd ..
