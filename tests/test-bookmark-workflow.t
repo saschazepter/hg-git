@@ -281,6 +281,7 @@ Now push the new branch
   $ hg push
   pushing to $TESTTMP/gitremoterepo
   searching for changes
+  not adding bookmark b2
   no changes found
   [1]
   $ hg push -B b2

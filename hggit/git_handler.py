@@ -381,9 +381,16 @@ class GitHandler(object):
         def changed(refs):
             old_refs.update(refs)
             exportable = self.get_exportable()
-            new_refs.update(
-                self.get_changed_refs(refs, exportable, True, False, ())
+            ignored, new = self.get_changed_refs(
+                refs, exportable, True, False, (),
             )
+
+            if ignored:
+                self.ui.note(b'ignoring bookmarks: %s\n' % (
+                    b', '.join(ignored),
+                ))
+
+            new_refs.update(new)
             return refs  # always return the same refs to make the send a no-op
 
         try:
@@ -1146,8 +1153,14 @@ class GitHandler(object):
                                           b" it doesn't have a bookmark" %
                                           self.repo[rev])
                     exportable[rev] = all_exportable[rev]
-            return self.get_changed_refs(refs, exportable, force,
-                                         newbranch or not old_refs, bookmarks)
+            ignored_branches, new_refs = self.get_changed_refs(
+                refs, exportable, force, newbranch or not old_refs, bookmarks,
+            )
+
+            for ignored_branch in ignored_branches:
+                self.ui.status(b'not adding bookmark %s\n' % ignored_branch)
+
+            return new_refs
 
         def genpack(have, want, progress=None, ofs_delta=True):
             commits = []
@@ -1201,6 +1214,7 @@ class GitHandler(object):
 
     def get_changed_refs(self, refs, exportable, force, newbranch, bookmarks):
         new_refs = refs.copy()
+        ignored_branches = set()
 
         # The remote repo is empty and the local one doesn't have
         # bookmarks/tags
@@ -1264,7 +1278,7 @@ class GitHandler(object):
                         ref[len(LOCAL_BRANCH_PREFIX):] not in bookmarks and
                         not newbranch
                     ):
-                        self.ui.debug(b'skipping new remote branch %s\n' % ref)
+                        ignored_branches.add(ref[11:])
                     else:
                         new_refs[ref] = self.map_git_get(ctx.hex())
                 elif new_refs[ref] in self._map_git:
@@ -1282,7 +1296,7 @@ class GitHandler(object):
                         b"branch '%s' changed on the server, "
                         b"please pull and merge before pushing" % ref)
 
-        return new_refs
+        return sorted(ignored_branches), new_refs
 
     def fetch_pack(self, remote_name, heads=None):
         # The dulwich default walk only checks refs/heads/. We also want to
