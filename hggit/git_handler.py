@@ -1199,7 +1199,7 @@ class GitHandler(object):
         return new_refs
 
     def fetch_pack(self, remote_name, heads=None):
-        localclient, path = self.get_transport_and_path(remote_name)
+        localclient, path = self.get_transport_and_path(remote_name, readonly=True)
 
         # The dulwich default walk only checks refs/heads/. We also want to
         # consider remotes when doing discovery, so we build our own list. We
@@ -1665,7 +1665,7 @@ class GitHandler(object):
         except UnicodeDecodeError:
             return string.decode('ascii', 'replace').encode('utf-8')
 
-    def get_transport_and_path(self, uri):
+    def get_transport_and_path(self, uri, readonly=False):
         """Method that sets up the transport (either ssh or http(s))
 
         Tests:
@@ -1679,11 +1679,11 @@ class GitHandler(object):
         >>> mockrepo.path = b''
         >>> g = GitHandler(mockrepo, ui())
         >>> tp = g.get_transport_and_path
-        >>> client, url = tp(b'http://fqdn.com/test.git')
+        >>> client, url = tp(b'https://github.com/schacon/hg-git.git', readonly=True)
         >>> print(isinstance(client, HttpGitClient))
         True
         >>> print(url.decode())
-        http://fqdn.com/test.git
+        https://github.com/schacon/hg-git.git
         >>> client, url = tp(b'git@fqdn.com:user/repo.git')
         >>> print(isinstance(client, SSHGitClient))
         True
@@ -1743,15 +1743,34 @@ class GitHandler(object):
                     username = username.decode('latin-1')
                 if password is not None:
                     password = password.decode('latin-1')
-            return (
-                client.HttpGitClient(
+
+            def create_client_with_password(username, password):
+                if username is None or password is None:
+                    pmgr = compat.passwordmgr(self.ui)
+                    username, password = pmgr.find_user_password(None, uri)
+                return client.HttpGitClient(
                     str_uri,
                     config=config,
                     username=username,
                     password=password,
-                ),
-                uri,
-            )
+                )
+
+            if not readonly:
+                return create_client_with_password(username, password), uri
+            else:
+                local_client = client.HttpGitClient(
+                    str_uri,
+                    config=config,
+                    username=username,
+                    password=password,
+                )
+                try:
+                    # a public repository?
+                    local_client.get_refs("")
+                except GitProtocolError:
+                    local_client = create_client_with_password(username, password)
+
+            return local_client, uri
 
         # if its not git or git+ssh, try a local url..
         return client.SubprocessGitClient(), uri
