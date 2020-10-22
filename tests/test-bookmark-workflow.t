@@ -405,3 +405,38 @@ Push a branch, rebase it, and verify that it doesn't break anything
   added 1 commits with 1 trees and 1 blobs
   updating reference refs/heads/b2
   $ cd ..
+
+Verify that pulling already existing, published changesets from git
+doesn't unpublish changesets. This is a three-step operation: 1) Pull
+and publish changesets from Git. 2) Transfer those changesets to
+another Mercurial repository, which loses the hg-git state. 3) Pull
+from Git, but without publishing enabled. Previously, the final
+operation would cause the changesets to revert to draft state.
+
+First, enact the full workflow:
+
+  $ hg clone -q hggitlocalrepo hggitlocalrepo-2
+  $ hg -R hggitlocalrepo-2 phase tip
+  7: public
+  $ hg -R hggitlocalrepo-2 pull gitremoterepo
+  pulling from gitremoterepo
+  importing git objects into hg
+  (run 'hg update' to get a working copy)
+  $ hg -R hggitlocalrepo-2 phase tip
+  7: draft
+  $ rm -rf hggitlocalrepo-2
+
+Then, reproduce explicitly:
+
+  $ cd hggitlocalrepo
+  $ hg phase -r master
+  6: public
+  $ hg gclear
+  clearing out the git cache data
+  $ hg pull --config hggit.usephases=no
+  pulling from $TESTTMP/gitremoterepo
+  importing git objects into hg
+  (run 'hg update' to get a working copy)
+  $ hg phase -r master
+  6: draft
+  $ cd ..
