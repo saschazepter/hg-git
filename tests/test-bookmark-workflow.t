@@ -423,7 +423,7 @@ First, enact the full workflow:
   importing git objects into hg
   (run 'hg update' to get a working copy)
   $ hg -R hggitlocalrepo-2 phase tip
-  7: draft
+  7: public
   $ rm -rf hggitlocalrepo-2
 
 Then, reproduce explicitly:
@@ -438,5 +438,5 @@ Then, reproduce explicitly:
   importing git objects into hg
   (run 'hg update' to get a working copy)
   $ hg phase -r master
-  6: draft
+  6: public
   $ cd ..

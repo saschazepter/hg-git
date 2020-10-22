@@ -825,6 +825,10 @@ class GitHandler(object):
     def get_git_incoming(self, refs):
         return git2hg.find_incoming(self.git.object_store, self._map_git, refs)
 
+    def _get_public_commits(self):
+        return set(self.repo.changelog.node(r)
+                   for r in self.repo.revs("heads(public())"))
+
     def get_transaction(self, desc=b"hg-git"):
         """obtain a transaction specific for the repository
 
@@ -838,6 +842,7 @@ class GitHandler(object):
         return tr
 
     def import_git_objects(self, remote_name, refs):
+        public_commits = self._get_public_commits()
         result = self.get_git_incoming(refs)
         commits = result.commits
         commit_cache = result.commit_cache
@@ -867,6 +872,25 @@ class GitHandler(object):
                     for csha in commits[offset:offset + chunksize]:
                         progress.increment()
                         self.import_git_commit(commit_cache[csha])
+
+        # Pulling from git always creates new changesets corresponding
+        # to the equivalent commits; however, some of those commits
+        # might already exist, e.g. by being pulled from another
+        # Mercurial repository also using hg-git. If those commits
+        # were public, recommitting them would incorrectly revert them
+        # to a draft state. Arguably, this is a bug in Mercurial, but
+        # given that this particular scenario is unlikely to occur
+        # elsewhere, we work around it here.
+        republish = public_commits - self._get_public_commits()
+
+        if republish:
+            self.ui.note(b'republishing heads: %s\n', (
+                b", ".join(map(hex, republish)),
+            ))
+
+            with self.repo.lock(), self.repo.transaction(b"phase") as tr:
+                phases.advanceboundary(self.repo, tr, phases.public,
+                                       sorted(public_commits))
 
         # TODO if the tags cache is used, remove any dangling tag references
         return total
