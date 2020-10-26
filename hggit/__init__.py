@@ -287,12 +287,9 @@ def git_cleanup(ui, repo):
         gitsha, hgsha = line.strip().split(b' ', 1)
         if hgsha in repo:
             new_map.append(b'%s %s\n' % (gitsha, hgsha))
-    wlock = repo.wlock()
-    try:
+    with repo.wlock():
         f = gh.vfs(gh.map_file, b'wb')
         f.writelines(new_map)
-    finally:
-        wlock.release()
     ui.status(_(b'git commit map cleaned\n'))
 
 
@@ -478,16 +475,9 @@ def exchangepull(orig, repo, remote, heads=None, force=False, bookmarks=(),
         pullop.trmanager = exchange.transactionmanager(repo, b'pull',
                                                        remote.url())
 
-        wlock = repo.wlock()
-        lock = repo.lock()
-        try:
+        with repo.wlock(), repo.lock(), pullop.trmanager:
             pullop.cgresult = repo.githandler.fetch(remote.path, heads)
-            pullop.trmanager.close()
             return pullop
-        finally:
-            pullop.trmanager.release()
-            lock.release()
-            wlock.release()
     else:
         return orig(repo, remote, heads, force, bookmarks=bookmarks, **kwargs)
 
