@@ -215,15 +215,12 @@ class GitHandler(object):
         self._map_hg_real = map_hg_real
 
     def save_map(self, map_file):
-        wlock = self.repo.wlock()
-        try:
+        with self.repo.wlock():
             map_hg = self._map_hg
             with self.vfs(map_file, b'wb+', atomictemp=True) as buf:
                 bwrite = buf.write
                 for hgsha, gitsha in compat.iteritems(map_hg):
                     bwrite(b"%s %s\n" % (gitsha, hgsha))
-        finally:
-            wlock.release()
 
     def load_tags(self):
         self.tags = {}
@@ -333,16 +330,9 @@ class GitHandler(object):
             blist.append(rnode)
 
         if blist:
-            lock = self.repo.lock()
-            try:
-                tr = self.repo.transaction(b"phase")
+            with self.repo.lock(), self.repo.transaction(b"phase") as tr:
                 phases.advanceboundary(self.repo, tr, phases.public,
                                        blist)
-                tr.close()
-            finally:
-                if tr is not None:
-                    tr.release()
-                lock.release()
 
         if imported == 0:
             return 0
