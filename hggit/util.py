@@ -12,10 +12,7 @@ except ImportError:
 
 from dulwich import errors
 from mercurial.i18n import _
-from mercurial import (
-    error,
-    lock as lockmod,
-)
+from mercurial import error
 
 from . import compat
 
@@ -109,16 +106,8 @@ def isgitsshuri(uri):
 
 def updatebookmarks(repo, changes, name=b'git_handler'):
     """abstract writing bookmarks for backwards compatibility"""
-    bms = repo._bookmarks
-    tr = lock = wlock = None
-    try:
-        wlock = repo.wlock()
-        lock = repo.lock()
-        tr = repo.transaction(name)
-        bms.applychanges(repo, tr, changes)
-        tr.close()
-    finally:
-        lockmod.release(tr, lock, wlock)
+    with repo.wlock(), repo.lock(), repo.transaction(name) as tr:
+        repo._bookmarks.applychanges(repo, tr, changes)
 
 
 def checksafessh(host):
