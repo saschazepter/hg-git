@@ -156,6 +156,8 @@ class GitHandler(object):
         # tried an unauthenticated request, gotten a realm, and are now
         # ready to prompt the user, if necessary
         self._http_auth_realm = None
+        # same, but for the HTTP proxy
+        self._http_proxy_realm = None
 
     @property
     def vfs(self):
@@ -1275,9 +1277,7 @@ class GitHandler(object):
                         self._http_auth_realm = m.group(1)
 
             elif 'unexpected http resp 407' in e.args[0]:
-                raise error.Abort(
-                    b'HTTP proxy requires authentication',
-                )
+                self._http_proxy_realm = 'Proxy'
             # dulwich 0.19
             elif 'unexpected http resp 401' in e.args[0]:
                 self._http_auth_realm = 'Git'
@@ -1820,14 +1820,38 @@ class GitHandler(object):
             config = dul_config.ConfigDict()
             config.set(b'http', b'useragent', ua)
 
-            proxy = compat.config(self.ui, b'string', b'http_proxy', b'host')
-            if proxy:
-                config.set(b'http', b'proxy', b'http://' + proxy)
+            pwmgr = url.passwordmgr(self.ui, self.ui.httppasswordmgrdb)
 
-                if compat.config(self.ui, b'string', b'http_proxy', b'passwd'):
-                    self.ui.warn(
-                        b"warning: proxy authentication is unsupported\n",
+            proxy = compat.config(self.ui, b'string', b'http_proxy', b'host')
+
+            if proxy:
+                # support proxy authentication by injecting it into the URL
+                proxyuser = compat.config(
+                    self.ui, b'string', b'http_proxy', b'user',
+                )
+                proxypasswd = compat.config(
+                    self.ui, b'string', b'http_proxy', b'passwd',
+                )
+
+                if proxyuser:
+                    proxyurl = b'http://%s@%s' % (proxyuser, proxy)
+                else:
+                    proxyurl = b'http://' + proxy
+
+                if self._http_proxy_realm:
+                    proxyuser, proxypasswd = map(
+                        pycompat.bytesurl,
+                        pwmgr.find_user_password(
+                            self._http_proxy_realm, pycompat.strurl(proxyurl),
+                        ),
                     )
+
+                if proxyuser and proxypasswd:
+                    proxyurl = b'http://%s:%s@%s' % (
+                        proxyuser, proxypasswd, proxy,
+                    )
+
+                config.set(b'http', b'proxy', proxyurl)
 
             if pycompat.ispy3:
                 # urllib3.util.url._encode_invalid_chars() converts the path
@@ -1835,8 +1859,6 @@ class GitHandler(object):
                 str_uri = uri.decode('utf-8')
             else:
                 str_uri = uri
-
-            pwmgr = url.passwordmgr(self.ui, self.ui.httppasswordmgrdb)
 
             # not available in dulwich 0.19, used on Python 2.7
             if hasattr(client, 'get_credentials_from_store'):
