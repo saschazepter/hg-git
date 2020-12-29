@@ -11,7 +11,9 @@ except ImportError:
 import os, tempfile, unittest, shutil
 from mercurial import ui, hg, commands, pycompat
 
-sys.path.append(os.path.join(os.path.dirname(__file__), os.path.pardir))
+sys.path.insert(
+    0, os.path.join(os.path.dirname(__file__), os.path.pardir),
+)
 
 from hggit.git_handler import GitHandler
 
