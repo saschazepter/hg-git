@@ -228,21 +228,16 @@ class GitHandler(object):
         return self._map_hg.get(hgsha)
 
     def load_map(self):
-        map_git_real = {}
-        map_hg_real = {}
         if os.path.exists(self.vfs.join(self.map_file)):
-            for line in self.vfs(self.map_file):
-                # format is <40 hex digits> <40 hex digits>\n
-                if len(line) != 82:
-                    raise ValueError(
-                        _(b'corrupt mapfile: incorrect line length %d') %
-                        len(line))
-                gitsha = line[:40]
-                hgsha = line[41:81]
-                map_git_real[gitsha] = hgsha
-                map_hg_real[hgsha] = gitsha
-        self._map_git_real = map_git_real
-        self._map_hg_real = map_hg_real
+            with self.vfs(self.map_file) as fp:
+                self._map_git_real = {
+                    line[:40]: line[41:81]
+                    for line in fp
+                }
+            self._map_hg_real = {v: k for k, v in self._map_git_real.items()}
+        else:
+            self._map_git_real = {}
+            self._map_hg_real = {}
 
     def save_map(self, map_file):
         self.ui.debug(_(b"saving git map to %s\n") % self.vfs.join(map_file))
