@@ -218,6 +218,11 @@ class GitHandler(object):
     # FILE LOAD AND SAVE METHODS
 
     def map_set(self, gitsha, hgsha):
+        if gitsha in self._map_git and self._map_git[gitsha] != hgsha:
+            self.ui.warn(b'warning: overwriting mapped git commit!\n')
+        if hgsha in self._map_hg and self._map_hg[hgsha] != gitsha:
+            self.ui.warn(b'warning: overwriting mapped mercurial commit!\n')
+
         self._map_git[gitsha] = hgsha
         self._map_hg[hgsha] = gitsha
 
