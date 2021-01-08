@@ -264,19 +264,12 @@ def gverify(ui, repo, **opts):
 @command(b'git-cleanup')
 def git_cleanup(ui, repo):
     '''clean up Git commit map after history editing'''
-    new_map = []
-    gh = repo.githandler
-    for line in gh.vfs(gh.map_file):
-        gitsha, hgsha = line.strip().split(b' ', 1)
-        if hgsha in repo:
-            new_map.append(b'%s %s\n' % (gitsha, hgsha))
-    wlock = repo.wlock()
-    try:
-        f = gh.vfs(gh.map_file, b'wb')
-        f.writelines(new_map)
-    finally:
-        wlock.release()
-    ui.status(_(b'git commit map cleaned\n'))
+    with repo.wlock():
+        gh = repo.githandler
+        ncleaned = gh.clean_map()
+        gh.save_map(gh.map_file)
+
+        ui.status(_(b'%d commits pruned from map\n') % ncleaned)
 
 
 def findcommonoutgoing(orig, repo, other, *args, **kwargs):

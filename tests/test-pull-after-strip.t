@@ -68,7 +68,7 @@ clone a branch
   abort: you appear to have run strip - please run hg git-cleanup
   [255]
   $ hg git-cleanup
-  git commit map cleaned
+  1 commits pruned from map
 pull works after 'hg git-cleanup'
 "adding remote bookmark" message was added in Mercurial 2.3
   $ hg pull -r beta | grep -v "adding remote bookmark"
