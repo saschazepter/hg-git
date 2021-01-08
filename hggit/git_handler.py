@@ -197,6 +197,15 @@ class GitHandler(object):
     def map_git_get(self, hgsha):
         return self._map_hg.get(hgsha)
 
+    def clean_map(self):
+        prior_size = len(self._map_hg)
+
+        for hgsha in list(self._map_hg):
+            if hgsha not in self.repo:
+                del self._map_git[self._map_hg.pop(hgsha)]
+
+        return prior_size - len(self._map_hg)
+
     def load_map(self):
         map_git_real = {}
         map_hg_real = {}
