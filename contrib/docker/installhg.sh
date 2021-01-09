@@ -15,8 +15,11 @@ fi
 if echo "$PYTHON" | grep -q ^2
 then
     PIPDEPENDS="$PIPDEPENDS dulwich~=0.19.0"
+elif echo "$HG" | fgrep -vq .
+then
+    PIPDEPENDS="$PIPDEPENDS https://github.com/dulwich/dulwich/archive/master.tar.gz pyflakes"
 else
-    PIPDEPENDS="$PIPDEPENDS dulwich pyflakes"
+    PIPDEPENDS="$PIPDEPENDS dulwich==0.20.0 pyflakes"
 fi
 
 if test "$PYTHON" -gt 3.5
