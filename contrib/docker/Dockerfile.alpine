@@ -3,6 +3,7 @@ FROM python:$PYTHON-alpine
 
 ARG HG=stable
 ARG PYTHON=3
+ARG GLOBAL_OPTIONS=
 
 COPY contrib/docker/installhg.sh /tmp
 RUN /tmp/installhg.sh

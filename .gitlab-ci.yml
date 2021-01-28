@@ -6,7 +6,8 @@ stages:
   - archives
 
 .base:
-  image: registry.heptapod.net:443/mercurial/hg-git/ci:py$PYTHON-hg-$HG
+  image: "registry.heptapod.net:443/mercurial/hg-git/ci\
+    :py$PYTHON-hg-$HG$GLOBAL_OPTIONS"
   timeout: 10m
   services:
       - name: registry.heptapod.net:443/mercurial/hg-git/git-server
@@ -19,7 +20,7 @@ stages:
     - su test -c contrib/ci.sh
   artifacts:
     reports:
-      junit: tests-$PYTHON-$HG.xml
+      junit: tests-$PYTHON-$HG$GLOBAL_OPTIONS.xml
 
 # First, test with the latest and greatest Mercurial, across the
 # versions Python supported. We generally assume that if e.g. CPython
@@ -101,10 +102,20 @@ Development:
     matrix:
       - PYTHON:
           - "2.7"
+        HG:
+          - "stable"
+          - "default"
+        GLOBAL_OPTIONS:
+          - ""
+      - PYTHON:
           - "3.9"
         HG:
           - "stable"
           - "default"
+        GLOBAL_OPTIONS:
+          - ""
+          - "--pure"
+          - "--rust"
 
 # Build images for the above tasks; this should be a scheduled job, as
 # it is quite unnecessary to run on every invocation.
@@ -134,10 +145,12 @@ Release images:
       --dockerfile $CI_PROJECT_DIR/contrib/docker/Dockerfile.alpine
       --build-arg PYTHON=$PYTHON
       --build-arg HG=$HG
+      --build-arg GLOBAL_OPTIONS=$GLOBAL_OPTIONS
       --reproducible
       --single-snapshot
       --cleanup
-      --destination registry.heptapod.net:443/mercurial/hg-git/ci:py$PYTHON-hg-$HG
+      --destination
+      registry.heptapod.net:443/mercurial/hg-git/ci:py$PYTHON-hg-$HG$GLOBAL_OPTIONS
   parallel:
     matrix:
       - PYTHON:
@@ -175,10 +188,20 @@ Current images:
     matrix:
       - PYTHON:
           - "2.7"
+        HG:
+          - "stable"
+          - "default"
+        GLOBAL_OPTIONS:
+          - ""
+      - PYTHON:
           - "3.9"
         HG:
-          - "default"
           - "stable"
+          - "default"
+        GLOBAL_OPTIONS:
+          - ""
+          - "--pure"
+          - "--rust"
 
 # Builds the image used by tests/test-networking.t
 Git service image:
