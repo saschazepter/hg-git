@@ -28,6 +28,13 @@ set -xe
 
 apk add --no-cache $BUILDDEPENDS $RUNDEPENDS
 
-python -m pip --no-cache-dir install $PIPDEPENDS
+PIP_OPTIONS="--no-cache-dir"
+
+if test -n "$GLOBAL_OPTIONS"
+then
+   PIP_OPTIONS="$PIP_OPTIONS --global-option=$GLOBAL_OPTIONS"
+fi
+
+python -m pip $PIP_OPTIONS install $PIPDEPENDS
 
 apk del $BUILDDEPENDS
