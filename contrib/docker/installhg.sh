@@ -35,6 +35,6 @@ then
    PIP_OPTIONS="$PIP_OPTIONS --global-option=$GLOBAL_OPTIONS"
 fi
 
-python -m pip $PIP_OPTIONS install $PIPDEPENDS
+python -m pip $PIP_OPTIONS install --verbose $PIPDEPENDS
 
 apk del $BUILDDEPENDS
