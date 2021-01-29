@@ -2,7 +2,7 @@
 
 set -e
 
-BUILDDEPENDS="curl gcc gettext musl-dev"
+BUILDDEPENDS="curl gcc gettext musl-dev mercurial"
 RUNDEPENDS="git git-daemon unzip openssh gnupg"
 
 if echo "$HG" | fgrep -q .
