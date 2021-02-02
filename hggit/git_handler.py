@@ -7,6 +7,7 @@ import os
 import re
 import shutil
 
+from dulwich.client import HTTPUnauthorized
 from dulwich.errors import HangupException, GitProtocolError
 from dulwich.objects import Blob, Commit, Tag, Tree, parse_timezone
 from dulwich.pack import create_delta, apply_delta
@@ -1348,11 +1349,6 @@ class GitHandler(object):
 
         func = getattr(clientobj, method)
 
-        # dulwich 0.19 does not offer a specific exception class
-        HTTPUnauthorized = getattr(
-            client, 'HTTPUnauthorized', type('<dummy>', (Exception,), {}),
-        )
-
         try:
             return func(path, *args, **kwargs)
         except (HTTPUnauthorized, GitProtocolError) as e:
@@ -1371,9 +1367,6 @@ class GitHandler(object):
                 raise error.Abort(
                     b'HTTP proxy requires authentication',
                 )
-            # dulwich 0.19
-            elif 'unexpected http resp 401' in e.args[0]:
-                self._http_auth_realm = 'Git'
             else:
                 raise
 
@@ -2069,16 +2062,12 @@ class GitHandler(object):
 
             pwmgr = url.passwordmgr(self.ui, self.ui.httppasswordmgrdb)
 
-            # not available in dulwich 0.19
-            if hasattr(client, 'get_credentials_from_store'):
-                urlobj = compat.url(uri)
-                auth = client.get_credentials_from_store(
-                    urlobj.scheme,
-                    urlobj.host,
-                    urlobj.user,
-                )
-            else:
-                auth = None
+            urlobj = compat.url(uri)
+            auth = client.get_credentials_from_store(
+                urlobj.scheme,
+                urlobj.host,
+                urlobj.user,
+            )
 
             if self._http_auth_realm:
                 # since we've tried an unauthenticated request, and
