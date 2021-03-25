@@ -33,50 +33,68 @@ relatively recent Dulwich.
 Installing
 ==========
 
-A common way to install Mercurial extensions is from their Mercurial repository.  I.e. 
-clone this repository somewhere and make the ``[extensions]`` section in your ``~/.hgrc``::
+A common way to install Mercurial extensions is from their Mercurial
+repository. I.e. clone this repository somewhere and make the
+``[extensions]`` section in your ``~/.hgrc``:
 
+.. code:: ini
 
    [extensions]
    hggit = [path-to]/hg-git/hggit
 
 That will enable the Hg-Git extension for you.
 
-Alternatively, you can install the plugin using your favourite package manager,
-e.g. ``pip3 install hg-git``, but note that you must make sure to use the version of
-python that is used by mercurial.  Thus, the safest way to do this with ``pip`` is:
+Alternatively, you can install the plugin using your favourite package
+manager, e.g. ``pip3 install hg-git``, but note that you must make
+sure to use the version of python that is used by Mercurial. Thus, the
+safest way to do this with ``pip`` is:
 
-.. code-block:: bash
-  
-   PYTHON="$(hg debuginstall -T'{pythonexe}')"  # Point PYTHON to the version used by hg
-   "$PYTHON" -m pip install --user hg-git       # Drop the --user if you want a system install
+.. code:: sh
 
-With ``hg-git`` visible to mercurial, it can simply be enabled in your ``~/.hgrc`` with::
+   # Point $PYTHON to the version used by hg
+   PYTHON="$(hg debuginstall -T '{pythonexe}')"
+   # Drop the --user if you want a system install
+   "$PYTHON" -m pip install --user hg-git
+
+With ``hg-git`` visible to Mercurial, it can simply be enabled in your
+``~/.hgrc`` with:
+
+.. code:: ini
 
    [extensions]
    hggit =
 
 .. note::
-   
-   ``hg-git`` is an extension and can be used with versions of mercurial already
-   installed on your system, but, as mentioned above,  needs to be installed so that
-   mercurial can find it.  The version of python mercurial uses is listed by::
 
-      hg debuginstall -T'{pythonexe}'
+   ``hg-git`` is an extension and can be used with versions of
+   Mercurial already installed on your system, but, as mentioned
+   above, needs to be installed so that Mercurial can find it. The
+   version of Python Mercurial uses is listed by:
 
-   This is the reason for setting ``PYTHON`` above.  This will work, for example, if you
-   are using a version of mercurial installed by the system, which might depends on
-   Python 2.7.  Keep in mind that python 2 reached its end of life in April 2020 and
-   will not be supported with versions of ``hg-git`` 0.11 and higher (see `issue #349
-   <https://foss.heptapod.net/mercurial/hg-git/-/issues/349>`_.
+   .. code:: sh
 
-   Perhaps better, install a more recent version of Mercurial along with ``hg-git`` in
-   your working python environment using something like::
+      hg debuginstall -T '{pythonexe}'
+
+   This is the reason for setting ``PYTHON`` above. This will work,
+   for example, if you are using a version of Mercurial installed by
+   the system, which might depends on Python 2.7. Keep in mind that
+   Python 2.7 reached its end of life in April 2020 and will not be
+   supported with versions of ``hg-git`` 0.11 and higher (see `issue
+   #349 <https://foss.heptapod.net/mercurial/hg-git/-/issues/349>`_.
+
+   Perhaps better, install a more recent version of Mercurial along
+   with ``hg-git`` in your working python environment using something
+   like:
+
+   .. code:: sh
 
       python3 -m pip install mercurial hg-git hg-evolve
 
-   This will also ensure that the |evolve_extension|_ is installed, allowing you to use
-   topics as outlined in the `Heptapod workflow <https://octobus.net/blog/2019-09-04-heptapod-workflow.html>`_::
+   This will also ensure that the |evolve_extension|_ is installed,
+   allowing you to use topics as outlined in the `Heptapod workflow
+   <https://octobus.net/blog/2019-09-04-heptapod-workflow.html>`_:
+
+   .. code:: ini
 
       [extensions]
       hggit =
@@ -104,30 +122,36 @@ Usage
 =====
 
 You can clone a Git repository from Mercurial by running
-``hg clone <url> [dest]``. For example, if you were to run::
+``hg clone <url> [dest]``. For example, if you were to run:
 
-   $ hg clone git://github.com/hg-git/hg-git.git
+.. code:: sh
+
+   hg clone git://github.com/hg-git/hg-git.git
 
 Hg-Git would clone the repository and convert it to a Mercurial
 repository for you. Other protocols are also supported, see ``hg help
 git`` for details.
 
-If you are starting from an existing Mercurial repository, you have to set up a
-Git repository somewhere that you have push access to, add a path entry
-for it in your .hg/hgrc file, and then run ``hg push [name]`` from
-within your repository. For example::
+If you are starting from an existing Mercurial repository, you have to
+set up a Git repository somewhere that you have push access to, add a
+path entry for it in your .hg/hgrc file, and then run ``hg push
+[name]`` from within your repository. For example:
 
-   $ cd hg-git # (a Mercurial repository)
-   $ # edit .hg/hgrc and add the target git url in the paths section
-   $ hg push
+.. code:: sh
 
-This will convert all your Mercurial data into Git objects and push them to the
-Git server.
+   cd hg-git # (a Mercurial repository)
+   # edit .hg/hgrc and add the target git url in the paths section
+   hg push
 
-Now that you have a Mercurial repository that can push/pull to/from a Git
-repository, you can fetch updates with ``hg pull``::
+This will convert all your Mercurial data into Git objects and push
+them to the Git server.
 
-   $ hg pull
+Now that you have a Mercurial repository that can push to and pull
+from a Git repository, you can fetch updates as usual:
+
+.. code:: sh
+
+   hg pull
 
 That will pull down any commits that have been pushed to the server in
 the meantime and give you a new head that you can merge in.
@@ -138,28 +162,30 @@ pull Git branches down and set them up as bookmarks.
 Hg-Git can also be used to convert a Mercurial repository to Git. You
 can use a local repository or a remote repository accessed via SSH, HTTP
 or HTTPS. Use the following commands to convert the repository, it
-assumes you're running this in ``$HOME``::
+assumes you're running this in ``$HOME``:
 
-   $ mkdir git-repo; cd git-repo; git init; cd ..
-   $ cd hg-repo
-   $ hg bookmarks hg
-   $ hg push ../git-repo
+.. code:: sh
+
+   mkdir git-repo; cd git-repo; git init; cd ..
+   cd hg-repo
+   hg bookmarks hg
+   hg push ../git-repo
 
 The ``hg`` bookmark is necessary to prevent problems as otherwise
 hg-git pushes to the currently checked out branch, confusing Git. The
 snippet above will create a branch named ``hg`` in the Git repository.
 To get the changes in ``master`` use the following command (only
 necessary in the first run, later just use ``git merge`` or ``git
-rebase``).
+rebase``):
 
-::
+.. code:: sh
 
-   $ cd git-repo
-   $ git checkout -b master hg
+   cd git-repo
+   git checkout -b master hg
 
 To import new changesets into the Git repository just rerun the ``hg
-push`` command and then use ``git merge`` or ``git rebase`` in your Git
-repository.
+push`` command and then use ``git merge`` or ``git rebase`` in your
+Git repository.
 
 ``.gitignore`` and ``.hgignore``
 --------------------------------
@@ -185,17 +211,17 @@ conversion. This has certain advantages:
 .. |extension_called_git| replace:: extension called ``git``
 .. _extension_called_git: https://www.mercurial-scm.org/wiki/GitExtension
 
- * Each commit only has one node ID, which is the Git hash.
- * Data is stored only once, so the on-disk footprint is much lower.
+* Each commit only has one node ID, which is the Git hash.
+* Data is stored only once, so the on-disk footprint is much lower.
 
 The extension has certain drawbacks, however:
 
- * It cannot handle all Git repositories. In particular, it cannot
-   handle `octopus merges`_, i.e. merge commits with more than two
-   parents. If any such commit is included in the history, conversion
-   will fail.
- * You cannot interact with Mercurial repositories.
- * Experimental status.
+* It cannot handle all Git repositories. In particular, it cannot
+  handle `octopus merges`_, i.e. merge commits with more than two
+  parents. If any such commit is included in the history, conversion
+  will fail.
+* You cannot interact with Mercurial repositories.
+* Experimental status.
 
 .. _octopus merges: https://git-scm.com/docs/git-merge
 
@@ -236,13 +262,17 @@ Since these default behaviors may not be what you want (``none@none``,
 for example, shows up unpleasantly on GitHub as "illegal email
 address"), the ``git.authors`` option provides for an "authors
 translation file" that will be used during outgoing transfers from
-Mercurial to Git only, by modifying ``hgrc`` as such::
+Mercurial to Git only, by modifying ``hgrc`` as such:
+
+.. code:: ini
 
    [git]
    authors = authors.txt
 
 Where ``authors.txt`` is the name of a text file containing author name
-translations, one per each line, using the following format::
+translations, one per each line, using the following format:
+
+.. code:: ini
 
    johnny = John Smith <jsmith@foo.com>
    dougie = Doug Johnson <dougiej@bar.com>
@@ -252,8 +282,9 @@ Empty lines and lines starting with a "#" are ignored.
 It should be noted that this translation is in *the Mercurial to Git
 direction only*. Changesets coming from Git back to Mercurial will not
 translate back into Mercurial usernames, so it's best that the same
-username/email combination be used on both the Mercurial and Git sides; the
-author file is mostly useful for translating legacy changesets.
+username/email combination be used on both the Mercurial and Git
+sides; the author file is mostly useful for translating legacy
+changesets.
 
 
 ``git.blockdotgit``
@@ -288,7 +319,9 @@ a Mercurial repository over to Git, and maintain the same named
 branches as are present on the hg side, the ``branch_bookmark_suffix``
 might be all that's needed. This presents a string "suffix" that will
 be recognized on each bookmark name, and stripped off as the bookmark
-is translated to a Git branch::
+is translated to a Git branch:
+
+.. code:: ini
 
    [git]
    branch_bookmark_suffix=_bookmark
@@ -328,7 +361,9 @@ Hg-Git keeps a Git repository clone for reading and updating. By
 default, the Git clone is the subdirectory ``git`` in your local
 Mercurial repository. If you would like this Git clone to be at the same
 level of your Mercurial repository instead (named ``.git``), add the
-following to your ``hgrc``::
+following to your ``hgrc``:
+
+.. code:: ini
 
    [git]
    intree = True
@@ -382,12 +417,14 @@ at the end.
 
 Please note that this is meaningless for an initial clone, as any
 error or interruption will delete the destination. So instead of
-cloning a large Git repository, you might want to pull instead::
+cloning a large Git repository, you might want to pull instead:
 
-  $ hg init linux
-  $ cd linux
-  $ echo "[paths]\ndefault = https://github.com/torvalds/linux" > .hg/hgrc
-  $ hg pull
+.. code:: sh
+
+  hg init linux
+  cd linux
+  echo "[paths]\ndefault = https://github.com/torvalds/linux" > .hg/hgrc
+  hg pull
 
 …and be extremely patient. Please note that converting very large
 repositories may take *days* rather than mere *hours*, and may run
