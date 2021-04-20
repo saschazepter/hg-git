@@ -99,7 +99,7 @@ With ``hg-git`` visible to Mercurial, it can simply be enabled in your
       [extensions]
       hggit =
       evolve =
-      topics =
+      topic =
 
 .. |evolve_extension| replace:: ``evolve`` extension
 .. _evolve_extension: https://www.mercurial-scm.org/wiki/EvolveExtension
