@@ -400,7 +400,7 @@ class IncrementalChangesetExporter(object):
         added, removed = [], []
 
         def isgit(sub, path):
-            return path not in sub or sub[path].startswith(b'[git]')
+            return path not in sub or sub[path][0].startswith(b'[git]')
 
         for path, sha in substate.items():
             if not isgit(sub, path):
