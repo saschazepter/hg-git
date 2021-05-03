@@ -1830,10 +1830,10 @@ class GitHandler(object):
                 str_uri = uri
 
             pwmgr = url.passwordmgr(self.ui, self.ui.httppasswordmgrdb)
+            urlobj = hgutil.url(uri)
 
             # not available in dulwich 0.19, used on Python 2.7
             if hasattr(client, 'get_credentials_from_store'):
-                urlobj = hgutil.url(uri)
                 auth = client.get_credentials_from_store(
                     urlobj.scheme,
                     urlobj.host,
@@ -1842,7 +1842,7 @@ class GitHandler(object):
             else:
                 auth = None
 
-            if self._http_auth_realm:
+            if self._http_auth_realm is not None:
                 # since we've tried an unauthenticated request, and
                 # obtain a realm, we can do a "full" search, including
                 # a prompt
@@ -1851,10 +1851,16 @@ class GitHandler(object):
                 )
             elif auth is not None:
                 username, password = auth
-                username = username.decode('utf-8')
-                password = password.decode('utf-8')
+            elif urlobj.user is not None and urlobj.passwd is not None:
+                username = urlobj.user
+                password = urlobj.passwd
             else:
                 username, password = pwmgr.find_stored_password(str_uri)
+
+            if isinstance(username, bytes):
+                username = username.decode()
+            if isinstance(password, bytes):
+                password = password.decode()
 
             return (
                 client.HttpGitClient(
