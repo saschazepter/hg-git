@@ -17,14 +17,37 @@ from mercurial import phases
 
 
 def get_public(ui, refs, remote_name=None):
-    if not ui.configbool(b'hggit', b'usephases'):
-        return {}
+    use_phases = ui.configbool(b'hggit', b'usephases')
 
     refs_to_publish = set(ui.configlist(b'git', b'public'))
 
     # if nothing is requested, fall back to defaults, meaning HEAD
     # and tags
     publish_defaults = not refs_to_publish
+
+    paths = ui.paths.get(remote_name)
+
+    msg = _('multiple paths is not supported if they use hg-git.publish (yet)')
+    if isinstance(paths, list):
+        # paths became lists in mercurial 5.9; but how do we pick
+        # the right one?
+        if len(paths) > 1:
+            for p in paths:
+                if getattr(p, 'hggit_publish'):
+                    raise error.Abort(msg)
+        path = paths[0]
+    else:
+        path = paths
+
+    if path and getattr(path, 'hggit_publish') is not None:
+        use_phases = bool(path.hggit_publish)
+        publish_defaults = path.hggit_publish is True
+        refs_to_publish = set(
+            path.hggit_publish if isinstance(path.hggit_publish, list) else []
+        )
+
+    if not use_phases:
+        return {}
 
     to_publish = set()
 
