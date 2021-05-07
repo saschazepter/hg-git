@@ -1,6 +1,9 @@
 from __future__ import generator_stop
 
 from mercurial import exthelper
+from mercurial.utils import stringutil
+
+from . import compat
 
 eh = exthelper.exthelper()
 
@@ -33,3 +36,14 @@ CONFIG_DEFAULTS = {
 for section, items in CONFIG_DEFAULTS.items():
     for item, default in items.items():
         eh.configitem(section, item, default=default)
+
+
+@eh.extsetup
+def extsetup(ui):
+    @compat.pathsuboption(b'hg-git.publish', b'hggit_publish')
+    def pathsuboption(ui, path, value):
+        b = stringutil.parsebool(value)
+        if b is not None:
+            return b
+        else:
+            return compat.parselist(value)
