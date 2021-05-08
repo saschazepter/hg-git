@@ -1,4 +1,4 @@
-#testcases bookmarks branches
+#testcases bookmarks branches topic
 
 Pushing to Git
 ==============
@@ -29,6 +29,19 @@ Load commonly used test logic
   > hg-git-mode = branches
   > EOF
 #endif
+#if topic no-evolve
+  $ echo 'requires evolve extensions'
+  $ exit 80
+#endif
+#if topic
+  $ cat >> $HGRCPATH <<EOF
+  > [extensions]
+  > topic =
+  > [experimental]
+  > hg-git-mode = topic
+  > EOF
+#endif
+
 Create a Git repository with a detached head
 
   $ git init gitrepo
