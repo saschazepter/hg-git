@@ -47,6 +47,8 @@ CONFIG_DEFAULTS = {
 class Mode(enum.Enum):
     BRANCHES = b'branches'
     BOOKMARKS = b'bookmarks'
+    # this is consistent with the extension name
+    TOPICS = b'topic'
 
     @classmethod
     def fromui(cls, ui):
