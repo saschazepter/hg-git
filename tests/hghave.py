@@ -1213,3 +1213,14 @@ def has_unicode_filesystem():
 @check("bigendian", "big-endian CPU")
 def has_bigendian():
     return sys.byteorder == 'big'
+
+
+@check("evolve", "evolve extension")
+def has_evolve():
+    try:
+        from hgext3rd import evolve
+
+        evolve.minimumhgversion
+        return True
+    except ImportError:
+        return False

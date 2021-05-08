@@ -255,7 +255,23 @@ Push empty Hg repo to empty Git repo (issue #58)
   (see "hg help branches" for details on creating them)
   [255]
 
+#if evolve
+  $ hg -R hgrepo2 --config experimental.hg-git-mode=topic push repo.git
+  pushing to repo.git
+  searching for changes
+  abort: no topic or tags to push to git
+  (see "hg help topic" for details on creating them)
+  [255]
+  $ hg -R hgrepo2 --config experimental.hg-git-mode=topic --config extensions.topic= push repo.git
+  pushing to repo.git
+  searching for changes
+  abort: no topic or tags to push to git
+  (see "hg help topic" for details on creating them)
+  [255]
+#endif
+
 The remote repo is empty and the local one doesn't have any bookmarks/tags
+
   $ cd hgrepo2
   $ echo init >> test.txt
   $ hg addremove
@@ -287,7 +303,7 @@ We should sanity-check the mode:
   $ hg push --config experimental.hg-git-mode=kaflaflibob ../repo.git
   pushing to ../repo.git
   abort: unknown mode kaflaflibob
-  (expected one of: bookmarks, branches)
+  (expected one of: bookmarks, branches, topic)
   [255]
 
 test for ssh vulnerability

@@ -1139,6 +1139,9 @@ class GitHandler(object):
         if self.mode is config.Mode.BRANCHES:
             if branch and not hg_branch:
                 hg_branch = branch
+        elif self.mode is config.Mode.TOPICS:
+            if branch is not None:
+                extra[b'topic'] = branch
 
         gparents = pycompat.maplist(self.map_hg_get, commit.parents)
 
@@ -1878,6 +1881,55 @@ class GitHandler(object):
                     branch = self.ui.config(b'git', b'defaultbranch')
 
                 res[hex(heads.pop())].heads.add(LOCAL_BRANCH_PREFIX + branch)
+
+        elif self.mode is config.Mode.TOPICS:
+            bm = self.repo.filtered(b'served').branchmap()
+
+            targets = collections.defaultdict(set)
+            tags = collections.defaultdict(set)
+
+            for fqbn, nodes in bm.items():
+                for node in nodes:
+                    ctx = self.repo[node]
+                    branch = ctx.branch()
+
+                    try:
+                        topic = ctx.topic()
+                    except AttributeError:
+                        raise error.Abort(
+                            b'cannot find topics',
+                            hint=b'did you remember to enable the extension?',
+                        )
+
+                    if topic:
+                        name = topic
+                    elif branch == b'default':
+                        name = self.ui.config(
+                            b'git',
+                            b'defaultbranch',
+                        )
+                    else:
+                        name = branch
+
+                    targets[name].add(ctx.hex())
+
+                    for tag in ctx.tags():
+                        if self.repo.tagtype(tag) == b'git':
+                            tags[name].add(hex(node))
+
+            for name, heads in targets.items():
+                if len(heads) > 1:
+                    heads.difference_update(tags[name])
+
+                if len(heads) > 1:
+                    self.ui.warn(
+                        b"warning: not pushing topic '%s' as it has multiple "
+                        b"heads: %s\n"
+                        % (topic, b", ".join(sorted(h[:12] for h in heads)))
+                    )
+                    continue
+
+                res[heads.pop()].heads.add(LOCAL_BRANCH_PREFIX + name)
 
         for tag, sha in self.tags.items():
             res[sha].tags.add(LOCAL_TAG_PREFIX + tag)
