@@ -81,6 +81,22 @@ def get_public(ui, refs, remote_names):
     return to_publish
 
 
+def _get_branches(ui, refs):
+    defaultbranch = ui.config(b'git', b'defaultbranch')
+
+    branches = {}
+    for ref, sha in refs.items():
+        if ref.startswith(LOCAL_BRANCH_PREFIX):
+            branch = ref[len(LOCAL_BRANCH_PREFIX) :]
+
+            if branch == defaultbranch:
+                branches[sha] = None
+            else:
+                branches[sha] = branch
+
+    return branches
+
+
 def _get_unseen_commits(done, git_map, git_object_store, todo):
     '''get all unseen commits reachable from todo in topological order
 
@@ -139,11 +155,12 @@ def _get_heads(git_object_store, refs):
 class GitIncomingCommit:
     '''struct to store result from find_incoming'''
 
-    __slots__ = 'sha', 'phase'
+    __slots__ = 'sha', 'phase', 'branch'
 
-    def __init__(self, sha, phase):
+    def __init__(self, sha, phase, branch):
         self.sha = sha
         self.phase = phase
+        self.branch = branch
 
     @property
     def node(self):
@@ -167,6 +184,8 @@ def find_incoming(ui, git_object_store, git_map, refs, remote):
 
     '''
 
+    sentinel = object()
+
     done = set()
 
     todo = _get_heads(git_object_store, refs)
@@ -174,15 +193,45 @@ def find_incoming(ui, git_object_store, git_map, refs, remote):
 
     public = get_public(ui, refs, remote)
 
+    # propagate the public phase backwards so incremental imports work
+    # properly
     for sha in reversed(commits):
         for p in git_object_store[sha].parents:
             if sha in public:
                 public.add(p)
 
+    # detect branch points
+    child_counts = collections.Counter(
+        p for sha in commits for p in git_object_store[sha].parents
+    )
+
+    # first, get direct branch pointers
+    branches = _get_branches(ui, refs)
+
+    # now fill in the branches up to the nearest branch point
+    for sha in reversed(commits):
+        if sha in branches:
+            for p in git_object_store[sha].parents:
+                if child_counts[p] == 1:
+                    branches.setdefault(p, branches[sha])
+
+    # then, fill in the default branch for commits all the way back
+    for sha in reversed(commits):
+        if branches.get(sha, sentinel) is None:
+            for p in git_object_store[sha].parents:
+                branches.setdefault(p, None)
+
+    # finally, fill all remaining branches
+    for sha in reversed(commits):
+        if sha in branches:
+            for p in git_object_store[sha].parents:
+                branches.setdefault(p, branches[sha])
+
     return [
         GitIncomingCommit(
             sha,
             phases.public if sha in public else phases.draft,
+            branches.get(sha),
         )
         for sha in commits
     ]

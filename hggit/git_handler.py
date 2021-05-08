@@ -38,6 +38,7 @@ from mercurial import (
 )
 
 from . import _ssh
+from . import config
 from . import gc
 from . import git2hg
 from . import hg2git
@@ -245,6 +246,10 @@ class GitHandler(object):
             self.load_remote_refs()
         return self._remote_refs
 
+    @property
+    def mode(self):
+        return config.Mode.fromui(self.ui)
+
     @hgutil.propertycache
     def git(self):
         # Dulwich is going to try and join unicode ref names against
@@ -436,7 +441,7 @@ class GitHandler(object):
                     self.ui.warn(
                         b"warning: the git source repository has a "
                         b"detached head\n"
-                        b"(you may want to update to a bookmark)\n"
+                        b"(you may want to update to another commit)\n"
                     )
                     activate = None
 
@@ -570,7 +575,7 @@ class GitHandler(object):
             self.update_remote_branches(remote_names, new_refs_with_head)
 
         if old_refs == new_refs:
-            if revs or not old_refs:
+            if revs or not old_refs or self.mode is not config.Mode.BOOKMARKS:
                 # fast path to skip the check below
                 self.ui.status(_(b"no changes found\n"))
             else:
@@ -1086,6 +1091,7 @@ class GitHandler(object):
                             command,
                             self.git[commit.sha],
                             commit.phase,
+                            commit.branch,
                         )
 
                     lastrev = cl.tiprev()
@@ -1109,7 +1115,7 @@ class GitHandler(object):
         # TODO if the tags cache is used, remove any dangling tag references
         return total
 
-    def import_git_commit(self, command, commit, phase):
+    def import_git_commit(self, command, commit, phase, branch):
         self.ui.debug(_(b"importing: %s\n") % commit.id)
         unfiltered = self.repo.unfiltered()
 
@@ -1129,6 +1135,10 @@ class GitHandler(object):
             extra[b'hg-git-rename-source'] = b'git'
         else:
             renames = hg_renames
+
+        if self.mode is config.Mode.BRANCHES:
+            if branch and not hg_branch:
+                hg_branch = branch
 
         gparents = pycompat.maplist(self.map_hg_get, commit.parents)
 
@@ -1536,8 +1546,9 @@ class GitHandler(object):
 
         if not any(exportable.values()):
             raise error.Abort(
-                b'no bookmarks or tags to push to git',
-                hint=b'see "hg help bookmarks" for details on creating them',
+                b'no %s or tags to push to git' % self.mode,
+                hint=b'see "hg help %s" for details on creating them'
+                % self.mode,
             )
 
         # mapped nodes might be hidden
@@ -1815,27 +1826,62 @@ class GitHandler(object):
 
             return [(_filter_bm(bm), bm, n) for bm, n in bms.items()]
 
-    def get_exportable(self):
+    def get_exportable(self, remote=None):
         res = collections.defaultdict(heads_tags)
 
-        for filtered_bm, bm, node in self.get_filtered_bookmarks():
-            ref_name = LOCAL_BRANCH_PREFIX + filtered_bm
-            if node not in self.repo.filtered(b'served'):
-                # technically, we don't _know_ that it's secret,
-                # but it's a very good guess
-                self.repo.ui.warn(
-                    b"warning: not exporting secret bookmark '%s'\n" % bm
-                )
-            elif check_ref_format(ref_name):
-                res[hex(node)].heads.add(ref_name)
-            else:
-                self.repo.ui.warn(
-                    b"warning: not exporting bookmark '%s' "
-                    b"due to invalid name\n" % bm
-                )
+        if self.mode is config.Mode.BOOKMARKS:
+            for filtered_bm, bm, node in self.get_filtered_bookmarks():
+                ref_name = LOCAL_BRANCH_PREFIX + filtered_bm
+
+                if node not in self.repo.filtered(b'served'):
+                    # technically, we don't _know_ that it's secret,
+                    # but it's a very good guess
+                    self.repo.ui.warn(
+                        b"warning: not exporting secret bookmark '%s'\n" % bm
+                    )
+                elif check_ref_format(ref_name):
+                    res[hex(node)].heads.add(ref_name)
+                else:
+                    self.repo.ui.warn(
+                        b"warning: not exporting bookmark '%s' "
+                        b"due to invalid name\n" % bm
+                    )
+
+        elif self.mode is config.Mode.BRANCHES:
+            served_repo = self.repo.filtered(b'served')
+
+            tags = collections.defaultdict(set)
+
+            for branch in served_repo.branchmap():
+                for head in served_repo.branchheads(branch):
+                    ctx = self.repo[head]
+
+                    for tag in ctx.tags():
+                        if self.repo.tagtype(tag) == b'git':
+                            tags[branch].add(head)
+
+            for branch in served_repo.branchmap():
+                heads = served_repo.branchheads(branch)
+
+                if len(heads) > 1:
+                    heads = set(heads) - tags[branch]
+
+                if len(heads) > 1:
+                    self.ui.warn(
+                        b"warning: not pushing branch '%s' "
+                        b"as it has multiple heads: %s\n"
+                        % (branch, b", ".join(sorted(map(short, heads))))
+                    )
+                    continue
+
+                if branch == b'default':
+                    branch = self.ui.config(b'git', b'defaultbranch')
+
+                res[hex(heads.pop())].heads.add(LOCAL_BRANCH_PREFIX + branch)
 
         for tag, sha in self.tags.items():
             res[sha].tags.add(LOCAL_TAG_PREFIX + tag)
+
         return res
 
     def import_tags(self, refs):
@@ -1936,6 +1982,9 @@ class GitHandler(object):
         return ref_nodes
 
     def update_hg_bookmarks(self, remote_names, refs):
+        if self.mode is not config.Mode.BOOKMARKS:
+            return
+
         bms = self.repo._bookmarks
         unfiltered = self.repo.unfiltered()
         changes = []

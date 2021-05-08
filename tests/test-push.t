@@ -248,6 +248,12 @@ Push empty Hg repo to empty Git repo (issue #58)
   abort: no bookmarks or tags to push to git
   (see "hg help bookmarks" for details on creating them)
   [255]
+  $ hg -R hgrepo2 --config experimental.hg-git-mode=branches push repo.git
+  pushing to repo.git
+  searching for changes
+  abort: no branches or tags to push to git
+  (see "hg help branches" for details on creating them)
+  [255]
 
 The remote repo is empty and the local one doesn't have any bookmarks/tags
   $ cd hgrepo2
@@ -275,6 +281,14 @@ That should not create any bookmarks
 And no tags for the remotes either:
   $ hg tags
   tip                                0:8aded40be5af
+
+We should sanity-check the mode:
+
+  $ hg push --config experimental.hg-git-mode=kaflaflibob ../repo.git
+  pushing to ../repo.git
+  abort: unknown mode kaflaflibob
+  (expected one of: bookmarks, branches)
+  [255]
 
 test for ssh vulnerability
 

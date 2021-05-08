@@ -466,7 +466,9 @@ def has_lfsserver():
     )
 
 
-@checkvers("git", "git client (with ext::sh support) version >= %s", (1.9,))
+@checkvers(
+    "git", "git client (with ext::sh support) version >= %s", (1.9, 2.28)
+)
 def has_git_range(v):
     major, minor = v.split('.')[0:2]
     return getgitversion() >= (int(major), int(minor))
