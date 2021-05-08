@@ -1,3 +1,5 @@
+#testcases bookmarks branches
+
 Pushing to Git
 ==============
 
@@ -21,6 +23,12 @@ failure modes we want to prevent.
 Load commonly used test logic
   $ . "$TESTDIR/testutil"
 
+#if branches
+  $ cat >> $HGRCPATH <<EOF
+  > [experimental]
+  > hg-git-mode = branches
+  > EOF
+#endif
 Create a Git repository with a detached head
 
   $ git init gitrepo
@@ -29,8 +37,14 @@ Create a Git repository with a detached head
   $ echo alpha > alpha
   $ git add alpha
   $ fn_git_commit -m "add alpha"
-  $ git checkout -d master
+  $ git checkout --detach master
   HEAD is now at 7eeab2e add alpha
+  $ git log --graph --all --decorate=short
+  * commit 7eeab2ea75ec1ac0ff3d500b5b6f8a3447dd7c03 (HEAD, master)
+    Author: test <test@example.org>
+    Date:   Mon Jan 1 00:00:10 2007 +0000
+    
+        add alpha
   $ cd ..
 
 Verify that we can push to a Git repository that has a detached HEAD
@@ -42,7 +56,10 @@ in this case continues to work.
   $ hg clone gitrepo hgrepo
   importing 1 git commits
   new changesets ff7a2f2d8d70 (1 drafts)
-  updating to bookmark master
+  warning: the git source repository has a detached head (no-bookmarks !)
+  (you may want to update to another commit) (no-bookmarks !)
+  updating to branch default (no-bookmarks !)
+  updating to bookmark master (bookmarks !)
   1 files updated, 0 files merged, 0 files removed, 0 files unresolved
   $ cd hgrepo
   $ echo beta > beta
@@ -54,23 +71,35 @@ Whether this should happen is debatable, but it's a side effect from
 the fact that pushing to the remote HEAD, with HEAD being the usual
 symref, should publish it.
 
+  $ hg push
+  pushing to $TESTTMP/gitrepo
+  searching for changes
+  adding objects
+  remote: found 0 deltas to reuse
+  added 1 commits with 1 trees and 1 blobs
+  updating reference refs/heads/master
   $ hg push -v --config hggit.usephases=yes
   pushing to $TESTTMP/gitrepo
   finding unexported changesets
-  exporting 1 changesets
-  converting revision 47580592d3d6492421a1e6cebc5c2d701a2e858b
-  packing 3 loose objects...
   searching for changes
-  remote: counting objects: 5, done.
-  1 commits found
-  adding objects
-  remote: counting objects: 5, done.
-  remote: found 0 deltas to reuse
-  added 1 commits with 1 trees and 1 blobs
-  updating reference default::refs/heads/master => GIT:0f378ab6
   publishing remote HEAD
-  $ hg phase 'all()'
-  0: public
-  1: draft
+  no changes found
+  [1]
+  $ hg log --graph --style=phases
+  @  changeset:   1:47580592d3d6
+  |  bookmark:    master (bookmarks !)
+  |  tag:         default/master
+  |  tag:         tip
+  |  phase:       draft
+  |  user:        test
+  |  date:        Mon Jan 01 00:00:11 2007 +0000
+  |  summary:     add beta
+  |
+  o  changeset:   0:ff7a2f2d8d70
+     phase:       public
+     user:        test <test@example.org>
+     date:        Mon Jan 01 00:00:10 2007 +0000
+     summary:     add alpha
+  
   $ cd ..
 

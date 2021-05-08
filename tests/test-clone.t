@@ -215,7 +215,7 @@ anything special
   importing 5 git commits
   new changesets ff7a2f2d8d70:47d12948785d (5 drafts)
   warning: the git source repository has a detached head
-  (you may want to update to a bookmark)
+  (you may want to update to another commit)
   updating to branch default
   2 files updated, 0 files merged, 0 files removed, 0 files unresolved
   $ hg -R hgrepo-2 book

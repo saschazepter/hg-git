@@ -1,6 +1,8 @@
 import bisect
 import collections
+import enum
 
+from mercurial import error
 from mercurial import exthelper
 from mercurial import help
 from mercurial.i18n import _
@@ -14,6 +16,7 @@ CONFIG_DEFAULTS = {
     b'experimental': {
         b'hg-git-bundle': False,
         b'hg-git-serve': False,
+        b'hg-git-mode': b'bookmarks',
     },
     b'git': {
         b'authors': None,
@@ -27,6 +30,7 @@ CONFIG_DEFAULTS = {
         b'pull-prune-remote-branches': True,
         b'pull-prune-bookmarks': True,
         b'blame.ignoreRevsFile': None,
+        b'defaultbranch': b'master',
     },
     b'hggit': {
         b'fetchbuffer': 100,
@@ -37,6 +41,32 @@ CONFIG_DEFAULTS = {
         b'threads': -1,
     },
 }
+
+
+@enum.unique
+class Mode(enum.Enum):
+    BRANCHES = b'branches'
+    BOOKMARKS = b'bookmarks'
+
+    @classmethod
+    def fromui(cls, ui):
+        mode = ui.config(b'experimental', b'hg-git-mode')
+
+        try:
+            return cls._value2member_map_[mode]
+        except KeyError:
+            raise error.Abort(
+                b'unknown mode %s' % mode,
+                hint=b'expected one of: ' + b', '.join(sorted(Mode.values())),
+            )
+
+    @classmethod
+    def values(cls):
+        return sorted(cls._value2member_map_)
+
+    def __bytes__(self):
+        return self.value
+
 
 for section, items in CONFIG_DEFAULTS.items():
     for item, default in items.items():
