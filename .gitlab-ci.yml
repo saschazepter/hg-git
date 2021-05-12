@@ -98,6 +98,15 @@ Ubuntu:
       reports:
         junit: tests-ubuntu.xml
 
+Heptapod:
+    stage: compat
+    trigger:
+      project: heptapod/py-heptapod
+      branch: branch/default
+      strategy: depend
+    variables:
+      HG_GIT_TRIGGERING_SHA: $CI_COMMIT_HG_SHA
+
 # Test that the tests pass against the current branches
 Development:
   extends: .base
