@@ -110,7 +110,7 @@ The warning message changed in Git 1.8.0
   
   
 
-  $ hg gclear
+  $ hg git-cleanup --all
   clearing out the git cache data
   $ hg push ../gitrepo2
   pushing to ../gitrepo2

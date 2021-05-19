@@ -163,7 +163,7 @@ make sure that only beta is in the manifest
   $ hg manifest
   beta
 
-  $ hg gclear
+  $ hg git-cleanup --all
   clearing out the git cache data
   $ ls .hg | grep git
   [1]

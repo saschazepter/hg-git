@@ -38,7 +38,7 @@ Load commonly used test logic
   adds: d1/f1 d1/f2
   dels: 
 
-  $ hg gclear
+  $ hg git-cleanup --all
   clearing out the git cache data
   $ hg push ../gitrepo2
   pushing to ../gitrepo2

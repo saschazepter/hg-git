@@ -56,19 +56,6 @@ def gexport(ui, repo):
     repo.githandler.export_commits()
 
 
-@eh.command(b'gclear')
-def gclear(ui, repo):
-    '''clear out the Git cached data (ADVANCED)
-
-    Strips all Git-related metadata from the repo, including the mapping
-    between Git and Mercurial changesets. This is an irreversible
-    destructive operation that may prevent further interaction with
-    other clones.
-    '''
-    repo.ui.status(_(b"clearing out the git cache data\n"))
-    repo.githandler.clear()
-
-
 @eh.command(b'debuggitdir')
 def gitdir(ui, repo):
     '''get the root of the git repository'''
@@ -90,9 +77,37 @@ def gverify(ui, repo, **opts):
     return verify.verify(ui, repo, ctx)
 
 
-@eh.command(b'git-cleanup')
-def git_cleanup(ui, repo):
-    '''clean up Git commit map after history editing'''
+@eh.command(
+    b'gclean|git-cleanup|gclear',
+    [
+        (b'', b'keep-filtered', False, b'keep filtered commits'),
+        (b'', b'all-data', False, b'clear out the Git cached data (ADVANCED)'),
+    ],
+)
+def gclear(ui, repo, **opts):
+    '''clean up Git commit map after history editing
+
+    .. container:: verbose
+
+      The ``--all-data`` option strips all Git-related metadata from
+      the repo, including the mapping between Git and Mercurial
+      changesets. This is an irreversible and destructive operation
+      that may prevent further interaction with other clones.
+
+    '''
+
+    compat.check_at_most_one_arg(opts, 'all_data', 'keep_filtered')
+    gh = repo.githandler
+
+    if opts.get('all_data'):
+        repo.ui.status(_(b"clearing out the git cache data\n"))
+        gh.clear()
+
+        return 0
+
+    if opts.get('keep_filtered'):
+        repo = repo.unfiltered()
+
     new_map = []
     gh = repo.githandler
     for line in gh.vfs(gh.map_file):

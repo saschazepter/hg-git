@@ -39,7 +39,7 @@ clean merge
   $ cd hgrepo
 
 clear the cache to be sure it is regenerated correctly
-  $ hg gclear
+  $ hg git-cleanup --all
   clearing out the git cache data
   $ hg push ../gitrepo2
   pushing to ../gitrepo2
