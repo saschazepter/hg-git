@@ -335,7 +335,7 @@ replace subrepo with symlink
   $ hg gverify -r 9
   verifying rev 9c3929c04f22 against git commit 15ba94929481c654814178aac1dbca06ae688718
 
-  $ hg gclear
+  $ hg git-cleanup --all
   clearing out the git cache data
   $ hg gexport
   $ cd .hg/git

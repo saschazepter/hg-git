@@ -21,7 +21,7 @@ Load commonly used test logic
   $ hg gverify
   verifying rev 01708ca54a8f against git commit 678256865a8c85ae925bf834369264193c88f8de
 
-  $ hg gclear
+  $ hg git-cleanup --all
   clearing out the git cache data
   $ hg push ../gitrepo2
   pushing to ../gitrepo2
