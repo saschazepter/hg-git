@@ -108,16 +108,37 @@ def gclear(ui, repo, **opts):
     if opts.get('keep_filtered'):
         repo = repo.unfiltered()
 
-    new_map = []
-    gh = repo.githandler
-    for line in gh.vfs(gh.map_file):
-        gitsha, hgsha = line.strip().split(b' ', 1)
-        if hgsha in repo:
-            new_map.append(b'%s %s\n' % (gitsha, hgsha))
-    with repo.githandler.store_repo.wlock():
-        f = gh.vfs(gh.map_file, b'wb')
-        f.writelines(new_map)
-    ui.status(_(b'git commit map cleaned\n'))
+
+    try:
+        with gh.vfs(gh.map_file) as fp:
+            old_map = fp.readlines()
+
+        new_map = []
+
+        with ui.makeprogress(b'checking', b'commits', len(old_map)) as progress:
+            for line in old_map:
+                progress.increment()
+
+                gitsha, hgsha = line.strip().split(b' ', 1)
+                if hgsha in repo:
+                    ui.debug(_(b'keeping %s -> %s\n' % (hgsha, gitsha)))
+                    new_map.append(b'%s %s\n' % (gitsha, hgsha))
+                else:
+                    ui.note(_(b'dropping %s -> %s\n' % (hgsha, gitsha)))
+
+        with repo.githandler.store_repo.wlock():
+            with gh.vfs(gh.map_file, b'wb') as fp:
+                fp.writelines(new_map)
+
+        removed = len(old_map) - len(new_map)
+
+        ui.status(_(b'removed %d commits from map\n') % removed)
+
+        return 0
+    except FileNotFoundError:
+        ui.traceback()
+        ui.status(_(b'nothing to clean\n'))
+        return 1
 
 
 @eh.wrapcommand(

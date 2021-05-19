@@ -115,7 +115,7 @@ test shared repositories
   $ ls hgrepo-shared/.hg | grep git
   [1]
   $ hg -R hgrepo-shared git-cleanup
-  git commit map cleaned
+  removed 0 commits from map
   $ rm -rf hgrepo-base hgrepo-shared
 
 test cloning HEAD

@@ -165,6 +165,9 @@ make sure that only beta is in the manifest
 
   $ hg git-cleanup --all
   clearing out the git cache data
+  $ hg git-cleanup
+  nothing to clean
+  [1]
   $ ls .hg | grep git
   [1]
   $ hg push ../gitrepo2
