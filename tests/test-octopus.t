@@ -106,7 +106,7 @@ Load commonly used test logic
   (if this is an octopus merge, verify against the last rev)
   [255]
 
-  $ hg gclear
+  $ hg git-cleanup --all
   clearing out the git cache data
   $ hg push ../gitrepo2
   pushing to ../gitrepo2
