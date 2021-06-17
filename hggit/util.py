@@ -5,14 +5,17 @@ from __future__ import generator_stop
 
 import collections
 import contextlib
+import hashlib
 import re
 
 from dulwich import errors
 from mercurial.i18n import _
 from mercurial import (
+    diffutil,
     error,
     extensions,
     phases,
+    obsutil,
     util as hgutil,
     pycompat,
 )
@@ -182,3 +185,46 @@ def swap_out_encoding(new_encoding=b'UTF-8'):
         old = hgutil._encoding
         hgutil._encoding = new_encoding
     return old
+
+
+def find_replacement(repo, possible_targets):
+    possible_targets.sort()
+
+    src_revset = 'not public() - (obsolete() + %ld)'
+    possible_sources = repo.revs(src_revset, possible_targets)
+    possible_sources.sort()
+
+    diff_hash = make_diff_hasher(repo)
+
+    target_hashes = {}
+    for rev in possible_targets:
+        # Might overwrite an "earlier" entry with the same hash,
+        #
+        # This is done on purpose, as we will need a single successor when
+        # creating replacement and taking the "higher one" as less chance of
+        # giving "wrong" result since people tends to rebase after pull anyway.
+        target_hashes[diff_hash(rev)] = rev
+
+    # empty patch does not provide any information, so lets ignore them
+    target_hashes.pop(EMPTY_ID, None)
+
+    for rev in possible_sources:
+        content_hash = diff_hash(rev)
+        successor = target_hashes.get(content_hash)
+        if successor is not None:
+            yield (rev, successor)
+
+
+EMPTY_ID = hashlib.sha256(b'').digest()
+
+
+def make_diff_hasher(repo):
+    diffopts = diffutil.diffallopts(repo.ui, {b'git': True})
+
+    def diff_hash(rev):
+        iter_diff = repo[rev].diff(opts=diffopts)
+        lines = obsutil._getdifflines(iter_diff)
+        raw_patch = b''.join(lines)
+        return hashlib.sha256(raw_patch).digest()
+
+    return diff_hash

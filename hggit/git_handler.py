@@ -29,6 +29,7 @@ from mercurial import (
     encoding,
     error,
     hg,
+    obsolete,
     obsutil,
     phases,
     pycompat,
@@ -368,7 +369,7 @@ class GitHandler(object):
     def import_commits(self, remote_name):
         refs = self.git.refs.as_dict()
         remote_names = [remote_name] if remote_name else []
-        self.import_git_objects(remote_names, refs)
+        self.import_git_objects(None, remote_names, refs)
 
     def fetch(self, remote, heads):
         result = self.fetch_pack(remote.path, heads)
@@ -378,6 +379,7 @@ class GitHandler(object):
 
         if result.refs:
             imported = self.import_git_objects(
+                remote,
                 remote_names,
                 result.refs,
                 heads=heads,
@@ -1023,7 +1025,7 @@ class GitHandler(object):
         else:
             return None, None
 
-    def import_git_objects(self, remote_names, refs, heads=None):
+    def import_git_objects(self, remote, remote_names, refs, heads=None):
         filteredrefs = self.filter_min_date(refs)
         if heads is not None:
             filteredrefs = git2hg.filter_refs(filteredrefs, heads)
@@ -1034,6 +1036,9 @@ class GitHandler(object):
             self.ui.status(_(b"importing %d git commits\n") % total)
         else:
             self.ui.status(_(b"no changes found\n"))
+        # the transaction management within hggit seems weird so we don't
+        # rely on transaction accounting of new changesets.
+        old_tip_rev = self.repo.changelog.tiprev()
 
         # don't bother saving the map if we're in a clone, as Mercurial
         # deletes the repository on errors
@@ -1063,6 +1068,14 @@ class GitHandler(object):
                         )
 
                     self.import_tags(refs)
+                    new_tip_rev = self.repo.changelog.tiprev()
+                    if remote is not None:
+                        self.infer_obsmarker(
+                            remote,
+                            refs,
+                            old_tip_rev,
+                            new_tip_rev,
+                        )
                     self.update_hg_bookmarks(remote_names, refs)
 
                     for remote_name in remote_names:
@@ -1821,6 +1834,52 @@ class GitHandler(object):
         self.export_commits()
         self.save_tags()
 
+    def infer_obsmarker(self, remote, refs, old_tip, new_tip):
+        if old_tip == new_tip:
+            return
+
+        # this is run after bookmark so that the remote branch are at the
+        # right location
+        targets = self.obs_inference_option(remote)
+        tracked = []
+        if targets is not None:
+            remote_names = self.remote_names(remote.path, False)
+            heads = self._get_ref_nodes(remote_names, refs)
+            tracked = [heads[t] for t in targets if t in heads]
+
+        if not tracked:
+            return
+
+        cl = self.repo.changelog
+        new_revs = list(cl.revs(start=old_tip + 1, stop=new_tip))
+
+        targets = self.repo.revs('::%ln and %ld', tracked, new_revs)
+        replacements = util.find_replacement(self.repo, targets)
+        relations = []
+        msg = None
+        debug_opt = b'debug.hg-git.find-successors-in'
+        if self.repo.ui.configbool(b'devel', debug_opt):
+            msg = b'HG-GIT:INFER_OBS: %s -> %s\n'
+
+        for predecessor, successor in replacements:
+            prec = self.repo[predecessor]
+            suc = self.repo[successor]
+            rel = ((prec,), (suc,))
+            if msg is not None:
+                self.repo.ui.status(msg % (bytes(prec), bytes(suc)))
+            relations.append(rel)
+
+        metadata = {b'infered': b'hg-git'}
+        obsolete.createmarkers(
+            self.repo,
+            relations,
+            metadata=metadata,
+            operation=b"auto-creation-by-hg-git",
+        )
+        msg = _(b"automatically obsoleted %d changesets\n")
+        msg %= len(relations)
+        self.ui.status(msg)
+
     def _get_ref_nodes(self, remote_names, refs):
         """get a {ref_name → node} mapping
 
@@ -2155,6 +2214,16 @@ class GitHandler(object):
                     names.add(name)
 
         return list(names)
+
+    def obs_inference_option(self, remote):
+        for name, paths in self.ui.paths.items():
+            # paths became lists in mercurial 5.9
+            if not isinstance(paths, list):
+                paths = [paths]
+
+            for path in paths:
+                if path.loc == remote.path:
+                    return path.hggit_find_sucessors_in
 
     def audit_hg_path(self, path):
         if b'.hg' in path.split(b'/') or b'\r' in path or b'\n' in path:
