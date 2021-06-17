@@ -5,6 +5,9 @@ from . import compat
 eh = exthelper.exthelper()
 
 
+ALL_BRANCHES = object()
+
+
 @eh.extsetup
 def extsetup(ui):
     @compat.pathsuboption(
@@ -20,5 +23,7 @@ def extsetup(ui):
         """
         if not value:
             return None
+        elif value == b'*':
+            return ALL_BRANCHES
         else:
             return compat.parselist(value)

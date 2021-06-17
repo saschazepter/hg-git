@@ -2442,3 +2442,249 @@ Pull should create marker this time since the config is set this time
      summary:     root commit
   
   $ cd ..
+
+Check we use wildcard branch in config
+--------------------------------------
+
+This check that '*' value will select all branch for tracking.
+
+  $ count=50
+  $ cp -r base-case test-config-target-wildcard
+  $ cd test-config-target-wildcard
+
+  $ cd hg-repo
+  $ hg book some-branch
+  $ echo alpha > alpha
+  $ hg add alpha
+  $ fn_hg_commit -m alpha
+  $ echo beta > beta
+  $ hg add beta
+  $ fn_hg_commit -m beta
+  $ echo gamma > gamma
+  $ hg add gamma
+  $ fn_hg_commit -m gamma
+  $ hg push -B some-branch
+  pushing to $TESTTMP/test-config-target-wildcard/server.git
+  searching for changes
+  adding objects
+  added 3 commits with 3 trees and 3 blobs
+  adding reference refs/heads/some-branch
+  $ hg log -G
+  @  changeset:   3:0c8e47eb927a
+  |  bookmark:    some-branch
+  |  tag:         default/some-branch
+  |  tag:         tip
+  |  user:        test
+  |  date:        Mon Jan 01 00:00:52 2007 +0000
+  |  summary:     gamma
+  |
+  o  changeset:   2:67ec0a3230ae
+  |  user:        test
+  |  date:        Mon Jan 01 00:00:51 2007 +0000
+  |  summary:     beta
+  |
+  o  changeset:   1:e91937fd8904
+  |  user:        test
+  |  date:        Mon Jan 01 00:00:50 2007 +0000
+  |  summary:     alpha
+  |
+  o  changeset:   0:b15403328556
+     bookmark:    master
+     tag:         default/master
+     user:        test <test@example.org>
+     date:        Mon Jan 01 00:00:10 2007 +0000
+     summary:     root commit
+  
+  $ cd ..
+
+Make the main branch move forward in git.
+
+  $ cd git-repo
+  $ echo main > main
+  $ git add main
+  $ fn_git_commit -m 'main-1'
+  $ git push --all
+  To ../server.git
+     54dfb14..e4ac97e  master -> master
+
+Pull, rebase and merge the new branch created in Mercurial.
+
+  $ git fetch origin some-branch
+  From ../server
+   * branch            some-branch -> FETCH_HEAD
+   * [new branch]      some-branch -> origin/some-branch
+  $ git log --graph
+  * commit e4ac97e7fecb5b18c920789fae2e0a5ff1494236
+  | Author: test <test@example.org>
+  | Date:   Mon Jan 1 00:00:53 2007 +0000
+  | 
+  |     main-1
+  | 
+  * commit 54dfb147815dcd75f0af8ba4b31cae8f25688e81
+    Author: test <test@example.org>
+    Date:   Mon Jan 1 00:00:10 2007 +0000
+    
+        root commit
+  $ git checkout --quiet some-branch
+  $ git log --graph
+  * commit a48097a4ee0e25ae0bf590af7b00885e8839c9bd
+  | Author: test <none@none>
+  | Date:   Mon Jan 1 00:00:52 2007 +0000
+  | 
+  |     gamma
+  | 
+  * commit e47c333c122acb342b916fbacac7f1234fdf8dbe
+  | Author: test <none@none>
+  | Date:   Mon Jan 1 00:00:51 2007 +0000
+  | 
+  |     beta
+  | 
+  * commit 99431e150e51ed0b82d2a9158dae68afae39b99b
+  | Author: test <none@none>
+  | Date:   Mon Jan 1 00:00:50 2007 +0000
+  | 
+  |     alpha
+  | 
+  * commit 54dfb147815dcd75f0af8ba4b31cae8f25688e81
+    Author: test <test@example.org>
+    Date:   Mon Jan 1 00:00:10 2007 +0000
+    
+        root commit
+  $ fn_git_rebase master
+  $ git log --graph
+  * commit 7b560c8d4265f86f9b2990359e16690f43005bc1
+  | Author: test <none@none>
+  | Date:   Mon Jan 1 00:00:52 2007 +0000
+  | 
+  |     gamma
+  | 
+  * commit 57d955e039ff9ccee0a86f91f32e11bf45025982
+  | Author: test <none@none>
+  | Date:   Mon Jan 1 00:00:51 2007 +0000
+  | 
+  |     beta
+  | 
+  * commit c44c134ccdc8a6831dbfa7732c63eaf526ca37ae
+  | Author: test <none@none>
+  | Date:   Mon Jan 1 00:00:50 2007 +0000
+  | 
+  |     alpha
+  | 
+  * commit e4ac97e7fecb5b18c920789fae2e0a5ff1494236
+  | Author: test <test@example.org>
+  | Date:   Mon Jan 1 00:00:53 2007 +0000
+  | 
+  |     main-1
+  | 
+  * commit 54dfb147815dcd75f0af8ba4b31cae8f25688e81
+    Author: test <test@example.org>
+    Date:   Mon Jan 1 00:00:10 2007 +0000
+    
+        root commit
+  $ git push --all --force
+  To ../server.git
+   + a48097a...7b560c8 some-branch -> some-branch (forced update)
+  $ cd ..
+
+Pulling the rebase in mercurial should detect the rebase and obsolete the older
+version since all branch are selected.
+
+  $ hg -R hg-repo up master
+  0 files updated, 0 files merged, 3 files removed, 0 files unresolved
+  (activating bookmark master)
+  $ hg -R hg-repo pull --config paths.default:hg-git.find-successors-in='*'
+  pulling from $TESTTMP/test-config-target-wildcard/server.git
+  importing 4 git commits
+  HG-GIT:INFER_OBS: e91937fd8904 -> 05f94c07c58c
+  HG-GIT:INFER_OBS: 67ec0a3230ae -> 47a01f7be6e7
+  HG-GIT:INFER_OBS: 0c8e47eb927a -> 45f6ceb621f2
+  automatically obsoleted 3 changesets
+  updating bookmark master
+  updating bookmark some-branch
+  3 new obsolescence markers
+  obsoleted 3 changesets
+  new changesets 542d88807180:45f6ceb621f2 (4 drafts)
+  (run 'hg heads' to see heads*) (glob)
+  $ hg -R hg-repo log -G
+  o  changeset:   7:45f6ceb621f2
+  |  bookmark:    some-branch
+  |  tag:         default/some-branch
+  |  tag:         tip
+  |  user:        test
+  |  date:        Mon Jan 01 00:00:52 2007 +0000
+  |  summary:     gamma
+  |
+  o  changeset:   6:47a01f7be6e7
+  |  user:        test
+  |  date:        Mon Jan 01 00:00:51 2007 +0000
+  |  summary:     beta
+  |
+  o  changeset:   5:05f94c07c58c
+  |  user:        test
+  |  date:        Mon Jan 01 00:00:50 2007 +0000
+  |  summary:     alpha
+  |
+  o  changeset:   4:542d88807180
+  |  bookmark:    master
+  |  tag:         default/master
+  |  parent:      0:b15403328556
+  |  user:        test <test@example.org>
+  |  date:        Mon Jan 01 00:00:53 2007 +0000
+  |  summary:     main-1
+  |
+  @  changeset:   0:b15403328556
+     user:        test <test@example.org>
+     date:        Mon Jan 01 00:00:10 2007 +0000
+     summary:     root commit
+  
+  $ hg -R hg-repo log -G --hidden
+  o  changeset:   7:45f6ceb621f2
+  |  bookmark:    some-branch
+  |  tag:         default/some-branch
+  |  tag:         tip
+  |  user:        test
+  |  date:        Mon Jan 01 00:00:52 2007 +0000
+  |  summary:     gamma
+  |
+  o  changeset:   6:47a01f7be6e7
+  |  user:        test
+  |  date:        Mon Jan 01 00:00:51 2007 +0000
+  |  summary:     beta
+  |
+  o  changeset:   5:05f94c07c58c
+  |  user:        test
+  |  date:        Mon Jan 01 00:00:50 2007 +0000
+  |  summary:     alpha
+  |
+  o  changeset:   4:542d88807180
+  |  bookmark:    master
+  |  tag:         default/master
+  |  parent:      0:b15403328556
+  |  user:        test <test@example.org>
+  |  date:        Mon Jan 01 00:00:53 2007 +0000
+  |  summary:     main-1
+  |
+  | x  changeset:   3:0c8e47eb927a
+  | |  user:        test
+  | |  date:        Mon Jan 01 00:00:52 2007 +0000
+  | |  obsolete:    rewritten using auto-creation-by-hg-git as 7:45f6ceb621f2
+  | |  summary:     gamma
+  | |
+  | x  changeset:   2:67ec0a3230ae
+  | |  user:        test
+  | |  date:        Mon Jan 01 00:00:51 2007 +0000
+  | |  obsolete:    rewritten using auto-creation-by-hg-git as 6:47a01f7be6e7
+  | |  summary:     beta
+  | |
+  | x  changeset:   1:e91937fd8904
+  |/   user:        test
+  |    date:        Mon Jan 01 00:00:50 2007 +0000
+  |    obsolete:    rewritten using auto-creation-by-hg-git as 5:05f94c07c58c
+  |    summary:     alpha
+  |
+  @  changeset:   0:b15403328556
+     user:        test <test@example.org>
+     date:        Mon Jan 01 00:00:10 2007 +0000
+     summary:     root commit
+  
+  $ cd ..
