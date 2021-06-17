@@ -453,5 +453,7 @@ If you need to do smooth, distributed and collaborative history editing, I
 strongly recommand you stick with Mercurial for that part.
 
 If set to '*', all branches of the remote path will be used.
+If PATH is '*', the value will be used as default value for all path that does
+not overwrite it.
 
 Starting with Mercurial 5.9, the value can be a comma separated list.
