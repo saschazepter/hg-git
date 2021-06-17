@@ -25,6 +25,9 @@ CONFIG_DEFAULTS = {
         b'retries': 3,
         b'invalidpaths': b'skip',
     },
+    b'devel': {
+        b'debug.hg-git.find-successors-in': list,
+    },
 }
 
 for section, items in CONFIG_DEFAULTS.items():
