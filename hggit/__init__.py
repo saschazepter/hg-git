@@ -154,6 +154,7 @@ from . import gitdirstate
 from . import gitrepo
 from . import hgrepo
 from . import overlay
+from . import pathoptions
 from . import revsets
 from . import schemes
 from . import templates
@@ -187,9 +188,10 @@ for _mod in (
     gitrepo,
     hgrepo,
     overlay,
+    pathoptions,
     revsets,
-    templates,
     schemes,
+    templates,
 ):
     eh.merge(_mod.eh)
 

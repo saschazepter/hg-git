@@ -424,3 +424,32 @@ change this by setting ``hggit.invalidpaths`` in ``.hgrc``::
 
 Possible values are ``keep``, ``skip`` or ``abort``. Prior to 1.0,
 the default was ``abort``.
+
+``paths.PATH:hg-git.find-successors-in``
+------------------------------------------
+
+This option can make `hg-git` try to automatically create obsolescence markers
+when pulling new changesets that are a rewrite of local draft changesets.
+
+This option should be set to BRANCH: the name of the Git branch that contains
+the changesets that might be the successors of local draft changesets. On pull
+from PATH, each *new* changesets under BRANCH will be compare the pre-existing
+draft changeset and an obsmarker might be created is they are deemed similar
+enough.
+
+Use this feature with care. In the git world it is very easy to get changeset
+"duplicated" on multiple Git branches, especially if multiple remotes are
+involved.  So it is "easy" for any new pulled content to be a duplicated of
+existing local content. Yet, mercurial don't really have a way to know which one
+is the new "official" version, pulled content might actually be an older version
+pulled from an outdated remote.
+
+So we recommend that you narrowly set this option on a single path, for just the
+set of git branch that are reputed "public" (and actually published on pull) for
+these remote. So that such obsmarkers are only created when a changeset as
+reached its final location.
+
+If you need to do smooth, distributed and collaborative history editing, I
+strongly recommand you stick with Mercurial for that part.
+
+Starting with Mercurial 5.9, the value can be a comma separated list.
