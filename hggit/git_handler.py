@@ -38,11 +38,14 @@ from mercurial import (
     scmutil,
 )
 
-from . import _ssh
-from . import compat
-from . import git2hg
-from . import hg2git
-from . import util
+from . import (
+    compat,
+    git2hg,
+    hg2git,
+    pathoptions,
+    _ssh,
+    util,
+)
 from .overlay import overlayrepo
 
 REMOTE_BRANCH_PREFIX = b'refs/remotes/'
@@ -1842,9 +1845,11 @@ class GitHandler(object):
         # right location
         targets = self.obs_inference_option(remote)
         tracked = []
-        if targets is not None:
-            remote_names = self.remote_names(remote.path, False)
-            heads = self._get_ref_nodes(remote_names, refs)
+        remote_names = self.remote_names(remote.path, False)
+        heads = self._get_ref_nodes(remote_names, refs)
+        if targets is pathoptions.ALL_BRANCHES:
+            tracked = list(heads.values())
+        elif targets is not None:
             tracked = [heads[t] for t in targets if t in heads]
 
         if not tracked:
