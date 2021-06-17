@@ -2221,6 +2221,7 @@ class GitHandler(object):
         return list(names)
 
     def obs_inference_option(self, remote):
+        val = None
         for name, paths in self.ui.paths.items():
             # paths became lists in mercurial 5.9
             if not isinstance(paths, list):
@@ -2228,7 +2229,16 @@ class GitHandler(object):
 
             for path in paths:
                 if path.loc == remote.path:
-                    return path.hggit_find_sucessors_in
+                    val = getattr(path, 'hggit_find_sucessors_in', None)
+                    break
+
+        # compat with mercurial <= 5.7
+        if val is None:
+            opt = b'*:hg-git.find-successors-in'
+            val = self.repo.ui.config(b'paths', opt)
+            if val:
+                val = [val]
+        return val
 
     def audit_hg_path(self, path):
         if b'.hg' in path.split(b'/') or b'\r' in path or b'\n' in path:

@@ -209,6 +209,7 @@ Now just pull it:
   $ hg pull
   pulling from $TESTTMP/repo.git
   importing 1 git commits
+  not updating diverged bookmark otherbranch
   new changesets d64bf0521af6 (1 drafts)
   (run 'hg heads .' to see heads, 'hg merge' to merge)
   $ hg state
