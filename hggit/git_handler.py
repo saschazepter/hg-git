@@ -370,6 +370,19 @@ class GitHandler(object):
         finally:
             self.save_map(self.map_file)
 
+    def _get_hg_target(self, gitsha):
+        try:
+            obj = self.git.get_object(gitsha)
+        except KeyError:
+            obj = None
+
+        # make sure we don't accidentally dereference and lose
+        # annotated tags
+        if isinstance(obj, Tag):
+            gitsha = obj.object[1]
+
+        return self.map_hg_get(gitsha)
+
     def get_refs(self, remote):
         self.export_commits()
         old_refs = {}
@@ -393,17 +406,7 @@ class GitHandler(object):
             old = {}
 
             for ref, sha in old_refs.items():
-                try:
-                    gittag = self.git.get_object(sha)
-                except KeyError:
-                    gittag = None
-
-                # make sure we don't accidentally dereference and lose
-                # annotated tags
-                if isinstance(gittag, Tag):
-                    sha = gittag.object[1]
-
-                old_target = self.map_hg_get(sha)
+                old_target = self._get_hg_target(sha)
 
                 if old_target:
                     self.ui.debug(b'unchanged ref %s: %s\n' % (ref, old_target))
@@ -1484,20 +1487,9 @@ class GitHandler(object):
                 if ref_name[-3:] == b'^{}':
                     ref_name = ref_name[:-3]
                 if ref_name not in repotags:
-                    obj = self.git.get_object(refs[k])
-                    sha = None
-                    if isinstance(obj, Commit):  # lightweight
-                        sha = self.map_hg_get(refs[k])
-                        if sha is not None:
-                            self.tags[ref_name] = sha
-                    elif isinstance(obj, Tag):  # annotated
-                        (obj_type, obj_sha) = obj.object
-                        obj = self.git.get_object(obj_sha)
-                        if isinstance(obj, Commit):
-                            sha = self.map_hg_get(obj_sha)
-                            # TODO: better handling for annotated tags
-                            if sha is not None:
-                                self.tags[ref_name] = sha
+                    hg_sha = self._get_hg_target(refs[k])
+                    if hg_sha is not None:
+                        self.tags[ref_name] = hg_sha
         self.save_tags()
 
     def add_tag(self, target, *tags):
@@ -1519,38 +1511,55 @@ class GitHandler(object):
         self.export_commits()
         self.save_tags()
 
-    def _get_heads(self, refs):
-        """get a {head → hg-bin-sha} mapping
+    def _get_heads(self, refs) -> (bytes, bytes, bytes, bytes):
+        """generator for heads corresponding to the given refs
 
-        (This function return binary node id)"""
-        heads = {}
+        Yield a (git ref, bookmark, tag, binary nodeid) tuple for each
+        item in refs that corresponds to a local commits.
+
+        * For bookmarks, tag is None.
+        * For tags, bookmark is None.
+        * For HEAD, both are None.
+
+        """
         for ref, git_sha in refs.items():
-            if not ref.startswith(LOCAL_BRANCH_PREFIX):
-                continue
-            h = ref[len(LOCAL_BRANCH_PREFIX):]
-            hg_sha = self.map_hg_get(git_sha)
-            # refs contains all the refs in the server,
-            # not just the ones we are pulling
-            if hg_sha is not None:
-                heads[h] = bin(hg_sha)
+            hg_sha = self._get_hg_target(git_sha)
 
-        return heads
+            if hg_sha is None:
+                # refs can contain all the refs in the server, not just
+                # the ones we are pulling
+                pass
+            elif ref.startswith(LOCAL_BRANCH_PREFIX):
+                suffix = self.branch_bookmark_suffix or b''
+                bm = ref[len(LOCAL_BRANCH_PREFIX):] + suffix
+                yield ref, bm, None, bin(hg_sha)
+            elif ref.startswith(LOCAL_TAG_PREFIX):
+                # not sure about this one; dulwich legacy?
+                if ref.endswith(b'^{}'):
+                    continue
+
+                tag = ref[len(LOCAL_TAG_PREFIX):]
+                yield ref, None, tag, bin(hg_sha)
+
+            elif ref == b'HEAD':
+                yield ref, None, None, bin(hg_sha)
 
     def update_hg_bookmarks(self, refs):
         try:
             bms = self.repo._bookmarks
-
-            suffix = self.branch_bookmark_suffix or b''
             changes = []
-            for head, hgsha in self._get_heads(refs).items():
-                if head not in bms:
+
+            for ref, bm, tag, nodeid in self._get_heads(refs):
+                if bm is None:
+                    pass
+                elif bm not in bms:
                     # new branch
-                    changes.append((head + suffix, hgsha))
+                    changes.append((bm, nodeid))
                 else:
-                    bm = self.repo[bms[head]]
-                    if bm.ancestor(self.repo[hgsha]) == bm:
+                    ctx = self.repo[bms[bm]]
+                    if ctx.ancestor(self.repo[nodeid]) == ctx:
                         # fast forward
-                        changes.append((head + suffix, hgsha))
+                        changes.append((bm, nodeid))
 
             if changes:
                 util.updatebookmarks(self.repo, changes)
@@ -1582,14 +1591,12 @@ class GitHandler(object):
 
         nodeids_to_publish = []
 
-        for ref_name, sha in refs.items():
-            hgsha = self.map_hg_get(sha)
+        for ref_name, bookmark, tag, nodeid in self._get_heads(refs):
+            if nodeid not in self.repo:
+                continue
 
-            if (
-                ref_name.startswith(LOCAL_BRANCH_PREFIX) and
-                hgsha is not None and hgsha in self.repo
-            ):
-                head = ref_name[11:]
+            elif bookmark is not None:
+                head = ref_name[len(LOCAL_BRANCH_PREFIX):]
                 remote_head = b'/'.join((remote_name, head))
 
                 # mark public any branches the user specified
@@ -1597,28 +1604,26 @@ class GitHandler(object):
                     self.ui.note(
                         b'publishing remote branch %s\n' % remote_head,
                     )
-                    nodeids_to_publish.append(bin(hgsha))
+                    nodeids_to_publish.append(nodeid)
 
-                remote_refs[remote_head] = bin(hgsha)
+                remote_refs[remote_head] = nodeid
                 # TODO(durin42): what is this doing?
                 new_ref = REMOTE_BRANCH_PREFIX + remote_head
-                self.git.refs[new_ref] = sha
-            elif (ref_name.startswith(LOCAL_TAG_PREFIX) and not
-                  ref_name.endswith(b'^{}')):
-                tag = ref_name[10:]
+                self.git.refs[new_ref] = refs[ref_name]
+
+            elif tag is not None:
                 if (
-                    hgsha is not None and
+                    nodeid is not None and
                     (publish_defaults or tag in refs_to_publish)
                 ):
                     msg = b'publishing remote tag %s/%s\n' % (remote_name, tag)
                     self.ui.note(msg)
-                    nodeids_to_publish.append(bin(hgsha))
-                self.git.refs[ref_name] = sha
-            elif (
-                ref_name == b'HEAD' and publish_defaults and hgsha is not None
-            ):
-                    self.ui.note(b'publishing remote HEAD\n')
-                    nodeids_to_publish.append(bin(hgsha))
+                    nodeids_to_publish.append(nodeid)
+                self.git.refs[ref_name] = refs[ref_name]
+
+            elif publish_defaults:
+                self.ui.note(b'publishing remote HEAD\n')
+                nodeids_to_publish.append(nodeid)
 
         if use_phases and nodeids_to_publish:
             with self.repo.lock(), self.repo.transaction(b"phase") as tr:
