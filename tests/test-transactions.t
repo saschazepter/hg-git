@@ -126,10 +126,21 @@ Test the user exiting in the middle of a conversion:
 
 And with a clone into an existing directory using an in-tree
 repository. Mercurial deletes the repository on errors, and so should
-we do with the Git repository, ideally. The current design doesn't
-make that easy to do, so this test mostly exists to document the
-current behaviour.
+we do with the Git repository.
 
+  $ mkdir hgrepo
+  $ EXIT_AFTER=5 \
+  > hg --config hggit.mapsavefrequency=10 --config git.intree=yes \
+  > --config extensions.breakage=$TESTDIR/testlib/ext-break-git-import.py \
+  > --cwd hgrepo \
+  > clone -U $TESTTMP/gitrepo .
+  importing git objects into hg
+  transaction abort!
+  rollback completed
+  interrupted!
+  [255]
+  $ ls -A hgrepo
+  $ rm -rf hgrepo
   $ mkdir hgrepo
   $ EXIT_AFTER=15 \
   > hg --config hggit.mapsavefrequency=10 --config git.intree=yes \
@@ -141,8 +152,5 @@ current behaviour.
   rollback completed
   interrupted!
   [255]
-the leftover below only appears in Mercurial 5.9+; it is unintentional
-TODO: once the first rc is released, change (?) to (hg59 !)
   $ ls -A hgrepo
-  .git (?)
   $ rm -rf hgrepo
