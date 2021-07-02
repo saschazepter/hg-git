@@ -7,7 +7,7 @@ import os
 import re
 import shutil
 
-from dulwich.errors import HangupException, GitProtocolError
+from dulwich.errors import HangupException, GitProtocolError, NotGitRepository
 from dulwich.objects import Blob, Commit, Tag, Tree, parse_timezone
 from dulwich.pack import create_delta, apply_delta
 from dulwich.refs import LOCAL_BRANCH_PREFIX, LOCAL_TAG_PREFIX
@@ -196,11 +196,13 @@ class GitHandler(object):
         gitpath = self.gitdir.decode(pycompat.sysstr(encoding.encoding),
                                      pycompat.sysstr(encoding.encodingmode))
         # make the git data directory
-        if os.path.exists(self.gitdir):
-            return Repo(gitpath)
-        else:
-            os.mkdir(self.gitdir)
-            return Repo.init_bare(gitpath)
+        try:
+            repo = Repo(gitpath)
+            self.created = False
+            return repo
+        except NotGitRepository:
+            self.created = True
+            return Repo.init_bare(gitpath, mkdir=True)
 
     def init_author_file(self):
         self.author_map = {}
@@ -834,6 +836,9 @@ class GitHandler(object):
         tr = self.repo.transaction(desc)
 
         tr.addfinalize(b'hg-git-save', lambda tr: self.save_map(self.map_file))
+
+        if self.created:
+            tr.addabort(b'hg-git-delete', lambda tr: shutil.rmtree(self.gitdir))
 
         return tr
 
