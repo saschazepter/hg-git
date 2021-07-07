@@ -13,7 +13,7 @@ from dulwich.refs import (
     LOCAL_BRANCH_PREFIX,
     LOCAL_TAG_PREFIX,
 )
-from dulwich.repo import Repo, check_ref_format
+from dulwich.repo import DEFAULT_REF, Repo, check_ref_format
 from dulwich import client
 from dulwich import config as dul_config
 from dulwich import diff_tree
@@ -245,6 +245,10 @@ class GitHandler(object):
             self.load_remote_refs()
         return self._remote_refs
 
+    @property
+    def intree(self):
+        return self.gitdir == self.repo.wvfs.join(b'.git')
+
     @hgutil.propertycache
     def git(self):
         # Dulwich is going to try and join unicode ref names against
@@ -266,7 +270,12 @@ class GitHandler(object):
                     b'warning: created new git repository at %s\n'
                     % self.gitdir,
                 )
-            return Repo.init_bare(gitpath, mkdir=True)
+            repo = Repo.init_bare(gitpath, mkdir=True)
+
+            # we want an _entirely_ empty repository
+            del repo.refs[DEFAULT_REF]
+
+            return repo
 
     def init_author_file(self):
         self.author_map = {}
