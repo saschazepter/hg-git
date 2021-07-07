@@ -266,8 +266,7 @@ class GitHandler(object):
                     b'warning: created new git repository at %s\n'
                     % self.gitdir,
                 )
-            os.mkdir(self.gitdir)
-            return Repo.init_bare(gitpath)
+            return Repo.init_bare(gitpath, mkdir=True)
 
     def init_author_file(self):
         self.author_map = {}
@@ -846,9 +845,12 @@ class GitHandler(object):
             b'?', name.lstrip(b'< ').rstrip(b'> ')
         )
 
-    def get_git_author(self, ctx):
+    def get_git_author(self, ctx=None):
         # hg authors might not have emails
-        author = ctx.user()
+        if ctx is not None:
+            author = ctx.user()
+        else:
+            author = self.ui.username()
 
         # see if a translation exists
         author = self.author_map.get(author, author)
@@ -873,7 +875,7 @@ class GitHandler(object):
         else:
             author = self.get_valid_git_username_email(author) + b' <none@none>'
 
-        if b'author' in ctx.extra():
+        if ctx is not None and b'author' in ctx.extra():
             try:
                 author = b"".join(apply_delta(author, ctx.extra()[b'author']))
             except (ApplyDeltaError, AssertionError):
