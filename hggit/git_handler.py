@@ -966,6 +966,10 @@ class GitHandler(object):
         tr.addfinalize(b'hg-git-save', lambda tr: self.save_map(self.map_file))
         scmutil.registersummarycallback(self.repo, tr, b'pull')
 
+        # close any files opened by dulwich, in an attempt
+        # to reduce memory footprint
+        tr.addpostclose(b'hg-git-close', lambda tr: self.git.close())
+
         return tr
 
     def get_result_head(self, result):
