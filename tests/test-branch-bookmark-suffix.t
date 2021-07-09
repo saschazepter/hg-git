@@ -36,7 +36,9 @@ bail if the user does not have dulwich
   $ git init --bare gitrepo1
   Initialized empty Git repository in $TESTTMP/gitrepo1/
 
-  $ hg init hgrepo
+  $ hg clone gitrepo1 hgrepo
+  updating to branch default
+  0 files updated, 0 files merged, 0 files removed, 0 files unresolved
   $ cd hgrepo
   $ hg branch -q branch1
   $ hg bookmark branch1_bookmark
@@ -66,11 +68,13 @@ bail if the user does not have dulwich
   
 
 
-  $ hg push ../gitrepo1
-  pushing to ../gitrepo1
+  $ hg push
+  pushing to $TESTTMP/gitrepo1
   searching for changes
   adding objects
   added 2 commits with 2 trees and 2 blobs
+  adding reference refs/heads/branch1
+  adding reference refs/heads/branch2
 
   $ cd ..
 
@@ -108,8 +112,8 @@ make sure the commit doesn't have an HG:rename-source annotation
   $ cd ..
 
   $ cd hgrepo
-  $ hg pull ../gitrepo1
-  pulling from ../gitrepo1
+  $ hg pull
+  pulling from $TESTTMP/gitrepo1
   importing git objects into hg
   (run 'hg heads' to see heads)
   $ hg log --graph
@@ -145,3 +149,44 @@ make sure the commit doesn't have an HG:rename-source annotation
 
 
   $ cd ..
+
+  $ cd gitrepo2
+  $ git checkout -q branch2
+  $ fn_git_rebase --onto branch1
+  $ git push -f
+  To $TESTTMP/gitrepo1
+   + f8f8de5...d8aef79 branch2 -> branch2 (forced update)
+  $ cd ../hgrepo
+  $ hg pull
+  pulling from $TESTTMP/gitrepo1
+  no changes found
+  $ hg log --graph
+  o  changeset:   3:ae8eb55f7090
+  |  tag:         tip
+  |  parent:      1:600de9b6d498
+  |  user:        test <test@example.org>
+  |  date:        Mon Jan 01 00:00:13 2007 +0000
+  |  summary:     append f2
+  |
+  | o  changeset:   2:8211cade99e4
+  | |  bookmark:    branch1_bookmark
+  | |  bookmark:    branch2_bookmark
+  | |  tag:         default/branch1
+  | |  tag:         default/branch2
+  | |  parent:      0:40a840c1f8ae
+  | |  user:        test <test@example.org>
+  | |  date:        Mon Jan 01 00:00:12 2007 +0000
+  | |  summary:     append f1
+  | |
+  @ |  changeset:   1:600de9b6d498
+  |/   branch:      branch2
+  |    user:        test
+  |    date:        Mon Jan 01 00:00:11 2007 +0000
+  |    summary:     add f2
+  |
+  o  changeset:   0:40a840c1f8ae
+     branch:      branch1
+     user:        test
+     date:        Mon Jan 01 00:00:10 2007 +0000
+     summary:     add f1
+  
