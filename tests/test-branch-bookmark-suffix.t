@@ -162,6 +162,7 @@ make sure the commit doesn't have an HG:rename-source annotation
   no changes found
   $ hg log --graph
   o  changeset:   3:ae8eb55f7090
+  |  bookmark:    branch2_bookmark
   |  tag:         tip
   |  parent:      1:600de9b6d498
   |  user:        test <test@example.org>
@@ -170,7 +171,6 @@ make sure the commit doesn't have an HG:rename-source annotation
   |
   | o  changeset:   2:8211cade99e4
   | |  bookmark:    branch1_bookmark
-  | |  bookmark:    branch2_bookmark
   | |  tag:         default/branch1
   | |  tag:         default/branch2
   | |  parent:      0:40a840c1f8ae
