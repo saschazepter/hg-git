@@ -2197,6 +2197,7 @@ class GitHandler(object):
 
         >>> from dulwich.client import HttpGitClient, SSHGitClient
         >>> from mercurial import ui
+        >>> from .compat import HgHttpGitClient
         >>> class SubHandler(GitHandler):
         ...    def __init__(self):
         ...         self.ui = ui.ui()
@@ -2206,7 +2207,7 @@ class GitHandler(object):
         ...         )
         >>> tp = SubHandler()._get_transport_and_path
         >>> client, url = tp(b'http://fqdn.com/test.git')
-        >>> print(isinstance(client, HttpGitClient))
+        >>> print(isinstance(client, HgHttpGitClient or HttpGitClient))
         True
         >>> print(url.decode())
         http://fqdn.com/test.git
@@ -2253,6 +2254,9 @@ class GitHandler(object):
             uri = uri[4:]
 
         if uri.startswith(b'http://') or uri.startswith(b'https://'):
+            if compat.HgHttpGitClient is not None:
+                return compat.HgHttpGitClient(self.ui, uri), uri
+
             ua = b'git/20x6 (hg-git ; uses dulwich and hg ; like git-core)'
             config = dul_config.ConfigDict()
             config.set(b'http', b'useragent', ua)

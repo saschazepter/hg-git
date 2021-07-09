@@ -31,17 +31,21 @@ Clone using the git protocol:
   updating to branch default
   0 files updated, 0 files merged, 0 files removed, 0 files unresolved
 
-..and HTTP:
+..and HTTP, which requires authentication:
 
   $ hg clone http://git-server/repo.git repo-http
-  abort: http authorization required for http://git-server/repo.git
+  abort: http authorization required for http://git-server/repo.git (no-dulwich02024 !)
+  abort: http authorization required for http://git-server/repo.git/info/refs (dulwich02024 !)
   [255]
+
+So pass it in the configuration:
+
   $ hg clone --config ui.interactive=yes \
   >    --config ui.interactive=yes \
-  >    --config auth.git.prefix=http://git-server \
+  >    --config auth.git.prefix=http://git-server/ \
   >    --config auth.git.username=git \
   >    http://git-server/repo.git repo-http
-  http authorization required for http://git-server/repo.git
+  http authorization required for http://git-server/repo.git* (glob)
   realm: Git (no-dulwich0203 !)
   realm: Git Access (dulwich0203 !)
   user: git
@@ -52,7 +56,7 @@ Clone using the git protocol:
   >          http://git-server/repo.git repo-http <<EOF
   > git
   > EOF
-  http authorization required for http://git-server/repo.git
+  http authorization required for http://git-server/repo.git* (glob)
   realm: Git (no-dulwich0203 !)
   realm: Git Access (dulwich0203 !)
   user: git
@@ -63,7 +67,7 @@ Clone using the git protocol:
 ..and finally SSH:
 
   $ hg clone git@git-server:/srv/repo.git repo-ssh
-  Warning: Permanently added * (glob)
+  Warning: Permanently added * (glob) (?)
   updating to branch default
   0 files updated, 0 files merged, 0 files removed, 0 files unresolved
 
@@ -98,13 +102,13 @@ Straight HTTP doesn't work:
 
   $ hg -R repo-http pull -u
   pulling from http://git-server/repo.git
-  abort: http authorization required for http://git-server/repo.git
+  abort: http authorization required for http://git-server/repo.git* (glob)
   [255]
 
 But we can specify authentication in the configuration:
 
   $ hg -R repo-http \
-  >    --config auth.git.prefix=http://git-server \
+  >    --config auth.git.prefix=http://git-server/ \
   >    --config auth.git.username=git \
   >    --config auth.git.password=git \
   >    pull -u
@@ -115,7 +119,7 @@ But we can specify authentication in the configuration:
   new changesets fa22339f4ab8 (1 drafts)
   1 files updated, 0 files merged, 0 files removed, 0 files unresolved
 
-#if dulwich0200
+#if dulwich0200 no-dulwich02024
 Try using git credentials, only supported on Dulwich 0.20+
 
 NB: the use of printf is deliberate; otherwise the test fails due to
