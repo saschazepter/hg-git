@@ -73,6 +73,7 @@ this should fail
   $ hg pull 2>&1 | grep -v 'divergent bookmark'
   pulling from $TESTTMP/gitrepo
   importing git objects into hg
+  not updating diverged bookmark master
   (run 'hg heads' to see heads, 'hg merge' to merge)
 TODO shouldn't need to do this since we're (in theory) pushing master explicitly,
 which should not implicitly also push the not-master ref.

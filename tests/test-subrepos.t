@@ -101,6 +101,7 @@ bring working copy to HEAD state (it's not bare repo)
   $ hg pull
   pulling from $TESTTMP/gitrepo1
   importing git objects into hg
+  updating bookmark master
   (run 'hg update' to get a working copy)
   $ hg checkout -C
   updating to active bookmark master
