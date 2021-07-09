@@ -25,6 +25,7 @@ pull a tag
   $ hg -R hgrepo pull -r t_alpha
   pulling from $TESTTMP/gitrepo
   importing git objects into hg
+  adding bookmark master
   (run 'hg update' to get a working copy)
   $ hg -R hgrepo update t_alpha
   1 files updated, 0 files merged, 0 files removed, 0 files unresolved
@@ -50,6 +51,7 @@ no-op pull with added bookmark
   $ hg -R hgrepo pull -r epsilon
   pulling from $TESTTMP/gitrepo
   no changes found
+  adding bookmark epsilon
 
 pull something that doesn't exist
   $ hg -R hgrepo pull -r kaflaflibob
@@ -69,6 +71,7 @@ pull a branch
   $ hg -R hgrepo pull -r beta
   pulling from $TESTTMP/gitrepo
   importing git objects into hg
+  adding bookmark beta
   (run 'hg update' to get a working copy)
   $ hg -R hgrepo log --graph
   o  changeset:   1:7fe02317c63d
@@ -103,6 +106,8 @@ pull everything else
   $ hg -R hgrepo pull
   pulling from $TESTTMP/gitrepo
   importing git objects into hg
+  adding bookmark delta
+  updating bookmark master
   (run 'hg heads' to see heads, 'hg merge' to merge)
   $ hg -R hgrepo log --graph
   o  changeset:   3:6f898ad1f3e1
@@ -155,6 +160,7 @@ pull the merge
   $ hg -R hgrepo pull --config git.pull-prune-remote-branches=false
   pulling from $TESTTMP/gitrepo
   importing git objects into hg
+  updating bookmark master
   (run 'hg update' to get a working copy)
   $ hg -R hgrepo tags | grep default/beta
   default/beta                       1:7fe02317c63d
@@ -223,6 +229,8 @@ ensure that releases/v1 and releases/v2 are pulled but not notreleases/v1
   $ hg -R hgrepo pull -r 'releases/*'
   pulling from $TESTTMP/gitrepo
   importing git objects into hg
+  adding bookmark releases/v1
+  adding bookmark releases/v2
   (run 'hg heads .' to see heads, 'hg merge' to merge)
   $ hg -R hgrepo log --graph
   o  changeset:   6:a3f95e150b0a
@@ -331,6 +339,7 @@ also add an annotated tag
   $ hg -R hgrepo pull
   pulling from $TESTTMP/gitrepo
   importing git objects into hg
+  updating bookmark master
   (run 'hg heads .' to see heads, 'hg merge' to merge)
   $ hg -R hgrepo heads
   changeset:   9:e103a73f33be
