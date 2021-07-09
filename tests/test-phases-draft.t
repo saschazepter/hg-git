@@ -32,6 +32,7 @@ pulling without hggit.usephases does not publish local changesets
   $ hg pull
   pulling from $TESTTMP/gitrepo
   importing git objects into hg
+  updating bookmark master
   (run 'hg update' to get a working copy)
   $ hg phase -r master
   1: draft

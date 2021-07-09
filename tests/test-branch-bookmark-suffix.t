@@ -115,6 +115,8 @@ make sure the commit doesn't have an HG:rename-source annotation
   $ hg pull
   pulling from $TESTTMP/gitrepo1
   importing git objects into hg
+  updating bookmark branch1_bookmark
+  updating bookmark branch2_bookmark
   (run 'hg heads' to see heads)
   $ hg log --graph
   o  changeset:   3:ae8eb55f7090
@@ -160,6 +162,7 @@ make sure the commit doesn't have an HG:rename-source annotation
   $ hg pull
   pulling from $TESTTMP/gitrepo1
   no changes found
+  not updating diverged bookmark branch2_bookmark
   $ hg log --graph
   o  changeset:   3:ae8eb55f7090
   |  bookmark:    branch2_bookmark

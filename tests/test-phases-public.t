@@ -77,6 +77,7 @@ pulling publishes the branch
   $ hg pull -r master other
   pulling from $TESTTMP/gitrepo/.git
   importing git objects into hg
+  updating bookmark master
   (run 'hg update' to get a working copy)
   $ hg phase -r master
   1: draft (publish-specific !)
@@ -87,6 +88,7 @@ pulling publishes the branch
   $ hg pull
   pulling from $TESTTMP/gitrepo
   importing git objects into hg
+  adding bookmark not-master
   (run 'hg update' to get a working copy)
   $ hg phase -r master -r not-master -r thetag
   1: public
