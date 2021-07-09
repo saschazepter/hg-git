@@ -15,7 +15,6 @@ from dulwich.refs import (
 )
 from dulwich.repo import Repo, check_ref_format
 from dulwich import client
-from dulwich import config as dul_config
 from dulwich import diff_tree
 from dulwich import object_store
 
@@ -2299,6 +2298,7 @@ class GitHandler(object):
 
         >>> from dulwich.client import HttpGitClient, SSHGitClient
         >>> from mercurial import ui
+        >>> from .compat import HgHttpGitClient
         >>> class SubHandler(GitHandler):
         ...    def __init__(self):
         ...         self.ui = ui.ui()
@@ -2308,7 +2308,7 @@ class GitHandler(object):
         ...         )
         >>> tp = SubHandler()._get_transport_and_path
         >>> client, url = tp(b'http://fqdn.com/test.git')
-        >>> print(isinstance(client, HttpGitClient))
+        >>> print(isinstance(client, util.HgHttpGitClient))
         True
         >>> print(url.decode())
         http://fqdn.com/test.git
@@ -2360,60 +2360,7 @@ class GitHandler(object):
             uri = uri[4:]
 
         if uri.startswith(b'http://') or uri.startswith(b'https://'):
-            ua = b'git/20x6 (hg-git ; uses dulwich and hg ; like git-core)'
-            config = dul_config.ConfigDict()
-            config.set(b'http', b'useragent', ua)
-
-            proxy = self.ui.config(b'http_proxy', b'host')
-
-            if proxy:
-                config.set(b'http', b'proxy', b'http://' + proxy)
-
-                if self.ui.config(b'http_proxy', b'passwd'):
-                    self.ui.warn(
-                        b"warning: proxy authentication is unsupported\n",
-                    )
-
-            str_uri = uri.decode('utf-8')
-            urlobj = urlutil.url(uri)
-            auth = client.get_credentials_from_store(
-                urlobj.scheme,
-                urlobj.host,
-                urlobj.user,
-            )
-
-            if self._http_auth_realm:
-                # since we've tried an unauthenticated request, and
-                # obtain a realm, we can do a "full" search, including
-                # a prompt
-                username, password = self._pwmgr.find_user_password(
-                    self._http_auth_realm,
-                    str_uri,
-                )
-                # NB: probably bytes here
-            elif auth is not None:
-                username, password = auth
-                # NB: probably string here
-            else:
-                username, password = self._pwmgr.find_stored_password(str_uri)
-                # NB: probably string here
-
-            if isinstance(username, bytes):
-                username = username.decode('utf-8')
-
-            if isinstance(password, bytes):
-                password = password.decode('utf-8')
-
-            return (
-                client.HttpGitClient(
-                    str_uri,
-                    config=config,
-                    username=username,
-                    password=password,
-                    **kwargs,
-                ),
-                uri,
-            )
+            return util.HgHttpGitClient(self.ui, uri), uri
 
         if uri.startswith(b'file://'):
             # the local Git client doesn't support include_tags, and
