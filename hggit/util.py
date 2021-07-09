@@ -6,7 +6,9 @@ import contextlib
 import functools
 import importlib.resources
 import re
+import urllib.parse
 
+from dulwich import client
 from dulwich import pack
 from dulwich import errors
 from dulwich.object_store import PackBasedObjectStore
@@ -14,11 +16,14 @@ from mercurial.i18n import _
 from mercurial import (
     error,
     extensions,
+    httppeer,
     phases,
+    url as urlmod,
     util as hgutil,
     pycompat,
     wireprotov1peer,
 )
+from mercurial.utils import urlutil
 
 gitschemes = (b'git', b'git+ssh', b'git+http', b'git+https')
 
@@ -242,3 +247,64 @@ def create_delta(base_buf, target_buf):
         delta = b''.join(delta)
 
     return delta
+
+
+class HgHttpGitClient(client.AbstractHttpGitClient):
+    def __init__(self, ui, base_url, **kwargs):
+        url = urlutil.url(base_url)
+
+        if url.query or url.fragment:
+            raise error.Abort(
+                _(b'unsupported URL component: "%s"')
+                % (url.query or url.fragment)
+            )
+
+        # urllib cannot handle URLs with embedded user or passwd.
+        url, authinfo = url.authinfo()
+        ui.debug(b'using %s\n' % url)
+
+        self.__ui = ui
+        self.__opener = urlmod.opener(ui, authinfo)
+
+        super().__init__(pycompat.strurl(url), **kwargs)
+
+    def _get_url(self, path):
+        u = urllib.parse.urljoin(self._base_url, pycompat.strurl(path))
+        return u.rstrip("/") + "/"
+
+    def _http_request(
+        self,
+        str_url,
+        headers=None,
+        data=None,
+        allow_compression=False,
+    ):
+        self.__ui.debug(
+            b"requesting %s\n"
+            % urlutil.hidepassword(pycompat.bytesurl(str_url))
+        )
+
+        if headers is None:
+            headers = {}
+        if allow_compression:
+            headers["Accept-Encoding"] = "gzip"
+        else:
+            headers["Accept-Encoding"] = "identity"
+
+        # TODO: recent versions of dulwich use generators for
+        # passing data on lazily; it would be nice to somehow
+        # retain that memory optimisation
+        if data is not None and not isinstance(data, bytes):
+            data = b''.join(data)
+
+        req = hgutil.urlreq.request(str_url, data, headers)
+
+        resp = httppeer.sendrequest(self.__ui, self.__opener, req)
+
+        resp_url = resp.geturl()
+
+        # used by dulwich
+        resp.redirect_location = resp_url if resp_url != str_url else ""
+        resp.content_type = resp.getheader("Content-Type")
+
+        return resp, resp.read

@@ -92,9 +92,9 @@ Similarly, make sure that we detect repositories ending with .git
   remote: found 0 deltas to reuse
   added 1 commits with 1 trees and 1 blobs
   updating reference refs/heads/master
-  $ hg log -T 'HG:{node|short} GIT:{gitnode|short} {tags}\n' -r .
-  HG:daf1ae153bf8 GIT:ab88565d0614 default/master tip
-  $ cd ..
+(??)  $ hg log -T 'HG:{node|short} GIT:{gitnode|short}\n' -r .
+(??)  HG:daf1ae153bf8 GIT:ab88565d0614
+(??)#endif
 
 Verify that we can suppress publishing using a path option:
 
