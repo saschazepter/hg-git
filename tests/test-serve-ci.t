@@ -31,17 +31,20 @@ Clone using the git protocol:
   updating to branch default
   0 files updated, 0 files merged, 0 files removed, 0 files unresolved
 
-..and HTTP:
+..and HTTP, which requires authentication:
 
   $ hg clone http://git-server/repo.git repo-http
-  abort: http authorization required for http://git-server/repo.git
+  abort: http authorization required for http://git-server/repo.git/info/refs
   [255]
+
+So pass it in the configuration:
+
   $ hg clone --config ui.interactive=yes \
   >    --config ui.interactive=yes \
-  >    --config auth.git.prefix=http://git-server \
+  >    --config auth.git.prefix=http://git-server/ \
   >    --config auth.git.username=git \
   >    http://git-server/repo.git repo-http
-  http authorization required for http://git-server/repo.git
+  http authorization required for http://git-server/repo.git* (glob)
   realm: Git Access
   user: git
   password: nope
@@ -51,7 +54,7 @@ Clone using the git protocol:
   >          http://git-server/repo.git repo-http <<EOF
   > git
   > EOF
-  http authorization required for http://git-server/repo.git
+  http authorization required for http://git-server/repo.git* (glob)
   realm: Git Access
   user: git
   password: git
@@ -61,7 +64,7 @@ Clone using the git protocol:
 ..and finally SSH:
 
   $ hg clone git@git-server:/srv/repo.git repo-ssh
-  Warning: Permanently added * (glob)
+  Warning: Permanently added * (glob) (?)
   updating to branch default
   0 files updated, 0 files merged, 0 files removed, 0 files unresolved
 
@@ -105,13 +108,13 @@ Straight HTTP doesn't work:
 
   $ hg -R repo-http pull -u
   pulling from http://git-server/repo.git
-  abort: http authorization required for http://git-server/repo.git
+  abort: http authorization required for http://git-server/repo.git* (glob)
   [255]
 
 But we can specify authentication in the configuration:
 
   $ hg -R repo-http \
-  >    --config auth.git.prefix=http://git-server \
+  >    --config auth.git.prefix=http://git-server/ \
   >    --config auth.git.username=git \
   >    --config auth.git.password=git \
   >    pull -u
