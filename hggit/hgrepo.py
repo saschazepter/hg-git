@@ -81,9 +81,13 @@ def pinnedrevs(orig, repo):
     # Mercurial pins bookmarks, even if obsoleted, so that they always
     # appear in e.g. log; do the same with git tags and remotes.
     if repo.local() and hasattr(repo, 'githandler'):
-        rev = repo.changelog.rev
+        # build up a list of applicable nodes
+        nodes = set(map(bin, repo.githandler.tags.values()))
+        nodes.update(repo.githandler.remote_refs.values())
 
-        pinned.update(rev(bin(r)) for r in repo.githandler.tags.values())
-        pinned.update(rev(r) for r in repo.githandler.remote_refs.values())
+        # convert it to revs, taking care to handle unknown nodes
+        revs = set(map(repo.changelog.rev, filter(repo.__contains__, nodes)))
+
+        pinned.update(revs)
 
     return pinned
