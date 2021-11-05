@@ -8,7 +8,7 @@ Load commonly used test logic
   $ git add alpha
   $ fn_git_commit -m 'add alpha'
 
-  $ git tag alpha
+  $ fn_git_tag alpha
 
   $ git checkout -b beta 2>&1 | sed s/\'/\"/g
   Switched to a new branch "beta"
@@ -37,16 +37,16 @@ clone a tag
 clone a branch
   $ hg clone -r beta gitrepo hgrepo-b
   importing 2 git commits
-  new changesets ff7a2f2d8d70:7fe02317c63d (2 drafts)
+  new changesets ff7a2f2d8d70:5403d6137622 (2 drafts)
   updating to branch default
   2 files updated, 0 files merged, 0 files removed, 0 files unresolved
   $ hg -R hgrepo-b log --graph
-  @  changeset:   1:7fe02317c63d
+  @  changeset:   1:5403d6137622
   |  bookmark:    beta
   |  tag:         default/beta
   |  tag:         tip
   |  user:        test <test@example.org>
-  |  date:        Mon Jan 01 00:00:11 2007 +0000
+  |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     add beta
   |
   o  changeset:   0:ff7a2f2d8d70
@@ -78,20 +78,20 @@ pull works after 'hg git-cleanup'
   $ hg pull -r beta | grep -v "adding remote bookmark"
   pulling from $TESTTMP/gitrepo
   importing 2 git commits
-  new changesets 7fe02317c63d:cc1e605d90db (2 drafts)
+  new changesets 5403d6137622:1745c5b062eb (2 drafts)
   (run 'hg update' to get a working copy)
   $ hg log --graph
-  o  changeset:   2:cc1e605d90db
+  o  changeset:   2:1745c5b062eb
   |  bookmark:    beta
   |  tag:         default/beta
   |  tag:         tip
   |  user:        test <test@example.org>
-  |  date:        Mon Jan 01 00:00:12 2007 +0000
+  |  date:        Mon Jan 01 00:00:13 2007 +0000
   |  summary:     add to beta
   |
-  o  changeset:   1:7fe02317c63d
+  o  changeset:   1:5403d6137622
   |  user:        test <test@example.org>
-  |  date:        Mon Jan 01 00:00:11 2007 +0000
+  |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     add beta
   |
   @  changeset:   0:ff7a2f2d8d70

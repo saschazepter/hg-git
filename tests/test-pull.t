@@ -17,7 +17,7 @@ set up a git repo with some commits, branches and a tag
   $ echo alpha > alpha
   $ git add alpha
   $ fn_git_commit -m 'add alpha'
-  $ git tag t_alpha
+  $ fn_git_tag t_alpha
   $ git checkout -qb beta
   $ echo beta > beta
   $ git add beta
@@ -81,16 +81,16 @@ pull a branch
   $ hg -R hgrepo pull -r beta
   pulling from $TESTTMP/gitrepo
   importing 1 git commits
-  new changesets 7fe02317c63d (1 drafts)
+  new changesets 5403d6137622 (1 drafts)
   (run 'hg update' to get a working copy)
   $ hg -R hgrepo log --graph --template=phases
-  o  changeset:   1:7fe02317c63d
+  o  changeset:   1:5403d6137622
   |  bookmark:    beta
   |  tag:         default/beta
   |  tag:         tip
   |  phase:       draft
   |  user:        test <test@example.org>
-  |  date:        Mon Jan 01 00:00:11 2007 +0000
+  |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     add beta
   |
   @  changeset:   0:ff7a2f2d8d70
@@ -117,7 +117,7 @@ no-op pull should affect phases
 add another commit and tag to the git repo
   $ cd gitrepo
   $ git checkout -q beta
-  $ git tag t_beta
+  $ fn_git_tag t_beta
   $ git checkout -q master
   $ echo gamma > gamma
   $ git add gamma
@@ -128,35 +128,35 @@ pull everything else
   $ hg -R hgrepo pull
   pulling from $TESTTMP/gitrepo
   importing 2 git commits
-  new changesets 678ebee93e38:6f898ad1f3e1 (2 drafts)
+  new changesets 25eed24f5e8f:10d5b7d40f3a (2 drafts)
   (run 'hg heads' to see heads, 'hg merge' to merge)
   $ hg -R hgrepo log --graph --template=phases
-  o  changeset:   3:6f898ad1f3e1
+  o  changeset:   3:10d5b7d40f3a
   |  bookmark:    master
   |  tag:         default/master
   |  tag:         tip
   |  phase:       draft
   |  parent:      0:ff7a2f2d8d70
   |  user:        test <test@example.org>
-  |  date:        Mon Jan 01 00:00:13 2007 +0000
+  |  date:        Mon Jan 01 00:00:15 2007 +0000
   |  summary:     add gamma
   |
-  | o  changeset:   2:678ebee93e38
+  | o  changeset:   2:25eed24f5e8f
   |/   bookmark:    delta
   |    tag:         default/delta
   |    phase:       draft
   |    parent:      0:ff7a2f2d8d70
   |    user:        test <test@example.org>
-  |    date:        Mon Jan 01 00:00:12 2007 +0000
+  |    date:        Mon Jan 01 00:00:13 2007 +0000
   |    summary:     add delta
   |
-  | o  changeset:   1:7fe02317c63d
+  | o  changeset:   1:5403d6137622
   |/   bookmark:    beta
   |    tag:         default/beta
   |    tag:         t_beta
   |    phase:       draft
   |    user:        test <test@example.org>
-  |    date:        Mon Jan 01 00:00:11 2007 +0000
+  |    date:        Mon Jan 01 00:00:12 2007 +0000
   |    summary:     add beta
   |
   @  changeset:   0:ff7a2f2d8d70
@@ -176,54 +176,54 @@ add a merge to the git repo, and delete the branch
    1 file changed, 1 insertion(+)
    create mode 100644 beta
   $ git branch -d beta
-  Deleted branch beta (was 9497a4e).
+  Deleted branch beta (was 2479458).
   $ cd ..
 
 pull the merge
   $ hg -R hgrepo tags | grep default/beta
-  default/beta                       1:7fe02317c63d
+  default/beta                       1:5403d6137622
   $ hg -R hgrepo pull --config git.pull-prune-remote-branches=false
   pulling from $TESTTMP/gitrepo
   importing 1 git commits
-  new changesets a02330f767a4 (1 drafts)
+  new changesets 5fe2956e5565 (1 drafts)
   (run 'hg update' to get a working copy)
   $ hg -R hgrepo tags | grep default/beta
-  default/beta                       1:7fe02317c63d
+  default/beta                       1:5403d6137622
   $ hg -R hgrepo pull
   pulling from $TESTTMP/gitrepo
   no changes found
   $ hg -R hgrepo tags | grep default/beta
   [1]
   $ hg -R hgrepo log --graph
-  o    changeset:   4:a02330f767a4
+  o    changeset:   4:5fe2956e5565
   |\   bookmark:    master
   | |  tag:         default/master
   | |  tag:         tip
-  | |  parent:      3:6f898ad1f3e1
-  | |  parent:      1:7fe02317c63d
+  | |  parent:      3:10d5b7d40f3a
+  | |  parent:      1:5403d6137622
   | |  user:        test <test@example.org>
-  | |  date:        Mon Jan 01 00:00:13 2007 +0000
+  | |  date:        Mon Jan 01 00:00:15 2007 +0000
   | |  summary:     Merge branch 'beta'
   | |
-  | o  changeset:   3:6f898ad1f3e1
+  | o  changeset:   3:10d5b7d40f3a
   | |  parent:      0:ff7a2f2d8d70
   | |  user:        test <test@example.org>
-  | |  date:        Mon Jan 01 00:00:13 2007 +0000
+  | |  date:        Mon Jan 01 00:00:15 2007 +0000
   | |  summary:     add gamma
   | |
-  | | o  changeset:   2:678ebee93e38
+  | | o  changeset:   2:25eed24f5e8f
   | |/   bookmark:    delta
   | |    tag:         default/delta
   | |    parent:      0:ff7a2f2d8d70
   | |    user:        test <test@example.org>
-  | |    date:        Mon Jan 01 00:00:12 2007 +0000
+  | |    date:        Mon Jan 01 00:00:13 2007 +0000
   | |    summary:     add delta
   | |
-  o |  changeset:   1:7fe02317c63d
+  o |  changeset:   1:5403d6137622
   |/   bookmark:    beta
   |    tag:         t_beta
   |    user:        test <test@example.org>
-  |    date:        Mon Jan 01 00:00:11 2007 +0000
+  |    date:        Mon Jan 01 00:00:12 2007 +0000
   |    summary:     add beta
   |
   @  changeset:   0:ff7a2f2d8d70
@@ -254,53 +254,53 @@ ensure that releases/v1 and releases/v2 are pulled but not notreleases/v1
   $ hg -R hgrepo pull -r 'releases/*'
   pulling from $TESTTMP/gitrepo
   importing 2 git commits
-  new changesets 218b2d0660d3:a3f95e150b0a (2 drafts)
+  new changesets 7921e3e03afc:4a813837019a (2 drafts)
   (run 'hg heads .' to see heads, 'hg merge' to merge)
   $ hg -R hgrepo log --graph
-  o  changeset:   6:a3f95e150b0a
+  o  changeset:   6:4a813837019a
   |  bookmark:    releases/v2
   |  tag:         default/releases/v2
   |  tag:         tip
-  |  parent:      4:a02330f767a4
+  |  parent:      4:5fe2956e5565
   |  user:        test <test@example.org>
-  |  date:        Mon Jan 01 00:00:15 2007 +0000
+  |  date:        Mon Jan 01 00:00:17 2007 +0000
   |  summary:     add eta
   |
-  | o  changeset:   5:218b2d0660d3
+  | o  changeset:   5:7921e3e03afc
   |/   bookmark:    releases/v1
   |    tag:         default/releases/v1
   |    user:        test <test@example.org>
-  |    date:        Mon Jan 01 00:00:14 2007 +0000
+  |    date:        Mon Jan 01 00:00:16 2007 +0000
   |    summary:     add zeta
   |
-  o    changeset:   4:a02330f767a4
+  o    changeset:   4:5fe2956e5565
   |\   bookmark:    master
   | |  tag:         default/master
-  | |  parent:      3:6f898ad1f3e1
-  | |  parent:      1:7fe02317c63d
+  | |  parent:      3:10d5b7d40f3a
+  | |  parent:      1:5403d6137622
   | |  user:        test <test@example.org>
-  | |  date:        Mon Jan 01 00:00:13 2007 +0000
+  | |  date:        Mon Jan 01 00:00:15 2007 +0000
   | |  summary:     Merge branch 'beta'
   | |
-  | o  changeset:   3:6f898ad1f3e1
+  | o  changeset:   3:10d5b7d40f3a
   | |  parent:      0:ff7a2f2d8d70
   | |  user:        test <test@example.org>
-  | |  date:        Mon Jan 01 00:00:13 2007 +0000
+  | |  date:        Mon Jan 01 00:00:15 2007 +0000
   | |  summary:     add gamma
   | |
-  | | o  changeset:   2:678ebee93e38
+  | | o  changeset:   2:25eed24f5e8f
   | |/   bookmark:    delta
   | |    tag:         default/delta
   | |    parent:      0:ff7a2f2d8d70
   | |    user:        test <test@example.org>
-  | |    date:        Mon Jan 01 00:00:12 2007 +0000
+  | |    date:        Mon Jan 01 00:00:13 2007 +0000
   | |    summary:     add delta
   | |
-  o |  changeset:   1:7fe02317c63d
+  o |  changeset:   1:5403d6137622
   |/   bookmark:    beta
   |    tag:         t_beta
   |    user:        test <test@example.org>
-  |    date:        Mon Jan 01 00:00:11 2007 +0000
+  |    date:        Mon Jan 01 00:00:12 2007 +0000
   |    summary:     add beta
   |
   @  changeset:   0:ff7a2f2d8d70
@@ -339,13 +339,13 @@ also add an annotated tag
   pulling from $TESTTMP/gitrepo
   no changes found
   $ hg -R hgrepo log -r master
-  changeset:   4:a02330f767a4
+  changeset:   4:5fe2956e5565
   bookmark:    master
   tag:         default/master
-  parent:      3:6f898ad1f3e1
-  parent:      1:7fe02317c63d
+  parent:      3:10d5b7d40f3a
+  parent:      1:5403d6137622
   user:        test <test@example.org>
-  date:        Mon Jan 01 00:00:13 2007 +0000
+  date:        Mon Jan 01 00:00:15 2007 +0000
   summary:     Merge branch 'beta'
   
 
@@ -363,10 +363,10 @@ also add an annotated tag
   $ hg -R hgrepo pull
   pulling from $TESTTMP/gitrepo
   importing 3 git commits
-  new changesets 49713da8f665:e103a73f33be (3 drafts)
+  new changesets c6b6049548e7:c5d2cb9e0ca8 (3 drafts)
   (run 'hg heads .' to see heads, 'hg merge' to merge)
   $ hg -R hgrepo heads
-  changeset:   9:e103a73f33be
+  changeset:   9:c5d2cb9e0ca8
   bookmark:    master
   tag:         default/master
   tag:         tip
@@ -374,35 +374,35 @@ also add an annotated tag
   date:        Wed Jan 01 00:00:00 2014 +0000
   summary:     newcommit
   
-  changeset:   7:49713da8f665
+  changeset:   7:c6b6049548e7
   tag:         newtag
   tag:         oldtag
-  parent:      4:a02330f767a4
+  parent:      4:5fe2956e5565
   user:        test <test@example.org>
   date:        Sat Mar 01 00:00:00 2014 +0000
   summary:     oldtag
   
-  changeset:   6:a3f95e150b0a
+  changeset:   6:4a813837019a
   bookmark:    releases/v2
   tag:         default/releases/v2
-  parent:      4:a02330f767a4
+  parent:      4:5fe2956e5565
   user:        test <test@example.org>
-  date:        Mon Jan 01 00:00:15 2007 +0000
+  date:        Mon Jan 01 00:00:17 2007 +0000
   summary:     add eta
   
-  changeset:   5:218b2d0660d3
+  changeset:   5:7921e3e03afc
   bookmark:    releases/v1
   tag:         default/releases/v1
   user:        test <test@example.org>
-  date:        Mon Jan 01 00:00:14 2007 +0000
+  date:        Mon Jan 01 00:00:16 2007 +0000
   summary:     add zeta
   
-  changeset:   2:678ebee93e38
+  changeset:   2:25eed24f5e8f
   bookmark:    delta
   tag:         default/delta
   parent:      0:ff7a2f2d8d70
   user:        test <test@example.org>
-  date:        Mon Jan 01 00:00:12 2007 +0000
+  date:        Mon Jan 01 00:00:13 2007 +0000
   summary:     add delta
   
 
