@@ -166,7 +166,7 @@ Verify that amending commits known to remotes doesn't break anything
 Now create a tag for the old, obsolete master
 
   $ cd ../gitrepo
-  $ git tag detached $(hg log -R ../hgrepo --hidden -r 2 -T '{gitnode}\n')
+  $ fn_git_tag detached $(hg log -R ../hgrepo --hidden -r 2 -T '{gitnode}\n')
   $ git tag
   alpha
   beta
@@ -219,7 +219,7 @@ Create a git tag from hg, but pointing to a new commit:
   adding git tag gamma
   finding unexported changesets
   exporting 1 changesets
-  converting revision 0eb1ab0073a885a498d4ae3dc5cf0c26e750fa3d
+  converting revision 6ae7bdebbdc9d416de1f53eeead8d3ecc5f95d73
   saving git map to $TESTTMP/hgrepo/.hg/git-mapfile
   $ hg push
   pushing to $TESTTMP/gitrepo
@@ -241,9 +241,9 @@ Try to overwrite an annotated tag:
   $ cd hgrepo
 #if hg57
   $ hg tags -v
-  tip                                4:0eb1ab0073a8
-  gamma                              4:0eb1ab0073a8 git
-  default/master                     4:0eb1ab0073a8 git-remote
+  tip                                4:6ae7bdebbdc9
+  gamma                              4:6ae7bdebbdc9 git
+  default/master                     4:6ae7bdebbdc9 git-remote
   detached                           2:61175962e488 git
   beta                               1:7fe02317c63d git
   alpha                              0:ff7a2f2d8d70 git
@@ -263,10 +263,10 @@ Try to overwrite an annotated tag:
   added 1 commits with 1 trees and 1 blobs
   updating reference refs/heads/master
   $ hg tags
-  tip                                5:c49682c7cba4
-  default/master                     5:c49682c7cba4
-  gamma                              4:0eb1ab0073a8
-  beta                               4:0eb1ab0073a8
+  tip                                5:cc961f7b5344
+  default/master                     5:cc961f7b5344
+  gamma                              4:6ae7bdebbdc9
+  beta                               4:6ae7bdebbdc9
   detached                           2:61175962e488
   alpha                              0:ff7a2f2d8d70
   $ cd ..
@@ -290,24 +290,24 @@ Test how pulling an explicit branch with an annotated tag:
 
   $ hg clone -r master gitrepo hgrepo-2
   importing 5 git commits
-  new changesets ff7a2f2d8d70:c49682c7cba4 (5 drafts)
+  new changesets ff7a2f2d8d70:cc961f7b5344 (5 drafts)
   updating to branch default
   4 files updated, 0 files merged, 0 files removed, 0 files unresolved
   $ hg log -r 'ancestors(master) and tagged()' -T shorttags -R hgrepo-2
   0:ff7a2f2d8d70 draft alpha
-  3:0eb1ab0073a8 draft beta gamma
-  4:c49682c7cba4 draft default/master tip
+  3:6ae7bdebbdc9 draft beta gamma
+  4:cc961f7b5344 draft default/master tip
   $ rm -rf hgrepo-2
 
   $ hg clone -r master gitrepo hgrepo-2
   importing 5 git commits
-  new changesets ff7a2f2d8d70:c49682c7cba4 (5 drafts)
+  new changesets ff7a2f2d8d70:cc961f7b5344 (5 drafts)
   updating to branch default
   4 files updated, 0 files merged, 0 files removed, 0 files unresolved
   $ hg log -r 'tagged()' -T shorttags -R hgrepo-2
   0:ff7a2f2d8d70 draft alpha
-  3:0eb1ab0073a8 draft beta gamma
-  4:c49682c7cba4 draft default/master tip
+  3:6ae7bdebbdc9 draft beta gamma
+  4:cc961f7b5344 draft default/master tip
 This used to die:
   $ hg -R hgrepo-2 gexport
   $ rm -rf hgrepo-2
@@ -320,6 +320,6 @@ Check that pulling will update phases only:
   pulling from $TESTTMP/gitrepo
   no changes found
   $ hg log -T shorttags -r gamma -r detached
-  4:0eb1ab0073a8 draft beta gamma
+  4:6ae7bdebbdc9 draft beta gamma
   2:61175962e488 draft detached X
   $ cd ..

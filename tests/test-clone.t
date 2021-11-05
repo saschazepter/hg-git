@@ -18,7 +18,7 @@ The phases setting should not affect hg-git
   $ git add alpha
   $ fn_git_commit -m 'add alpha'
 
-  $ git tag alpha
+  $ fn_git_tag alpha
 
   $ git checkout -b beta 2>&1 | sed s/\'/\"/g
   Switched to a new branch "beta"
@@ -62,19 +62,19 @@ Make sure this is still draft since we didn't pull remote's HEAD
 clone a branch
   $ hg clone -r beta gitrepo hgrepo-b
   importing 2 git commits
-  new changesets ff7a2f2d8d70:7fe02317c63d (2 drafts)
+  new changesets ff7a2f2d8d70:5403d6137622 (2 drafts)
   updating to branch default
   2 files updated, 0 files merged, 0 files removed, 0 files unresolved
   $ hg -R hgrepo-b bookmarks
-   * beta                      1:7fe02317c63d
+   * beta                      1:5403d6137622
      master                    0:ff7a2f2d8d70
   $ hg -R hgrepo-b log --graph
-  @  changeset:   1:7fe02317c63d
+  @  changeset:   1:5403d6137622
   |  bookmark:    beta
   |  tag:         default/beta
   |  tag:         tip
   |  user:        test <test@example.org>
-  |  date:        Mon Jan 01 00:00:11 2007 +0000
+  |  date:        Mon Jan 01 00:00:12 2007 +0000
   |  summary:     add beta
   |
   o  changeset:   0:ff7a2f2d8d70
@@ -98,11 +98,11 @@ Make sure that a deleted .hgsubstate does not confuse hg-git
 
   $ hg clone -r beta gitrepo hgrepo-c
   importing 4 git commits
-  new changesets ff7a2f2d8d70:47d12948785d (4 drafts)
+  new changesets ff7a2f2d8d70:a2a4e0744dde (4 drafts)
   updating to branch default
   2 files updated, 0 files merged, 0 files removed, 0 files unresolved
   $ hg -R hgrepo-c bookmarks
-   * beta                      3:47d12948785d
+   * beta                      3:a2a4e0744dde
      master                    0:ff7a2f2d8d70
   $ hg --cwd hgrepo-c status
 
@@ -110,13 +110,13 @@ test shared repositories
 
   $ hg clone gitrepo hgrepo-base
   importing 5 git commits
-  new changesets ff7a2f2d8d70:47d12948785d (5 drafts)
+  new changesets ff7a2f2d8d70:a2a4e0744dde (5 drafts)
   updating to branch default (no-hg57 !)
   updating to bookmark beta (hg57 !)
   2 files updated, 0 files merged, 0 files removed, 0 files unresolved
   $ hg -R hgrepo-base bookmarks
-   * beta                      4:47d12948785d
-     gamma                     2:ca33a262eb46
+   * beta                      4:a2a4e0744dde
+     gamma                     2:fffc582e1fd9
      master                    0:ff7a2f2d8d70
   $ hg  --config extensions.share= share hgrepo-base hgrepo-shared
   updating working directory
@@ -142,7 +142,7 @@ test cloning HEAD
   $ cd ..
   $ hg clone gitrepo hgrepo-2
   importing 5 git commits
-  new changesets ff7a2f2d8d70:47d12948785d (5 drafts)
+  new changesets ff7a2f2d8d70:a2a4e0744dde (5 drafts)
   updating to bookmark master (hg57 !)
   1 files updated, 0 files merged, 0 files removed, 0 files unresolved (hg57 !)
   updating to branch default (no-hg57 !)
@@ -166,7 +166,7 @@ and activate the corresponding bookmark
 #if hg57
   $ hg clone gitrepo hgrepo-2
   importing 5 git commits
-  new changesets ff7a2f2d8d70:47d12948785d (5 drafts)
+  new changesets ff7a2f2d8d70:a2a4e0744dde (5 drafts)
   updating to bookmark master
   1 files updated, 0 files merged, 0 files removed, 0 files unresolved
 #else
@@ -177,8 +177,8 @@ and activate the corresponding bookmark
   2 files updated, 0 files merged, 0 files removed, 0 files unresolved
 #endif
   $ hg -R hgrepo-2 book
-     beta                      4:47d12948785d
-     gamma                     2:ca33a262eb46
+     beta                      4:a2a4e0744dde
+     gamma                     2:fffc582e1fd9
    * master                    0:ff7a2f2d8d70
   $ rm -rf hgrepo-2
 
@@ -194,14 +194,14 @@ anything special
   $ cd ..
   $ hg clone gitrepo hgrepo-2
   importing 5 git commits
-  new changesets ff7a2f2d8d70:47d12948785d (5 drafts)
+  new changesets ff7a2f2d8d70:a2a4e0744dde (5 drafts)
   warning: the git source repository has a detached head
   (you may want to update to a bookmark)
   updating to branch default
   2 files updated, 0 files merged, 0 files removed, 0 files unresolved
   $ hg -R hgrepo-2 book
-     beta                      4:47d12948785d
-     gamma                     2:ca33a262eb46
+     beta                      4:a2a4e0744dde
+     gamma                     2:fffc582e1fd9
      master                    0:ff7a2f2d8d70
   $ hg -R hgrepo-2 id --tags
   default/beta tip
