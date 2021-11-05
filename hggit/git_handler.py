@@ -1712,7 +1712,7 @@ class GitHandler(object):
         all_remote_nodeids = []
 
         for ref_name, sha in refs.items():
-            hgsha = self.map_hg_get(sha)
+            hgsha = self.map_hg_get(sha, deref=True)
 
             if (
                 ref_name.startswith(LOCAL_BRANCH_PREFIX) and
