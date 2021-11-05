@@ -51,7 +51,7 @@ Load commonly used test logic
   $ echo gamma > d/gamma
   $ git add d/gamma
   $ fn_git_commit -m'add d/gamma'
-  $ git tag t1
+  $ fn_git_tag t1
 
   $ echo gamma 2 >> d/gamma
   $ git add d/gamma
@@ -84,15 +84,15 @@ Load commonly used test logic
   @@ -0,0 +1,1 @@
   +gamma
   
-  changeset:   3:5202f48c20c9
+  changeset:   3:8edfe38d11c5
   bookmark:    b1
   user:        test <test@example.org>
-  date:        Mon Jan 01 00:00:13 2007 +0000
+  date:        Mon Jan 01 00:00:14 2007 +0000
   summary:     add d/gamma line 2
   
-  diff -r 9865e289be73 -r 5202f48c20c9 d/gamma
+  diff -r 9865e289be73 -r 8edfe38d11c5 d/gamma
   --- a/d/gamma	Mon Jan 01 00:00:12 2007 +0000
-  +++ b/d/gamma	Mon Jan 01 00:00:13 2007 +0000
+  +++ b/d/gamma	Mon Jan 01 00:00:14 2007 +0000
   @@ -1,1 +1,2 @@
    gamma
   +gamma 2
@@ -120,10 +120,10 @@ incoming -r
   date:        Mon Jan 01 00:00:12 2007 +0000
   summary:     add d/gamma
   
-  changeset:   2:5202f48c20c9
+  changeset:   2:8edfe38d11c5
   bookmark:    b1
   user:        test <test@example.org>
-  date:        Mon Jan 01 00:00:13 2007 +0000
+  date:        Mon Jan 01 00:00:14 2007 +0000
   summary:     add d/gamma line 2
   
   $ hg incoming -r t1 | grep -v 'no changes found'
@@ -140,7 +140,7 @@ nothing incoming after pull
   $ hg pull | grep -v "adding remote bookmark"
   pulling from $TESTTMP/gitrepo
   importing 3 git commits
-  new changesets 7fe02317c63d:248d83ebf472 (3 drafts)
+  new changesets 7fe02317c63d:8a1e713e179b (3 drafts)
   (run 'hg heads' to see heads, 'hg merge' to merge)
   $ hg incoming | grep -v 'no changes found'
   comparing with $TESTTMP/gitrepo
