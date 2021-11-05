@@ -6,7 +6,7 @@ Phases
 This test verifies our behaviour with the ``hggit.usephases`` option.
 We run it in two modes:
 
-1) The defaults, i.e. the remote HEAD.
+1) The defaults, i.e. the remote HEAD and tags.
 2) Specificly set what should be published to correspond to the defaults.
 
 
@@ -43,7 +43,7 @@ pulled changesets are public
   $ echo gamma > gamma
   $ git add gamma
   $ fn_git_commit -m 'add gamma'
-  $ fn_git_tag thetag
+  $ fn_git_tag -m 'create the tag' thetag
   $ echo delta > delta
   $ git add delta
   $ fn_git_commit -m 'add delta'
@@ -73,8 +73,16 @@ happens to be the same thing here
 
 pulling publishes the branch
 
-  $ hg phase -r master
-  0: draft
+  $ hg log --graph -T phases
+  o  changeset:   0:ff7a2f2d8d70
+     bookmark:    master
+     tag:         default/master
+     tag:         tip
+     phase:       draft
+     user:        test <test@example.org>
+     date:        Mon Jan 01 00:00:10 2007 +0000
+     summary:     add alpha
+  
 #if publish-defaults
   $ hg pull -r master other
   pulling from $TESTTMP/gitrepo/.git
@@ -108,10 +116,38 @@ pulling publishes the branch
   2 local changesets published
   (run 'hg update' to get a working copy)
 #endif
-  $ hg phase -r master -r not-master -r thetag
-  1: public
-  3: draft
-  2: public
+  $ hg log --graph -T phases
+  o  changeset:   3:a54f8feea836
+  |  bookmark:    not-master
+  |  tag:         default/not-master
+  |  tag:         tip
+  |  phase:       draft
+  |  user:        test <test@example.org>
+  |  date:        Mon Jan 01 00:00:14 2007 +0000
+  |  summary:     add delta
+  |
+  o  changeset:   2:ca33a262eb46
+  |  tag:         thetag
+  |  phase:       public
+  |  user:        test <test@example.org>
+  |  date:        Mon Jan 01 00:00:12 2007 +0000
+  |  summary:     add gamma
+  |
+  o  changeset:   1:7fe02317c63d
+  |  bookmark:    master
+  |  tag:         default/master
+  |  tag:         other/master
+  |  phase:       public
+  |  user:        test <test@example.org>
+  |  date:        Mon Jan 01 00:00:11 2007 +0000
+  |  summary:     add beta
+  |
+  o  changeset:   0:ff7a2f2d8d70
+     phase:       public
+     user:        test <test@example.org>
+     date:        Mon Jan 01 00:00:10 2007 +0000
+     summary:     add alpha
+  
 
 public bookmark not pushed is not published after pull
 
