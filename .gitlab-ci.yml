@@ -85,6 +85,11 @@ Alpine:
         apk add build-base python3-dev py3-pip
         pip install --break-system-packages dulwich==$DULWICH
       fi
+    - |
+      if test -n "$EVOLVE"
+      then
+        pip install --break-system-packages hg-evolve=="$EVOLVE"
+      fi
     - adduser -D test
     - chown -R test *
     - SETUPTOOLS_SCM_PRETEND_VERSION=1 PYTHON=3 su test -c contrib/ci.sh
@@ -95,6 +100,8 @@ Alpine:
       - ALPINE: "3.19"
         DULWICH:
           - "0.21.6"
+        EVOLVE:
+          - "11.1.3"
       - ALPINE:
         - "3.19"
 
