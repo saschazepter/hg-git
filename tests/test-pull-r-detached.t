@@ -72,9 +72,10 @@ Try cloning master:
        add alpha
   
   $ GIT_DIR=$(hg debuggitdir) git tag -ln
-  error: refs/tags/alpha does not point to a valid object!
+  error: refs/tags/alpha does not point to a valid object! (no-dulwich01916 !)
   error: refs/tags/beta does not point to a valid object!
   error: refs/tags/gamma does not point to a valid object!
+  alpha           added tag alpha (dulwich01916 !)
   $ cd ..
   $ rm -rf hgrepo
 
@@ -95,10 +96,17 @@ include the annotated tags:
   o  0[alpha,default/master][master]   ff7a2f2d8d70   2007-01-01 00:00 +0000   test
        add alpha
   
+#if dulwich01916
+  $ GIT_DIR=$(hg debuggitdir) git tag -ln
+  alpha           added tag alpha
+  beta            added tag beta
+  gamma           added tag gamma
+#else
   $ GIT_DIR=$(hg debuggitdir) git tag -ln
   error: refs/tags/alpha does not point to a valid object!
   error: refs/tags/beta does not point to a valid object!
   error: refs/tags/gamma does not point to a valid object!
+#endif
 
 Check how we handle pushing with those missing revisions:
 
@@ -108,6 +116,6 @@ Check how we handle pushing with those missing revisions:
   $ echo delta > delta
   $ fn_hg_commit -Am 'add delta'
   $ hg push -q || true
-  abort: branch 'refs/tags/alpha' changed on the server, please pull and merge before pushing
+  abort: branch 'refs/tags/alpha' changed on the server, please pull and merge before pushing (no-dulwich01916 !)
   $ cd ..
   $ rm -rf hgrepo

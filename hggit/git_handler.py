@@ -16,6 +16,7 @@ from dulwich.repo import Repo, check_ref_format
 from dulwich import client
 from dulwich import config as dul_config
 from dulwich import diff_tree
+from dulwich import protocol
 
 from mercurial.i18n import _
 from mercurial.node import hex, bin, nullid, short
@@ -2033,6 +2034,12 @@ class GitHandler(object):
             thin_packs=self.allow_thin_packs,
         )
 
+        # argument added in dulwich 0.19.16; the check below is
+        # strictly unrelated, but the change was made in the same
+        # version
+        if protocol.CAPABILITY_DELETE_REFS in client.RECEIVE_CAPABILITIES:
+            kwargs.update(include_tags=True)
+
         # test for raw git ssh uri here so that we can reuse the logic below
         if util.isgitsshuri(uri):
             uri = b"git+ssh://" + uri
@@ -2113,6 +2120,8 @@ class GitHandler(object):
             )
 
         if uri.startswith(b'file://'):
+            # not supported by this class?!
+            kwargs.pop('include_tags', None)
             return client.LocalGitClient(**kwargs), compat.url(uri).path
 
         # if its not git or git+ssh, try a local url..
