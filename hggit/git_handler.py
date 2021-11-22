@@ -179,6 +179,19 @@ class GitHandler(object):
         return self.ui.configsource(b'paths', b'default') == b'clone'
 
     @property
+    def allow_thin_packs(self):
+        """detect whether we can use thin packs
+
+        thin packs are packs that don't contain all their ancestors
+
+        they are safe to use when we _know_ that we created the
+        repository, i.e. we're in a clone, and the git directory is
+        within the repository just created
+
+        """
+        return not self.is_clone or not self.gitdir.startswith(self.repo.root)
+
+    @property
     def _map_git(self):
         """mapping of `git-sha` to `hg-sha`"""
         if self._map_git_real is None:
@@ -1343,10 +1356,10 @@ class GitHandler(object):
             prefix=b'hg-git-fetch-', suffix=b'.pack', dir=self.gitdir,
         )
 
-        if self.is_clone and self.gitdir.startswith(self.repo.root):
-            # if we're in a clone, and the git directory is within the
-            # repository just created, so we can use a named temporary
-            # file, suitable for moving into the git repository
+        if not self.allow_thin_packs:
+            # we've suppressed thin packs, so we can safely use a
+            # named temporary file, suitable for moving into the git
+            # repository
             move = delete = True
             f = tempfile.NamedTemporaryFile(**tempargs, delete=False)
         else:
@@ -2016,6 +2029,10 @@ class GitHandler(object):
         if not issubclass(client.get_ssh_vendor, _ssh.SSHVendor):
             client.get_ssh_vendor = _ssh.generate_ssh_vendor(self.ui)
 
+        kwargs = dict(
+            thin_packs=self.allow_thin_packs,
+        )
+
         # test for raw git ssh uri here so that we can reuse the logic below
         if util.isgitsshuri(uri):
             uri = b"git+ssh://" + uri
@@ -2038,7 +2055,7 @@ class GitHandler(object):
             if port:
                 client.port = port
 
-            return transport(pycompat.strurl(host), port=port), path
+            return transport(pycompat.strurl(host), port=port, **kwargs), path
 
         if uri.startswith(b'git+http://') or uri.startswith(b'git+https://'):
             uri = uri[4:]
@@ -2090,12 +2107,13 @@ class GitHandler(object):
                     config=config,
                     username=username,
                     password=password,
+                    **kwargs
                 ),
                 uri,
             )
 
         if uri.startswith(b'file://'):
-            return client.LocalGitClient(), compat.url(uri).path
+            return client.LocalGitClient(**kwargs), compat.url(uri).path
 
         # if its not git or git+ssh, try a local url..
-        return client.SubprocessGitClient(), uri
+        return client.SubprocessGitClient(**kwargs), uri
