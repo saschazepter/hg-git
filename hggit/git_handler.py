@@ -1711,7 +1711,9 @@ class GitHandler(object):
         for ref_name, sha in refs.items():
             hgsha = self.map_hg_get(sha)
 
-            if (
+            if sha not in self.git:
+                self.ui.debug(b'not adding unknown ref %s\n' % ref_name)
+            elif (
                 ref_name.startswith(LOCAL_BRANCH_PREFIX) and
                 hgsha is not None and hgsha in self.repo
             ):
