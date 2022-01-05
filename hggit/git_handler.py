@@ -463,6 +463,8 @@ class GitHandler(object):
                 if h not in oldheads and self.repo[h].closesbranch():
                     dh -= 1
 
+        self.update_references()
+
         if dh < 0:
             return dh - 1
         else:
