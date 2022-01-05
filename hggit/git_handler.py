@@ -270,7 +270,11 @@ class GitHandler(object):
                     b'warning: created new git repository at %s\n'
                     % self.gitdir,
                 )
-            repo = Repo.init_bare(gitpath, mkdir=True)
+
+            if self.repo.ui.configbool(b'git', b'intree'):
+                repo = Repo.init(os.path.dirname(gitpath))
+            else:
+                repo = Repo.init_bare(gitpath, mkdir=True)
 
             # we want an _entirely_ empty repository
             del repo.refs[DEFAULT_REF]
