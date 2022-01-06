@@ -1,13 +1,21 @@
+#testcases intree worktree
+
 Load commonly used test logic
   $ . "$TESTDIR/testutil"
 
+#if intree
   $ echo "[git]" >> $HGRCPATH
   $ echo "intree = True" >> $HGRCPATH
+#else
+  $ echo "[hggit]" >> $HGRCPATH
+  $ echo "worktree = True" >> $HGRCPATH
+#endif
 
   $ hg init hgrepo
   $ cd hgrepo
   $ hg debuggitdir
-  $TESTTMP/hgrepo/.git
+  $TESTTMP/hgrepo/.hg/git (worktree !)
+  $TESTTMP/hgrepo/.git (intree !)
   $ echo alpha > alpha
   $ hg add alpha
   $ fn_hg_commit -m "add alpha"
@@ -34,12 +42,37 @@ configure for use from git
   1 files updated, 0 files merged, 0 files removed, 0 files unresolved
   $ cd gitrepo
   $ hg book master
-  $ hg up null
-  0 files updated, 0 files merged, 1 files removed, 0 files unresolved
-  (leaving bookmark master)
+
+#if intree
   $ hg debuggitdir
   $TESTTMP/gitrepo/.git
   $ hg gexport
+  $ hg up null
+  0 files updated, 0 files merged, 1 files removed, 0 files unresolved
+  (leaving bookmark master)
+#else
+  $ hg debuggitdir
+  $TESTTMP/gitrepo/.hg/git
+  $ cat .git
+  gitdir: $TESTTMP/gitrepo/.hg/git/worktrees/gitrepo
+  $ git show -q --decorate --oneline
+  672a49b (HEAD -> master) add alpha
+  $ hg book -i
+  $ git show -q --decorate --oneline
+  672a49b (HEAD, master) add alpha
+  $ hg up null
+  warning: cannot synchronise git checkout!
+  0 files updated, 0 files merged, 1 files removed, 0 files unresolved
+  $ git show -q --decorate --oneline
+  672a49b (HEAD, master) add alpha
+  $ hg up tip
+  1 files updated, 0 files merged, 0 files removed, 0 files unresolved
+  $ git show -q --decorate --oneline
+  672a49b (HEAD, master) add alpha
+  $ hg up null
+  warning: cannot synchronise git checkout!
+  0 files updated, 0 files merged, 1 files removed, 0 files unresolved
+#endif
 
 do some work
   $ git checkout -q master
