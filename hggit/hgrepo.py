@@ -1,3 +1,4 @@
+from mercurial import bookmarks
 from mercurial import exthelper
 from mercurial import repoview
 from mercurial import statichttprepo
@@ -8,6 +9,7 @@ from mercurial.node import bin
 from .git_handler import GitHandler
 from .gitrepo import gitrepo
 from . import util
+from . import worktree
 
 eh = exthelper.exthelper()
 
@@ -69,7 +71,30 @@ def reposetup(ui, repo):
 
             return tagscache
 
+        def setparents(self, *args, **kwargs):
+            super().setparents(*args, **kwargs)
+
+            worktree.update_worktree(self)
+
+        def _hggit_bookmark_state(self):
+            return bookmarks.isactivewdirparent(self) and (
+                self._bookmarks.active,
+                self._bookmarks[repo._bookmarks.active],
+            )
+
     repo.__class__ = hgrepo
+
+
+@eh.wrapfunction(bookmarks, 'update')
+@eh.wrapfunction(bookmarks, 'activate')
+@eh.wrapfunction(bookmarks, 'deactivate')
+def bmaffect(orig, repo, *args, **kwargs):
+    old_state = repo._hggit_bookmark_state()
+
+    orig(repo, *args, **kwargs)
+
+    if old_state != repo._hggit_bookmark_state():
+        worktree.update_worktree(repo)
 
 
 @eh.wrapfunction(repoview, 'pinnedrevs')

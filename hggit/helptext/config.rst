@@ -159,6 +159,11 @@ Control how the Hg-Git extension interacts with Git.
 
 Control behavior of the Hg-Git extension.
 
+``worktree``
+  Create Git working tree for the Mercurial repository, and
+  synchronize its checkout with Mercurial, when possible. Similarly,
+  if a bookmark is active, Git will track the corresponding branch.
+
 ``mapsavefrequency``
   By default, hg-git only saves the results of a conversion at the end.
   Use this option to enable resuming long-running pulls and pushes. Set
