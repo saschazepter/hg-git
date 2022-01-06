@@ -1,10 +1,13 @@
 Load commonly used test logic
   $ . "$TESTDIR/testutil"
 
+  $ echo "[git]" >> $HGRCPATH
+  $ echo "intree = True" >> $HGRCPATH
+
   $ hg init hgrepo
   $ cd hgrepo
   $ hg debuggitdir
-  $TESTTMP/hgrepo/.hg/git
+  $TESTTMP/hgrepo/.git
   $ echo alpha > alpha
   $ hg add alpha
   $ fn_hg_commit -m "add alpha"
@@ -34,24 +37,20 @@ configure for use from git
   $ hg up null
   0 files updated, 0 files merged, 1 files removed, 0 files unresolved
   (leaving bookmark master)
-  $ echo "[git]" >> .hg/hgrc
-  $ echo "intree = True" >> .hg/hgrc
   $ hg debuggitdir
   $TESTTMP/gitrepo/.git
   $ hg gexport
 
 do some work
-  $ git checkout master 2>&1 | sed s/\'/\"/g
-  Already on "master"
+  $ git checkout -q master
   $ echo beta > beta
   $ git add beta
   $ fn_git_commit -m 'add beta'
 
 get things back to hg
-  $ hg gimport
-  importing 1 git commits
-  updating bookmark master
-  new changesets 9f124f3c1fc2 (1 drafts)
+  $ hg gimport -q
+  $ hg book
+     master                    1:9f124f3c1fc2
   $ hg log --graph --debug | grep -v phase:
   o  changeset:   1:9f124f3c1fc29a14f5eb027c24811b0ac9d5ff10
   |  bookmark:    master
