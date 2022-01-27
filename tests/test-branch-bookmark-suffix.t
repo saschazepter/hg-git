@@ -1,5 +1,3 @@
-#testcases with-path without-path
-
 Load commonly used test logic
   $ . "$TESTDIR/testutil"
 
@@ -12,9 +10,6 @@ Load commonly used test logic
   updating to branch default
   0 files updated, 0 files merged, 0 files removed, 0 files unresolved
   $ cd hgrepo
-#if without-path
-  $ rm .hg/hgrc
-#endif
   $ hg branch -q branch1
   $ hg bookmark branch1_bookmark
   $ echo f1 > f1
@@ -94,9 +89,9 @@ make sure the commit doesn't have an HG:rename-source annotation
 
   $ cd hgrepo
   $ hg paths
-  default = $TESTTMP/repo.git (with-path !)
-  $ hg pull ../repo.git
-  pulling from ../repo.git
+  default = $TESTTMP/repo.git
+  $ hg pull
+  pulling from $TESTTMP/repo.git
   importing 3 git commits
   updating bookmark branch1_bookmark
   updating bookmark branch2_bookmark
@@ -106,7 +101,7 @@ make sure the commit doesn't have an HG:rename-source annotation
   $ hg log --graph
   o  changeset:   4:faf44fc3a4e8
   |  bookmark:    branch3_bookmark
-  |  tag:         default/branch3 (with-path !)
+  |  tag:         default/branch3
   |  tag:         tip
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:14 2007 +0000
@@ -114,7 +109,7 @@ make sure the commit doesn't have an HG:rename-source annotation
   |
   o  changeset:   3:ae8eb55f7090
   |  bookmark:    branch2_bookmark
-  |  tag:         default/branch2 (with-path !)
+  |  tag:         default/branch2
   |  parent:      1:600de9b6d498
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:13 2007 +0000
@@ -122,7 +117,7 @@ make sure the commit doesn't have an HG:rename-source annotation
   |
   | o  changeset:   2:8211cade99e4
   | |  bookmark:    branch1_bookmark
-  | |  tag:         default/branch1 (with-path !)
+  | |  tag:         default/branch1
   | |  parent:      0:40a840c1f8ae
   | |  user:        test <test@example.org>
   | |  date:        Mon Jan 01 00:00:12 2007 +0000
@@ -220,21 +215,9 @@ does the scenario.
 Now try pulling a diverged bookmark:
 
   $ rm -r hgrepo
-#if with-path
   $ hg clone -U repo.git hgrepo
   importing 5 git commits
   new changesets 40a840c1f8ae:faf44fc3a4e8 (5 drafts)
-#else
-  $ hg init hgrepo
-  $ hg -R hgrepo pull repo.git
-  pulling from repo.git
-  importing 5 git commits
-  adding bookmark branch1_bookmark
-  adding bookmark branch2_bookmark
-  adding bookmark branch3_bookmark
-  new changesets 40a840c1f8ae:faf44fc3a4e8 (5 drafts)
-  (run 'hg heads' to see heads, 'hg merge' to merge)
-#endif
   $ cd gitrepo
   $ git checkout -q branch1
   $ fn_git_rebase branch3
@@ -242,15 +225,15 @@ Now try pulling a diverged bookmark:
   To $TESTTMP/repo.git
    + d8aef79...ce1d1c5 branch1 -> branch1 (forced update)
   $ cd ../hgrepo
-  $ hg pull ../repo.git
-  pulling from ../repo.git
+  $ hg pull
+  pulling from $TESTTMP/repo.git
   importing 1 git commits
   not updating diverged bookmark branch1_bookmark
   new changesets 895d0307f8b7 (1 drafts)
   (run 'hg update' to get a working copy)
   $ hg log --graph
   o  changeset:   5:895d0307f8b7
-  |  tag:         default/branch1 (with-path !)
+  |  tag:         default/branch1
   |  tag:         tip
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:12 2007 +0000
@@ -258,14 +241,14 @@ Now try pulling a diverged bookmark:
   |
   o  changeset:   4:faf44fc3a4e8
   |  bookmark:    branch3_bookmark
-  |  tag:         default/branch3 (with-path !)
+  |  tag:         default/branch3
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:14 2007 +0000
   |  summary:     append f3
   |
   o  changeset:   3:ae8eb55f7090
   |  bookmark:    branch2_bookmark
-  |  tag:         default/branch2 (with-path !)
+  |  tag:         default/branch2
   |  user:        test <test@example.org>
   |  date:        Mon Jan 01 00:00:13 2007 +0000
   |  summary:     append f2
