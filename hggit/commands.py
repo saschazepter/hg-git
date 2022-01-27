@@ -30,7 +30,7 @@ eh = exthelper.exthelper()
 
 
 @eh.command(b'gimport')
-def gimport(ui, repo, remote_name=None):
+def gimport(ui, repo):
     '''import commits from Git to Mercurial (ADVANCED)
 
     This command is equivalent to pulling from a Git source, but
@@ -41,7 +41,7 @@ def gimport(ui, repo, remote_name=None):
 
     '''
     with repo.wlock():
-        repo.githandler.import_commits(remote_name)
+        repo.githandler.import_commits()
 
 
 @eh.command(b'gexport')
