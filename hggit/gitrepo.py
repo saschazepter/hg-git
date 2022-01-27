@@ -188,7 +188,10 @@ def exchangepull(
         )
 
         with repo.wlock(), repo.lock(), pullop.trmanager:
-            pullop.cgresult = repo.githandler.fetch(remote, heads)
+            pullop.cgresult = repo.githandler.fetch(
+                kwargs.get("path") or remote.path,
+                heads,
+            )
             return pullop
     else:
         return orig(
@@ -225,7 +228,11 @@ def exchangepush(
             bookmarks,
             **pycompat.strkwargs(opargs or {}),
         )
-        pushop.cgresult = repo.githandler.push(remote.path, revs, force)
+        pushop.cgresult = repo.githandler.push(
+            kwargs.get("path") or remote.path,
+            revs,
+            force,
+        )
         return pushop
     else:
         return orig(
