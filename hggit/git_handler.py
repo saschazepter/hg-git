@@ -22,7 +22,10 @@ from dulwich import diff_tree
 
 from mercurial.i18n import _
 from mercurial.node import hex, bin, nullid, short
-from mercurial.utils import dateutil
+from mercurial.utils import (
+    dateutil,
+    urlutil,
+)
 from mercurial import (
     bookmarks,
     context,
@@ -346,22 +349,20 @@ class GitHandler(object):
 
     # COMMANDS METHODS
 
-    def import_commits(self, remote_name):
+    def import_commits(self):
         refs = self.git.refs.as_dict()
-        remote_names = [remote_name] if remote_name else []
-        self.import_git_objects(remote_names, refs)
+        self.import_git_objects(None, refs)
 
-    def fetch(self, remote, heads):
-        result = self.fetch_pack(remote.path, heads)
-        remote_names = self.remote_names(remote.path, False)
+    def fetch(self, path, heads):
+        result = self.fetch_pack(path, heads)
 
         oldheads = self.repo.changelog.heads()
 
         if result.refs:
             imported = self.import_git_objects(
-                remote_names,
+                path,
                 result.refs,
-                heads=heads,
+                heads,
             )
         else:
             imported = 0
@@ -472,10 +473,10 @@ class GitHandler(object):
                 _(b"git remote error: ") + pycompat.sysbytes(str(e))
             )
 
-    def push(self, remote, revs, force):
-        old_refs, new_refs = self.upload_pack(remote, revs, force)
-        remote_names = self.remote_names(remote, True)
-        remote_desc = remote_names[0] if remote_names else remote
+    def push(self, path, revs, force):
+        old_refs, new_refs = self.upload_pack(path, revs, force)
+        remote_names = self.remote_names(path, True)
+        remote_desc = remote_names[0] if remote_names else path
 
         if not isinstance(new_refs, dict):
             # dulwich 0.20.6 changed the API and deprectated treating
@@ -521,7 +522,7 @@ class GitHandler(object):
 
             try:
                 new_refs_with_head.update(
-                    self.fetch_pack(remote, [b'HEAD']).refs,
+                    self.fetch_pack(path, [b'HEAD']).refs,
                 )
             except (error.RepoLookupError):
                 self.ui.debug(b'remote repository has no HEAD\n')
@@ -988,7 +989,7 @@ class GitHandler(object):
         else:
             return None, None
 
-    def import_git_objects(self, remote_names, refs, heads=None):
+    def import_git_objects(self, path, refs, heads=None):
         filteredrefs = self.filter_min_date(refs)
         if heads is not None:
             filteredrefs = git2hg.filter_refs(filteredrefs, heads)
@@ -1028,6 +1029,9 @@ class GitHandler(object):
                         )
 
                     self.import_tags(refs)
+
+                    remote_names = self.remote_names(path, False)
+
                     self.update_hg_bookmarks(remote_names, refs)
 
                     for remote_name in remote_names:
@@ -1315,7 +1319,7 @@ class GitHandler(object):
 
     # PACK UPLOADING AND FETCHING
 
-    def upload_pack(self, remote, revs, force):
+    def upload_pack(self, path, revs, force):
         all_exportable = self.export_commits()
         old_refs = {}
         change_totals = {}
@@ -1367,6 +1371,10 @@ class GitHandler(object):
 
         progress = GitProgress(self.ui)
         progressfunc = progress.progress
+
+        remote = (
+            path.pushloc or path.loc if isinstance(path, urlutil.path) else path
+        )
 
         try:
             new_refs = self._call_client(
@@ -1458,7 +1466,7 @@ class GitHandler(object):
 
         return new_refs
 
-    def fetch_pack(self, remote, heads=None):
+    def fetch_pack(self, path, heads=None):
         # The dulwich default walk only checks refs/heads/. We also want to
         # consider remotes when doing discovery, so we build our own list. We
         # can't just do 'refs/' here because the tag class doesn't have a
@@ -1495,7 +1503,7 @@ class GitHandler(object):
 
         try:
             ret = self._call_client(
-                remote,
+                path.loc if isinstance(path, urlutil.path) else path,
                 'fetch_pack',
                 determine_wants,
                 graphwalker,
@@ -2055,6 +2063,12 @@ class GitHandler(object):
         )
 
     def remote_names(self, remote, push):
+        if not isinstance(remote, bytes):
+            if remote is None or remote.name is None:
+                return []
+            else:
+                return [remote.name]
+
         names = set()
         url = compat.url(remote)
 
