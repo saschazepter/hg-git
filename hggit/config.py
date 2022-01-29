@@ -7,7 +7,7 @@ eh = exthelper.exthelper()
 CONFIG_DEFAULTS = {
     b'git': {
         b'authors': None,
-        b'branch_bookmark_suffix': None,
+        b'branch_bookmark_suffix': b'',
         b'debugextrainmessage': False,  # test only -- do not document this!
         b'findcopiesharder': False,
         b'intree': None,

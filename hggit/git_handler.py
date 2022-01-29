@@ -423,7 +423,7 @@ class GitHandler(object):
                     activate = None
 
             if activate is not None:
-                activate += self.branch_bookmark_suffix or b''
+                activate += self.branch_bookmark_suffix
 
                 if activate in self.repo._bookmarks:
                     bookmarks.activate(self.repo, activate)
@@ -1864,7 +1864,7 @@ class GitHandler(object):
         for ref_name, wanted_node in self._get_ref_nodes(
             remote_names, refs
         ).items():
-            bm = ref_name + (self.branch_bookmark_suffix or b'')
+            bm = ref_name + self.branch_bookmark_suffix
             current_node = bms.get(bm)
 
             if current_node is not None and current_node == wanted_node:
