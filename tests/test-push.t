@@ -204,14 +204,20 @@ We can push only one of two bookmarks on the same revision:
   searching for changes
   adding reference refs/heads/also-not-master
 
+We can push a bookmark to a completely different name:
+
+  $ hg git-push default master:refs/heads/totally-not-master
+  remote: Push to file://$TESTTMP/gitrepo successful.
+
 And we can delete them again afterwards:
 
   $ hg book -d also-not-master really-not-master
-  $ hg push -B also-not-master -B really-not-master
+  $ hg push -B also-not-master -B really-not-master -B totally-not-master
   pushing to file:///$TESTTMP/gitrepo
   searching for changes
   warning: unable to delete 'refs/heads/really-not-master' as it does not exist on the remote repository
   deleting reference refs/heads/also-not-master
+  deleting reference refs/heads/totally-not-master
 
 Push empty Hg repo to empty Git repo (issue #58)
   $ hg init hgrepo2

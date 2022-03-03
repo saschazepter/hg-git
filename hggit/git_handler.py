@@ -138,6 +138,15 @@ class GitProgress(object):
 
             self._progress.update(pos, total=total)
 
+    write = progress
+
+    def __enter__(self):
+        self.flush()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.flush()
+
     def flush(self, msg=b''):
         if self._progress is not None:
             self._progress.complete()
@@ -1627,7 +1636,7 @@ class GitHandler(object):
             return getattr(clientobj, method)(path, *args, **kwargs)
 
         for ignored in range(self.ui.configint(b'hggit', b'retries')):
-            clientobj, path = self._get_transport_and_path(remote)
+            clientobj, path = self.get_transport_and_path(remote)
             func = getattr(clientobj, method)
 
             try:
@@ -2195,7 +2204,7 @@ class GitHandler(object):
 
         return True
 
-    def _get_transport_and_path(self, uri):
+    def get_transport_and_path(self, uri):
         """Method that sets up the transport (either ssh or http(s))
 
         Tests:
@@ -2209,7 +2218,7 @@ class GitHandler(object):
         ...         self._pwmgr = url.passwordmgr(
         ...             self.ui, self.ui.httppasswordmgrdb,
         ...         )
-        >>> tp = SubHandler()._get_transport_and_path
+        >>> tp = SubHandler().get_transport_and_path
         >>> client, url = tp(b'http://fqdn.com/test.git')
         >>> print(isinstance(client, HttpGitClient))
         True
