@@ -13,6 +13,7 @@ from dulwich import porcelain
 
 from mercurial.node import hex, nullhex
 from mercurial.i18n import _
+from mercurial.utils import urlutil
 from mercurial import (
     error,
     exthelper,
@@ -23,6 +24,7 @@ from mercurial import (
 
 # local modules
 from . import compat
+from . import git_handler
 from . import verify
 
 eh = exthelper.exthelper()
@@ -103,6 +105,34 @@ def git_cleanup(ui, repo):
         f = gh.vfs(gh.map_file, b'wb')
         f.writelines(new_map)
     ui.status(_(b'git commit map cleaned\n'))
+
+
+@eh.command(
+    b'git-push|gpush',
+    [
+        (b'f', b'force', False, _(b'force push')),
+    ],
+    _(b'[-f] [REMOTE] [REFSPEC]'),
+    helpcategory=registrar.command.CATEGORY_REMOTE_REPO_MANAGEMENT,
+)
+def gpush(ui, repo, dest=None, refspecs=None, force=False):
+    """push the given refs to git"""
+    gh = repo.githandler
+
+    gh.export_commits()
+
+    path = urlutil.get_unique_push_path(b'git-push', repo, ui, dest)
+    client, uri = gh.get_transport_and_path(bytes(path.url))
+
+    with git_handler.GitProgress(ui) as p:
+        porcelain.push(
+            gh.git,
+            uri,
+            refspecs=refspecs or None,
+            force=force,
+            outstream=p,
+            errstream=p,
+        )
 
 
 @eh.wrapcommand(
