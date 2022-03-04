@@ -30,7 +30,7 @@ Create two commits, one secret:
   searching for changes
   adding objects
   added 1 commits with 1 trees and 1 blobs
-  adding reference refs/heads/master
+  adding branch master
   $ cd ..
   $ hg -R hgrepo log --graph --template phases
   @  changeset:   1:62966756ea96

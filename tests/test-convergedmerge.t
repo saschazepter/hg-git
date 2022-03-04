@@ -52,7 +52,7 @@ Load commonly used test logic
   searching for changes
   adding objects
   added 5 commits with 3 trees and 3 blobs
-  adding reference refs/heads/master
+  adding branch master
   $ cd ..
 
   $ hg clone repo.git hgrepo2

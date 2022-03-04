@@ -76,7 +76,7 @@ Push it!
   searching for changes
   adding objects
   added 6 commits with 6 trees and 1 blobs
-  adding reference refs/heads/master
+  adding branch master
 
 Check the results:
 

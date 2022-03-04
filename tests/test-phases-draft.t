@@ -57,6 +57,6 @@ pushing without hggit.usephases does not publish local changesets
   searching for changes
   adding objects
   added 1 commits with 1 trees and 1 blobs
-  updating reference refs/heads/master
+  updating branch master
   $ hg phase -r master
   2: draft

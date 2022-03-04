@@ -59,7 +59,7 @@ Make sure legacy extra (in commit message, after '--HG--') doesn't break
   searching for changes
   adding objects
   added 3 commits with 3 trees and 0 blobs
-  adding reference refs/heads/b1
+  adding branch b1
 
   $ hg bookmark b2
   $ hg mv c c2
@@ -99,8 +99,8 @@ Test some nutty filenames
   searching for changes
   adding objects
   added 3 commits with 3 trees and 0 blobs
-  adding reference refs/heads/b2
-  adding reference refs/heads/b3
+  adding branch b2
+  adding branch b3
 
   $ cd ../gitrepo
   $ git cat-file commit b1

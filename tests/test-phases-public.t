@@ -152,7 +152,7 @@ actually pushed
   searching for changes
   adding objects
   added 1 commits with 1 trees and 1 blobs
-  adding reference refs/heads/not-pushed
+  adding branch not-pushed
   $ hg phase -r 'all() - master' > $TESTTMP/after
   $ diff $TESTTMP/before $TESTTMP/after | tr '<>' '-+'
   $ hg phase -r not-pushed -r master
@@ -163,7 +163,7 @@ actually pushed
   searching for changes
   adding objects
   added 1 commits with 1 trees and 1 blobs
-  updating reference refs/heads/master
+  updating branch master
   $ hg phase -r 'all() - master' > $TESTTMP/after
   $ diff $TESTTMP/before $TESTTMP/after | tr '<>' '-+'
   $ hg phase -r master

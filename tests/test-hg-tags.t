@@ -31,8 +31,8 @@ Load commonly used test logic
   searching for changes
   adding objects
   added 1 commits with 1 trees and 1 blobs
-  updating reference refs/heads/master
-  adding reference refs/tags/alpha
+  updating branch master
+  adding tag alpha
 
   $ hg log --graph
   @  changeset:   1:e8b150f84560
