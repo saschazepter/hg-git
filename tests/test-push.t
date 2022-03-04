@@ -34,7 +34,7 @@ Load commonly used test logic
   searching for changes
   adding objects
   added 1 commits with 1 trees and 1 blobs
-  adding reference refs/heads/beta
+  adding branch beta
 
   $ cd ..
 
@@ -111,7 +111,7 @@ this should also fail
   searching for changes
   adding objects
   added 1 commits with 1 trees and 1 blobs
-  updating reference refs/heads/master
+  updating branch master
 
 this should fail, no changes to push
   $ hg push -r master
@@ -133,7 +133,7 @@ hg-git issue103 -- directories can lose information at hg-git export time
   searching for changes
   adding objects
   added 1 commits with 2 trees and 0 blobs
-  updating reference refs/heads/master
+  updating branch master
 
   $ echo beta > dir1/beta
   $ hg add dir1/beta
@@ -143,7 +143,7 @@ hg-git issue103 -- directories can lose information at hg-git export time
   searching for changes
   adding objects
   added 1 commits with 2 trees and 0 blobs
-  updating reference refs/heads/master
+  updating branch master
   $ hg log -r master
   changeset:   5:ba0476ff1899
   bookmark:    master
@@ -192,7 +192,7 @@ fails:
   pushing to file:///$TESTTMP/gitrepo
   searching for changes
   warning: failed to update HEAD; unable to set b'HEAD' to b'7eeab2ea75ec1ac0ff3d500b5b6f8a3447dd7c03' (?)
-  updating reference refs/heads/not-master
+  updating branch not-master
   $ cd ..
 
 Push empty Hg repo to empty Git repo (issue #58)

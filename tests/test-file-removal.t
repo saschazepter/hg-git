@@ -172,7 +172,7 @@ make sure that only beta is in the manifest
   searching for changes
   adding objects
   added 9 commits with 8 trees and 5 blobs
-  adding reference refs/heads/master
+  adding branch master
 
   $ cd ..
   $ git --git-dir=repo.git log --pretty=medium

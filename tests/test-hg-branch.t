@@ -29,7 +29,7 @@ Load commonly used test logic
   searching for changes
   adding objects
   added 1 commits with 1 trees and 0 blobs
-  updating reference refs/heads/master
+  updating branch master
 
   $ hg branch gamma | grep -v 'permanent and global'
   marked working directory as branch gamma
@@ -39,7 +39,7 @@ Load commonly used test logic
   searching for changes
   adding objects
   added 1 commits with 1 trees and 0 blobs
-  updating reference refs/heads/master
+  updating branch master
 
   $ hg log --graph
   @  changeset:   2:400db38f4f64

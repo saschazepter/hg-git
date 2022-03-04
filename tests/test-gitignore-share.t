@@ -23,7 +23,7 @@ Load commonly used test logic
   searching for changes
   adding objects
   added 1 commits with 1 trees and 1 blobs
-  adding reference refs/heads/master
+  adding branch master
   $ cd ..
 
 We should also ignore the file in a shared repository:

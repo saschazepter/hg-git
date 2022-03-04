@@ -113,11 +113,11 @@ Load commonly used test logic
   searching for changes
   adding objects
   added 8 commits with 8 trees and 6 blobs
-  adding reference refs/heads/branch1
-  adding reference refs/heads/branch2
-  adding reference refs/heads/branch3
-  adding reference refs/heads/branch4
-  adding reference refs/heads/master
+  adding branch branch1
+  adding branch branch2
+  adding branch branch3
+  adding branch branch4
+  adding branch master
   $ cd ..
 
   $ git --git-dir=repo.git log --pretty=medium | sed s/\\.\\.\\.//g

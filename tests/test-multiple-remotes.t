@@ -57,12 +57,12 @@ Load commonly used test logic
   searching for changes
   adding objects
   added 1 commits with 1 trees and 1 blobs
-  updating reference refs/heads/master
+  updating branch master
   pushing to $TESTTMP/repo.git
   searching for changes
   adding objects
   added 1 commits with 1 trees and 1 blobs
-  updating reference refs/heads/master
+  updating branch master
 
   $ hg tags
   tip                                1:47580592d3d6

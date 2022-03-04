@@ -50,7 +50,7 @@ resolve using second parent
   searching for changes
   adding objects
   added 4 commits with 3 trees and 3 blobs
-  adding reference refs/heads/master
+  adding branch master
   $ cd ..
 
   $ hg clone repo.git hgrepo2
