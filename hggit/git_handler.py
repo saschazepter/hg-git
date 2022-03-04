@@ -1,6 +1,7 @@
 from __future__ import generator_stop
 
 import collections
+import functools
 import itertools
 import os
 import re
@@ -525,19 +526,8 @@ class GitHandler(object):
                 )
 
         if new_refs and remote_names:
-            # make sure that we know the remote head, for possible
-            # publishing
-            new_refs_with_head = new_refs.copy()
-
-            try:
-                new_refs_with_head.update(
-                    self.fetch_pack(remote, [b'HEAD']).refs,
-                )
-            except (error.RepoLookupError):
-                self.ui.debug(b'remote repository has no HEAD\n')
-
             for remote_name in remote_names:
-                self.update_remote_branches(remote_name, new_refs_with_head)
+                self.update_remote_branches(remote_name, new_refs)
 
         if old_refs == new_refs:
             if revs or not old_refs:
@@ -1378,9 +1368,28 @@ class GitHandler(object):
         progress = GitProgress(self.ui)
         progressfunc = progress.progress
 
+        def send_pack(client, path, *args, **kwargs):
+            # this is a hack that works around the fact that we don't
+            # get symrefs on push, so we won't know the remote head --
+            # sadly, there's no direct way of getting remote
+            # _symrefs_, it seems
+            def fill_in_head(refs):
+                remote_refs = client.get_refs(path)
+
+                if b'HEAD' in remote_refs:
+                    refs[b'HEAD'] = remote_refs[b'HEAD']
+
+            fill_in_head(old_refs)
+
+            result = client.send_pack(path, *args, **kwargs)
+
+            fill_in_head(result.refs)
+
+            return result
+
         try:
             new_refs = self._call_client(
-                remote, 'send_pack', changed, genpack, progress=progressfunc
+                remote, send_pack, changed, genpack, progress=progressfunc
             )
 
             if len(change_totals) > 0:
@@ -1545,7 +1554,11 @@ class GitHandler(object):
     def _call_client(self, remote, method, *args, **kwargs):
         for ignored in range(self.ui.configint(b'hggit', b'retries')):
             clientobj, path = self._get_transport_and_path(remote)
-            func = getattr(clientobj, method)
+            func = (
+                getattr(clientobj, method)
+                if isinstance(method, str)
+                else functools.partial(method, clientobj)
+            )
 
             try:
                 return func(path, *args, **kwargs)
