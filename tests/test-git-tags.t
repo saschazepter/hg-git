@@ -134,8 +134,8 @@ Create a git tag from hg
   searching for changes
   adding objects
   added 1 commits with 1 trees and 1 blobs
-  updating reference refs/heads/master
-  adding reference refs/tags/alpha
+  updating branch master
+  adding tag alpha
 
 Verify that amending commits known to remotes doesn't break anything
 
@@ -171,7 +171,7 @@ Verify that amending commits known to remotes doesn't break anything
   searching for changes
   adding objects
   added 1 commits with 1 trees and 1 blobs
-  updating reference refs/heads/master
+  updating branch master
 
 Now create a tag for the old, obsolete master
 
@@ -237,8 +237,8 @@ Create a git tag from hg, but pointing to a new commit:
   searching for changes
   adding objects
   added 1 commits with 1 trees and 1 blobs
-  updating reference refs/heads/master
-  adding reference refs/tags/gamma
+  updating branch master
+  adding tag gamma
   $ cd ../gitrepo
   $ git fetch --quiet --tags
   $ git tag
@@ -273,7 +273,7 @@ Try to overwrite an annotated tag:
   searching for changes
   adding objects
   added 1 commits with 1 trees and 1 blobs
-  updating reference refs/heads/master
+  updating branch master
   $ hg tags
   tip                                5:c49682c7cba4
   default/master                     5:c49682c7cba4

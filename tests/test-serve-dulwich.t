@@ -78,7 +78,7 @@ Make sure that clone over unauthenticated HTTP doesn't break
   searching for changes
   adding objects
   added 1 commits with 1 trees and 1 blobs
-  updating reference refs/heads/master
+  updating branch master
   $ hg log -T 'HG:{node|short} GIT:{gitnode|short}\n' -r .
   HG:daf1ae153bf8 GIT:ab88565d0614
 

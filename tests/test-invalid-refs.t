@@ -36,10 +36,10 @@ Load commonly used test logic
   searching for changes
   adding objects
   added 3 commits with 3 trees and 3 blobs
-  adding reference refs/heads/delt#a
-  updating reference refs/heads/master
-  adding reference refs/tags/alph#a
-  adding reference refs/tags/gamm_a
+  adding branch delt#a
+  updating branch master
+  adding tag alph#a
+  adding tag gamm_a
 
   $ hg log --graph
   @  changeset:   3:0950ab44ea23

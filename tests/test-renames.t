@@ -372,7 +372,7 @@ Make a new commit with a copy and a rename in Mercurial
   searching for changes
   adding objects
   added 2 commits with 2 trees and 3 blobs
-  updating reference refs/heads/master
+  updating branch master
 
   $ cd ../repo.git
   $ git log master --pretty=oneline

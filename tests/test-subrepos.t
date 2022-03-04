@@ -80,7 +80,7 @@ hg status shall NOT report .hgsub and .hgsubstate as untracked - either ignored 
   searching for changes
   adding objects
   added 1 commits with 2 trees and 1 blobs
-  updating reference refs/heads/master
+  updating branch master
   $ cd ..
   $ cd gitrepo
   $ git pull --ff-only
@@ -159,7 +159,7 @@ pull shall bring .hgsub entry which was added to the git repo
   searching for changes
   adding objects
   added 1 commits with 1 trees and 0 blobs
-  updating reference refs/heads/master
+  updating branch master
   $ cd ..
 
 5. But we actually do something quite weird in this case: If a

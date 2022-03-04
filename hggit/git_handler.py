@@ -143,6 +143,15 @@ class GitProgress(object):
         self.progress(b'')
 
 
+def get_ref_type_and_name(ref):
+    if ref.startswith(LOCAL_BRANCH_PREFIX):
+        return b'branch', ref[len(LOCAL_BRANCH_PREFIX):]
+    elif ref.startswith(LOCAL_TAG_PREFIX):
+        return b'tag', ref[len(LOCAL_TAG_PREFIX):]
+    else:
+        return None, ref
+
+
 def get_repo_and_gitdir(repo):
     if repo.shared():
         repo = hg.sharedreposource(repo)
@@ -486,6 +495,7 @@ class GitHandler(object):
             ref_status = {}
 
         for ref, new_sha in sorted(new_refs.items()):
+            ref_type, ref_name = get_ref_type_and_name(ref)
             old_sha = old_refs.get(ref)
             if ref_status.get(ref) is not None:
                 self.ui.warn(
@@ -498,16 +508,16 @@ class GitHandler(object):
                         b"adding reference %s::%s => GIT:%s\n"
                         % (remote_desc, ref, new_sha[0:8])
                     )
-                else:
-                    self.ui.status(b"adding reference %s\n" % ref)
+                elif ref_type is not None:
+                    self.ui.status(b"adding %s %s\n" % (ref_type, ref_name))
             elif new_sha != old_sha:
                 if self.ui.verbose:
                     self.ui.note(
                         b"updating reference %s::%s => GIT:%s\n"
                         % (remote_desc, ref, new_sha[0:8])
                     )
-                else:
-                    self.ui.status(b"updating reference %s\n" % ref)
+                elif ref_type is not None:
+                    self.ui.status(b"updating %s %s\n" % (ref_type, ref_name))
             else:
                 self.ui.debug(
                     b"unchanged reference %s::%s => GIT:%s\n"

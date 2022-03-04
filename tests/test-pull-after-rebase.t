@@ -67,7 +67,7 @@ Clone it and rebase the branch
   searching for changes
   adding objects
   added 1 commits with 1 trees and 1 blobs
-  updating reference refs/heads/branch
+  updating branch branch
   $ cd ..
 
 Now switch back to git and create a new commit based on what we just rebased

@@ -60,7 +60,7 @@ try to follow the hint:
   searching for changes
   adding objects
   added 1 commits with 1 trees and 1 blobs
-  updating reference refs/heads/master
+  updating branch master
 
 and as an extra test, what if we want to push a commit that's
 converted, but gone?
