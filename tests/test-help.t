@@ -103,6 +103,8 @@ Load commonly used test logic
         to "git diff"'s --find-copies-harder option.
   
       "intree"
+         (Deprecated. Use "hggit.worktree" instead.)
+  
         Hg-Git keeps a Git repository clone for reading and updating. By
         default, the Git clone is the subdirectory "git" in your local Mercurial
         repository. If you would like this Git clone to be at the same level of
@@ -113,8 +115,12 @@ Load commonly used test logic
           intree = True
   
         Please note that changing this setting in an existing repository doesn't
-        move the local Git repository. You will either have to do so yourself,
-        or issue an 'hg pull' after the fact to repopulate the new location.
+        move the local Git repository.
+  
+        Having the location of the local Git repository move around depending on
+        a configuration setting can easily lead to multiple copies. Use the 'hg
+        config hgit.worktree' option instead. You can use the 'hg debug-move-
+        git-repo' command to move away from this setting.
   
       "mindate"
         If set, branches where the latest commit's commit time is older than

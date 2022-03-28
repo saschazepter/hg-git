@@ -183,6 +183,8 @@ current behaviour.
   > hg --config hggit.mapsavefrequency=10 --config git.intree=yes \
   > --cwd hgrepo \
   > clone -U $TESTTMP/gitrepo .
+  warning: git.intree is deprecated and will be removed in a future release; please migrate to hggit.worktree
+  (hint: you can suppress this warning by setting git.intree.warn to false)
   importing 100 git commits
   transaction abort!
   rollback completed

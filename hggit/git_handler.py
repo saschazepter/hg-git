@@ -161,11 +161,24 @@ class heads_tags(object):
         return f"heads_tags(heads={self.heads}, tags={self.tags})"
 
 
+_warn_intree = True
+
+
 def get_repo_and_gitdir(repo):
     if repo.local() and repo.shared():
         repo = hg.sharedreposource(repo)
 
     if repo.ui.configbool(b'git', b'intree'):
+        global _warn_intree
+
+        if _warn_intree and repo.ui.configbool(b'git', b'intree.warn'):
+            _warn_intree = False
+            repo.ui.warn(
+                b'warning: git.intree is deprecated and will be removed in a '
+                b'future release; please migrate to hggit.worktree\n'
+                b'(hint: you can suppress this warning by setting '
+                b'git.intree.warn to false)\n'
+            )
         gitdir = repo.wvfs.join(b'.git')
     else:
         gitdir = repo.vfs.join(b'git')
