@@ -21,6 +21,7 @@ CONFIG_DEFAULTS = {
         b'debugextrainmessage': False,  # test only -- do not document this!
         b'findcopiesharder': False,
         b'intree': None,
+        b'intree.warn': True,
         b'mindate': None,
         b'public': list,
         b'renamelimit': 400,

@@ -6,6 +6,7 @@ Load commonly used test logic
 #if intree
   $ echo "[git]" >> $HGRCPATH
   $ echo "intree = True" >> $HGRCPATH
+  $ echo "intree.warn = False" >> $HGRCPATH
 #else
   $ echo "[hggit]" >> $HGRCPATH
   $ echo "worktree = True" >> $HGRCPATH
