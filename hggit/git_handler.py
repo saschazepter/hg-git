@@ -648,24 +648,23 @@ class GitHandler(object):
             )
         )
 
-        to_export = (
-            repo[node]
-            for node in map(repo.changelog.node, ancestors)
-            if not hex(node) in self._map_hg
-        )
+        export = []
 
-        todo_total = len(repo) - len(self._map_hg)
-        topic = b'searching'
-        unit = b'commits'
+        with repo.ui.makeprogress(
+            b'searching', b'commits', len(ancestors)
+        ) as progress:
+            for rev in ancestors:
+                extra = repo.changelog.changelogrevision(rev).extra
+                node = repo.changelog.node(rev)
+                progress.increment(item=short(node))
 
-        with repo.ui.makeprogress(topic, unit, todo_total) as progress:
-            export = []
-            for ctx in to_export:
-                progress.increment(item=short(ctx.node()))
-                if ctx.extra().get(b'hg-git', None) != b'octopus':
-                    export.append(ctx)
+                if (
+                    hex(node) not in self._map_hg
+                    and extra.get(b'hg-git', None) != b'octopus'
+                ):
+                    export.append(node)
 
-            total = len(export)
+        total = len(export)
 
         self.ui.note(_(b"exporting %d changesets\n") % total)
 
@@ -677,8 +676,7 @@ class GitHandler(object):
             # therefore export, is in topological order. By
             # definition, export[0]'s parents must be present in Git,
             # so we start the incremental exporter from there.
-            pctx = export[0].p1()
-            pnode = pctx.node()
+            pnode = repo.changelog.parents(export[0])[0]
             if pnode == nullid:
                 gitcommit = None
             else:
@@ -687,16 +685,16 @@ class GitHandler(object):
                     gitcommit = self.git[gitsha]
 
             exporter = hg2git.IncrementalChangesetExporter(
-                self.repo, pctx, self.git.object_store, gitcommit
+                self.repo, repo[pnode], self.git.object_store, gitcommit
             )
 
             mapsavefreq = self.ui.configint(b'hggit', b'mapsavefrequency')
             with self.repo.ui.makeprogress(
                 b'exporting', total=total
             ) as progress:
-                for i, ctx in enumerate(export, 1):
-                    progress.increment(item=short(ctx.node()))
-                    self.export_hg_commit(ctx.node(), exporter)
+                for i, node in enumerate(export, 1):
+                    progress.increment(item=short(node))
+                    self.export_hg_commit(node, exporter)
                     if mapsavefreq and i % mapsavefreq == 0:
                         self.save_map(self.map_file)
 
