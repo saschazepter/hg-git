@@ -69,7 +69,9 @@ Broken due to bug #977 in Dulwich
   $ fn_hg_commit -A -m baz
   $ hg push || cat $TESTTMP/dulwich.log
   \r (no-eol) (esc)
-  searching commits 1/1 daf1ae153bf8         [=============>]\r (no-eol) (esc)
+  searching commits 1/3 c4d188f6e13d         [===>          ]\r (no-eol) (esc)
+  searching commits 2/3 221dd250e933         [========>     ]\r (no-eol) (esc)
+  searching commits 3/3 daf1ae153bf8         [=============>]\r (no-eol) (esc)
                                                               \r (no-eol) (esc)
   \r (no-eol) (esc)
   exporting 1/1 daf1ae153bf8         [=====================>]\r (no-eol) (esc)
