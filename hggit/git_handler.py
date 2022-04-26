@@ -447,7 +447,7 @@ class GitHandler(object):
         else:
             return dh + 1
 
-    def export_commits(self, revs=None):
+    def export_commits(self, revs):
         try:
             exportable = self.export_git_objects(revs)
             self.update_references(exportable)
@@ -608,7 +608,6 @@ class GitHandler(object):
 
     # incoming support
     def getremotechanges(self, remote, revs):
-        self.export_commits()
         result = self.fetch_pack(remote.path, revs)
 
         # refs contains all remote refs. Prune to only those requested.
