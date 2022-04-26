@@ -656,37 +656,39 @@ class GitHandler(object):
                     export.append(ctx)
 
             total = len(export)
-            if not total:
-                return
 
         self.ui.note(_(b"exporting %d changesets\n") % total)
 
-        # By only exporting deltas, the assertion is that all previous objects
-        # for all other changesets are already present in the Git repository.
-        # This assertion is necessary to prevent redundant work. Here, nodes,
-        # and therefore export, is in topological order. By definition,
-        # export[0]'s parents must be present in Git, so we start the
-        # incremental exporter from there.
-        pctx = export[0].p1()
-        pnode = pctx.node()
-        if pnode == nullid:
-            gitcommit = None
-        else:
-            gitsha = self._map_hg[hex(pnode)]
-            with util.abort_push_on_keyerror():
-                gitcommit = self.git[gitsha]
+        if total:
+            # By only exporting deltas, the assertion is that all
+            # previous objects for all other changesets are already
+            # present in the Git repository. This assertion is
+            # necessary to prevent redundant work. Here, nodes, and
+            # therefore export, is in topological order. By
+            # definition, export[0]'s parents must be present in Git,
+            # so we start the incremental exporter from there.
+            pctx = export[0].p1()
+            pnode = pctx.node()
+            if pnode == nullid:
+                gitcommit = None
+            else:
+                gitsha = self._map_hg[hex(pnode)]
+                with util.abort_push_on_keyerror():
+                    gitcommit = self.git[gitsha]
 
-        exporter = hg2git.IncrementalChangesetExporter(
-            self.repo, pctx, self.git.object_store, gitcommit
-        )
+            exporter = hg2git.IncrementalChangesetExporter(
+                self.repo, pctx, self.git.object_store, gitcommit
+            )
 
-        mapsavefreq = self.ui.configint(b'hggit', b'mapsavefrequency')
-        with self.repo.ui.makeprogress(b'exporting', total=total) as progress:
-            for i, ctx in enumerate(export, 1):
-                progress.increment(item=short(ctx.node()))
-                self.export_hg_commit(ctx.node(), exporter)
-                if mapsavefreq and i % mapsavefreq == 0:
-                    self.save_map(self.map_file)
+            mapsavefreq = self.ui.configint(b'hggit', b'mapsavefrequency')
+            with self.repo.ui.makeprogress(
+                b'exporting', total=total
+            ) as progress:
+                for i, ctx in enumerate(export, 1):
+                    progress.increment(item=short(ctx.node()))
+                    self.export_hg_commit(ctx.node(), exporter)
+                    if mapsavefreq and i % mapsavefreq == 0:
+                        self.save_map(self.map_file)
 
     # convert this commit into git objects
     # go through the manifest, convert all blobs/trees we don't have
