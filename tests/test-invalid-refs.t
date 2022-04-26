@@ -26,13 +26,13 @@ Load commonly used test logic
   $ hg book -r . epsil*on
 
   $ hg gexport
-  warning: not exporting tag 'bet*a' due to invalid name
   warning: not exporting bookmark 'epsil*on' due to invalid name
+  warning: not exporting tag 'bet*a' due to invalid name
 
   $ hg push
   pushing to $TESTTMP/gitrepo
-  warning: not exporting tag 'bet*a' due to invalid name
   warning: not exporting bookmark 'epsil*on' due to invalid name
+  warning: not exporting tag 'bet*a' due to invalid name
   searching for changes
   adding objects
   added 3 commits with 3 trees and 3 blobs
