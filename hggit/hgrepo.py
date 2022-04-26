@@ -5,7 +5,9 @@ import io
 from mercurial import bundle2
 from mercurial import exchange
 from mercurial import exthelper
+from mercurial import hg
 from mercurial import repoview
+from mercurial import streamclone
 from mercurial import util as hgutil
 from mercurial.node import bin, hex
 
@@ -147,6 +149,53 @@ def _addpartsfromopts(orig, ui, repo, bundler, source, outgoing, opts):
     ):
         addpartrevgitmap(repo, bundler, outgoing)
         addpartrevgittags(repo, bundler, outgoing)
+
+
+if hasattr(streamclone, '_v2_walk'):
+    # added in mercurial 5.9
+    @eh.wrapfunction(streamclone, '_v2_walk')
+    def _v2_walk(orig, repo, *args, **kwargs):
+        entries, totalfilesize = orig(repo, *args, **kwargs)
+
+        if repo.ui.configbool(b'experimental', b'hg-git-serve'):
+            for fn in (repo.githandler.map_file, repo.githandler.tags_file):
+                totalfilesize += repo.svfs.lstat(fn).st_size
+                entries.append(
+                    (streamclone._srcstore, fn, streamclone._filefull, None),
+                )
+
+        return entries, totalfilesize
+
+else:
+
+    @eh.reposetup
+    def add_files_to_copylist(ui, repo):
+        if hasattr(repo, 'store'):
+
+            class hggitstore(repo.store.__class__):
+                def copylist(self):
+                    fns = super().copylist()
+
+                    if repo.ui.configbool(b'experimental', b'hg-git-serve'):
+                        fns += [
+                            b'store/' + repo.githandler.map_file,
+                            b'store/' + repo.githandler.tags_file,
+                        ]
+
+                    return fns
+
+            repo.store.__class__ = hggitstore
+
+
+@eh.wrapfunction(bundle2, 'getrepocaps')
+def getrepocaps(orig, repo, **kwargs):
+    caps = orig(repo, **kwargs)
+
+    if repo.ui.configbool(b'experimental', b'hg-git-serve'):
+        caps[CAPABILITY_MAP] = ()
+        caps[CAPABILITY_TAGS] = ()
+
+    return caps
 
 
 @eh.extsetup
