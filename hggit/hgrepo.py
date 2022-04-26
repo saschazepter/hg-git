@@ -28,7 +28,7 @@ def reposetup(ui, repo):
         @util.transform_notgit
         def findoutgoing(self, remote, base=None, heads=None, force=False):
             if isinstance(remote, gitrepo):
-                base, heads = self.githandler.get_refs(remote.path)
+                base, heads = self.githandler.get_refs(remote.path, heads)
                 out, h = super().findoutgoing(remote, base, heads, force)
                 return out
             else:  # pragma: no cover
