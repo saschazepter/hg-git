@@ -449,9 +449,9 @@ class GitHandler(object):
 
     def export_commits(self):
         try:
-            self.export_git_objects()
-            self.export_hg_tags()
-            return self.update_references()
+            exportable = self.export_git_objects()
+            self.update_references(exportable)
+            return exportable
         finally:
             self.save_map(self.map_file)
 
@@ -638,6 +638,7 @@ class GitHandler(object):
         self.ui.note(_(b"finding unexported changesets\n"))
         repo = self.repo
         clnode = repo.changelog.node
+        exportable = self.get_exportable()
 
         nodes = (clnode(n) for n in repo)
         to_export = (
@@ -689,6 +690,8 @@ class GitHandler(object):
                     self.export_hg_commit(ctx.node(), exporter)
                     if mapsavefreq and i % mapsavefreq == 0:
                         self.save_map(self.map_file)
+
+        return exportable
 
     # convert this commit into git objects
     # go through the manifest, convert all blobs/trees we don't have
@@ -1530,11 +1533,12 @@ class GitHandler(object):
                 ):
                     self.ui.warn(b"warning: cannot update '%s'\n" % ref)
                 elif ref not in refs:
-                    gitobj = self.git.get_object(self.git.refs[ref])
-                    if isinstance(gitobj, Tag):
-                        new_refs[ref] = gitobj.id
-                    else:
-                        new_refs[ref] = self.map_git_get(ctx.hex())
+                    gitsha = self.map_git_get(ctx.hex())
+                    if ref in self.git.refs:
+                        gitobj = self.git.get_object(self.git.refs[ref])
+                        if isinstance(gitobj, Tag):
+                            gitsha = gitobj.id
+                    new_refs[ref] = gitsha
                 elif new_refs[ref] in self._map_git:
                     rctx = unfiltered[self.map_hg_get(new_refs[ref])]
                     if rctx.ancestor(ctx) == rctx or force:
@@ -1694,8 +1698,8 @@ class GitHandler(object):
             if check_min_time(self.git[sha])
         )
 
-    def update_references(self):
-        exportable = self.get_exportable()
+    def update_references(self, exportable):
+        new_refs = {}
 
         # Create a local Git branch name for each
         # Mercurial bookmark.
@@ -1705,34 +1709,13 @@ class GitHandler(object):
                 # prior to 0.20.22, dulwich couldn't handle refs
                 # pointing to missing objects, so don't add them
                 if git_sha and git_sha in self.git:
-                    util.set_refs(self.ui, self.git, {git_ref: git_sha})
+                            new_refs[git_ref] = git_sha
 
-        return exportable
-
-    def export_hg_tags(self):
-        new_refs = {}
-
-        for tag, sha in self.repo.tags().items():
-            if self.repo.tagtype(tag) in (b'global', b'git'):
-                tag = tag.replace(b' ', b'_')
-                target = self.map_git_get(hex(sha))
-
-                if target is None:
-                    self.repo.ui.warn(
-                        b"warning: not exporting tag '%s' "
-                        b"due to missing git "
-                        b"revision\n" % tag
-                    )
-                    continue
-
-                tag_refname = LOCAL_TAG_PREFIX + tag
-
-                if not check_ref_format(tag_refname):
-                    self.repo.ui.warn(
-                        b"warning: not exporting tag '%s' "
-                        b"due to invalid name\n" % tag
-                    )
-                    continue
+        # And similarly, for tags
+        for sha, heads_tags in exportable.items():
+            for tag_refname in heads_tags.tags:
+                tag = tag_refname[len(LOCAL_TAG_PREFIX) :]
+                target = self.map_git_get(sha)
 
                 # check whether the tag already exists and is
                 # annotated
@@ -1754,9 +1737,11 @@ class GitHandler(object):
                         # and never overwrite annotated tags,
                         # otherwise it'd happen on every pull
                         target = reftarget
+                        sha = self.map_hg_get(peeledtarget)
 
-                new_refs[tag_refname] = target
-                self.tags[tag] = hex(sha)
+                if target is not None:
+                    new_refs[tag_refname] = target
+                self.tags[tag] = sha
 
         if new_refs:
             util.set_refs(self.ui, self.git, new_refs)
@@ -1795,8 +1780,21 @@ class GitHandler(object):
                     b"due to invalid name\n" % bm
                 )
 
-        for tag, sha in self.tags.items():
-            res[sha].tags.add(LOCAL_TAG_PREFIX + tag)
+        for tag, sha in self.repo.tags().items():
+            if self.repo.tagtype(tag) in (b'global', b'git'):
+                tag = tag.replace(b' ', b'_')
+
+                tag_refname = LOCAL_TAG_PREFIX + tag
+
+                if not check_ref_format(tag_refname):
+                    self.repo.ui.warn(
+                        b"warning: not exporting tag '%s' "
+                        b"due to invalid name\n" % tag
+                    )
+                    continue
+
+                res[hex(sha)].tags.add(tag_refname)
+
         return res
 
     def import_tags(self, refs):
