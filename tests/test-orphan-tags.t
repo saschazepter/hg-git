@@ -95,6 +95,7 @@ them (#358)
   $ hg push --debug
   pushing to $TESTTMP/repo.git
   finding unexported changesets
+  exporting 0 changesets
   saving git map to $TESTTMP/hgrepo/.hg/git-mapfile
   searching for changes
   1 commits found

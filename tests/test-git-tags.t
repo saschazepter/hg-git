@@ -107,6 +107,7 @@ Create a git tag from hg
   $ hg tag --git alpha --debug -r 0
   adding git tag alpha
   finding unexported changesets
+  exporting 0 changesets
   saving git map to $TESTTMP/hgrepo/.hg/git-mapfile
   $ hg log --graph
   @  changeset:   1:7fe02317c63d
