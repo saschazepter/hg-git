@@ -36,8 +36,9 @@ Load commonly used test logic
 
   $ hg book -r 1 beta
 
-  $ hg outgoing | grep -v 'searching for changes'
+  $ hg outgoing
   comparing with $TESTTMP/gitrepo
+  searching for changes
   changeset:   1:47580592d3d6
   bookmark:    beta
   user:        test

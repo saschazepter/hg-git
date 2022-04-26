@@ -447,16 +447,16 @@ class GitHandler(object):
         else:
             return dh + 1
 
-    def export_commits(self):
+    def export_commits(self, revs=None):
         try:
-            exportable = self.export_git_objects()
+            exportable = self.export_git_objects(revs)
             self.update_references(exportable)
             return exportable
         finally:
             self.save_map(self.map_file)
 
-    def get_refs(self, remote):
-        exportable = self.export_commits()
+    def get_refs(self, remote, heads):
+        exportable = self.export_commits(heads)
         old_refs = {}
         new_refs = {}
 
@@ -634,15 +634,24 @@ class GitHandler(object):
 
     # CHANGESET CONVERSION METHODS
 
-    def export_git_objects(self):
+    def export_git_objects(self, heads):
         self.ui.note(_(b"finding unexported changesets\n"))
         repo = self.repo
-        clnode = repo.changelog.node
         exportable = self.get_exportable()
 
-        nodes = (clnode(n) for n in repo)
+        if heads is None:
+            heads = map(bin, exportable)
+
+        ancestors = sorted(
+            repo.changelog.ancestors(
+                map(repo.changelog.rev, heads), inclusive=True
+            )
+        )
+
         to_export = (
-            repo[node] for node in nodes if not hex(node) in self._map_hg
+            repo[node]
+            for node in map(repo.changelog.node, ancestors)
+            if not hex(node) in self._map_hg
         )
 
         todo_total = len(repo) - len(self._map_hg)
@@ -1381,7 +1390,7 @@ class GitHandler(object):
                 b"branch_bookmark_suffix is set",
             )
 
-        all_exportable = self.export_commits()
+        all_exportable = self.export_commits(revs)
         old_refs = {}
         change_totals = {}
 
@@ -1836,7 +1845,7 @@ class GitHandler(object):
                     b"the name '%s' is not a valid git " b"tag" % tag
                 )
 
-        self.export_commits()
+        self.export_commits([bin(target)])
         self.save_tags()
 
     def _get_ref_nodes(self, remote_names, refs):

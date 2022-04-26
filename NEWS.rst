@@ -27,6 +27,11 @@ Enhancements:
     default:pushurl = git+ssh://git@github.com/example
     default:hg-git.publish = yes
 
+* Add ``-r``/``--rev`` option to ``git-export`` to select which
+  commits to export. If unspecified, the command will default to
+  exporting *everything*, as was the previous behaviour.
+* Don't export irrelevant commits during a push.
+
 This release requires Mercurial 5.4 or later and Python 3.7 or later.
 
 hg-git 1.0.2 (unreleased)

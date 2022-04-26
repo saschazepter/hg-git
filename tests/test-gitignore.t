@@ -26,6 +26,7 @@ directory) otherwise, a rogue .gitignore could slow down a hg-only repo
 Notice that foo appears above. Now export the commit to git and verify
 it's gone:
 
+  $ hg book -r tip master
   $ hg gexport
   $ hg status
   ? .gitignore

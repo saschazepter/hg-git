@@ -48,9 +48,19 @@ def gimport(ui, repo, remote_name=None):
 
 @eh.command(
     b'git-export|gexport',
+    [
+        (
+            b'r',
+            b'rev',
+            [],
+            _(b'a changeset intended to be converted'),
+            _(b'REV'),
+        ),
+    ],
+    _(b'[-r REV]'),
     helpcategory=registrar.command.CATEGORY_IMPORT_EXPORT,
 )
-def gexport(ui, repo):
+def gexport(ui, repo, rev):
     '''export commits from Mercurial to Git (ADVANCED)
 
     This command is equivalent to pushing to a Git source, but without
@@ -61,7 +71,8 @@ def gexport(ui, repo):
     it ensures that all changesets have a corresponding Git node.
 
     '''
-    repo.githandler.export_commits()
+
+    repo.githandler.export_commits([repo.lookup(r) for r in rev] or None)
 
 
 @eh.command(

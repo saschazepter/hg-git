@@ -17,6 +17,7 @@ Create a commit and export it to Git
   $ touch thefile
   $ hg add thefile
   $ hg ci -A -m commit
+  $ hg book -r tip master
   $ hg gexport
 
 Create a file that we can ignore
