@@ -221,6 +221,10 @@ class GitHandler(object):
         return self.store_repo.vfs
 
     @property
+    def store_vfs(self):
+        return self.store_repo.store.vfs
+
+    @property
     def is_clone(self):
         """detect whether the current operation is an 'hg clone'"""
         # a bit of a hack, but it has held true for quite some time
@@ -304,22 +308,33 @@ class GitHandler(object):
         return self._map_hg.get(hgsha)
 
     def load_map(self):
-        map_git_real = {}
-        map_hg_real = {}
         if os.path.exists(self.vfs.join(self.map_file)):
-            for line in self.vfs(self.map_file):
-                # format is <40 hex digits> <40 hex digits>\n
-                if len(line) != 82:
-                    raise ValueError(
-                        _(b'corrupt mapfile: incorrect line length %d')
-                        % len(line)
-                    )
-                gitsha = line[:40]
-                hgsha = line[41:81]
-                map_git_real[gitsha] = hgsha
-                map_hg_real[hgsha] = gitsha
-        self._map_git_real = map_git_real
-        self._map_hg_real = map_hg_real
+            maps = self._read_map_from(self.vfs(self.map_file))
+        elif os.path.exists(self.store_vfs.join(self.map_file)):
+            maps = self._read_map_from(self.store_vfs(self.map_file))
+        else:
+            maps = {}, {}
+
+        self._map_hg_real, self._map_git_real = maps
+
+    @staticmethod
+    def _read_map_from(fp):
+        map_git = {}
+        map_hg = {}
+
+        for line in fp:
+            # format is <40 hex digits> <40 hex digits>\n
+            if len(line) != 82:
+                raise ValueError(
+                    _(b'corrupt mapfile: incorrect line length %d') % len(line)
+                )
+
+            gitsha = line[:40]
+            hgsha = line[41:81]
+            map_hg[hgsha] = gitsha
+            map_git[gitsha] = hgsha
+
+        return map_hg, map_git
 
     def save_map(self):
         self.ui.debug(
@@ -330,26 +345,39 @@ class GitHandler(object):
             with self.vfs(self.map_file, b'wb+', atomictemp=True) as fp:
                 self._write_map_to(fp)
 
+            with self.store_vfs(self.map_file, b'wb+', atomictemp=True) as fp:
+                self._write_map_to(fp)
+
     def _write_map_to(self, fp):
         bwrite = fp.write
         for hgsha, gitsha in self._map_hg.items():
             bwrite(b"%s %s\n" % (gitsha, hgsha))
 
     def load_tags(self):
-        self.tags = {}
         if os.path.exists(self.vfs.join(self.tags_file)):
             with self.vfs(self.tags_file) as fp:
-                self._read_tags_from(fp)
+                self.tags = self._read_tags_from(fp)
+        elif os.path.exists(self.store_vfs.join(self.tags_file)):
+            with self.store_vfs(self.tags_file) as fp:
+                self.tags = self._read_tags_from(fp)
+        else:
+            self.tags = {}
 
     def _read_tags_from(self, fp):
+        tags = {}
+
         for line in fp:
             sha, name = line.strip().split(b' ', 1)
             if sha in self.repo.unfiltered():
-                    self.tags[name] = sha
+                tags[name] = sha
+
+        return tags
 
     def save_tags(self):
         with self.repo.lock():
             with self.vfs(self.tags_file, b'w+', atomictemp=True) as fp:
+                self._write_tags_to(fp)
+            with self.store_vfs(self.tags_file, b'w+', atomictemp=True) as fp:
                 self._write_tags_to(fp)
 
     def _write_tags_to(self, fp):
@@ -611,14 +639,15 @@ class GitHandler(object):
         return ret
 
     def clear(self):
-        mapfile = self.vfs.join(self.map_file)
-        tagsfile = self.vfs.join(self.tags_file)
         if os.path.exists(self.gitdir):
             shutil.rmtree(self.gitdir)
-        if os.path.exists(mapfile):
-            os.remove(mapfile)
-        if os.path.exists(tagsfile):
-            os.remove(tagsfile)
+        for vfs in (self.vfs, self.store_vfs):
+            mapfile = vfs.join(self.map_file)
+            tagsfile = vfs.join(self.tags_file)
+            if os.path.exists(mapfile):
+                os.remove(mapfile)
+            if os.path.exists(tagsfile):
+                os.remove(tagsfile)
 
     # incoming support
     def getremotechanges(self, remote, revs):
