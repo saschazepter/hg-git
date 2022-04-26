@@ -10,6 +10,10 @@ from . import compat
 eh = exthelper.exthelper()
 
 CONFIG_DEFAULTS = {
+    b'experimental': {
+        b'hg-git-bundle': False,
+        b'hg-git-serve': False,
+    },
     b'git': {
         b'authors': None,
         b'branch_bookmark_suffix': None,
