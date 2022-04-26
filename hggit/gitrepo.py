@@ -150,12 +150,14 @@ def safebranchrevs(orig, lrepo, otherrepo, branches, revs):
 @eh.wrapfunction(discovery, b'findcommonoutgoing')
 def findcommonoutgoing(orig, repo, other, *args, **kwargs):
     if isinstance(other, gitrepo):
-        heads = repo.githandler.get_refs(other.path)[0]
         kw = kwargs.copy()
         for val, k in zip(
             args, ('onlyheads', 'force', 'commoninc', 'portable')
         ):
             kw[k] = val
+        heads = repo.githandler.get_refs(
+            other.path, kw.get('onlyheads') or None
+        )[0]
         force = kw.get('force', False)
         commoninc = kw.get('commoninc', None)
         if commoninc is None:
