@@ -56,9 +56,13 @@ copying/linking clone
   $ hg clone -U hgrepo otherhgrepo
   $ cd otherhgrepo
   $ find .hg -name 'git*' | sort
+  .hg/store/git-mapfile
+  .hg/store/git-tags
   $ hg tags -q
   tip
+  alpha
   $ hg log -r 'fromgit()' -T '{rev}:{node|short} {gitnode|short}\n'
+  0:ff7a2f2d8d70 7eeab2ea75ec
   $ cd ..
 
 Checking using a pull clone
