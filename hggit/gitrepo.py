@@ -151,8 +151,7 @@ def safebranchrevs(orig, lrepo, otherrepo, branches, revs):
 def findcommonoutgoing(orig, repo, other, *args, **kwargs):
     if isinstance(other, gitrepo):
         heads = repo.githandler.get_refs(other.path)[0]
-        kw = {}
-        kw.update(kwargs)
+        kw = kwargs.copy()
         for val, k in zip(
             args, ('onlyheads', 'force', 'commoninc', 'portable')
         ):
