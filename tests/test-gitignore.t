@@ -1,8 +1,8 @@
 Load commonly used test logic
   $ . "$TESTDIR/testutil"
 
-  $ hg init repo
-  $ cd repo
+  $ hg init hgrepo
+  $ cd hgrepo
 
 Create a commit that we can export later on
 
@@ -155,10 +155,12 @@ it's gone:
   ? dir/bar
   ? foo
   ? foobar
+  $ cd ..
 
 show pattern error in hgignore file as expected (issue197)
 ----------------------------------------------------------
 
+  $ cd hgrepo
   $ cat > $TESTTMP/invalidhgignore <<EOF
   > # invalid syntax in regexp
   > foo(
@@ -172,5 +174,41 @@ show pattern error in hgignore file as expected (issue197)
   > foo(
   > EOF
   $ hg status
-  abort: $TESTTMP/repo/.hgignore: invalid pattern (relre): foo(
+  abort: $TESTTMP/hgrepo/.hgignore: invalid pattern (relre): foo(
   [255]
+  $ cd ..
+
+check behaviour with worktree
+-----------------------------
+
+  $ git init -q --bare repo.git
+  $ cd hgrepo
+  $ hg book -r tip master
+  $ hg push ../repo.git
+  pushing to ../repo.git
+  searching for changes
+  adding objects
+  remote: found 0 deltas to reuse (dulwich0210 !)
+  added 2 commits with 2 trees and 2 blobs
+  adding reference refs/heads/master
+  $ cd ..
+  $ hg --config hggit.worktree=yes clone repo.git worktree
+  importing 2 git commits
+  new changesets 69cb9b83bde4:c6a4b5109a96 (2 drafts)
+  updating to bookmark master (hg57 !)
+  updating to branch default (no-hg57 !)
+  2 files updated, 0 files merged, 0 files removed, 0 files unresolved
+  $ cd worktree
+  $ ls -A
+  .git
+  .gitignore
+  .hg
+  thefile
+  $ hg st
+  ? .git
+  $ hg --config hggit.worktree=yes st
+  $ git status
+  On branch master
+  nothing to commit, working tree clean
+  $ cd ..
+  $ rm -rf worktree

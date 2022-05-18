@@ -2,7 +2,7 @@ from __future__ import generator_stop
 
 import os
 
-import dulwich
+import dulwich.ignore
 
 from mercurial import bookmarks
 from mercurial.node import hex
@@ -48,6 +48,8 @@ def update_worktree(repo):
 
         if not has_head:
             del gh.git.refs[b"HEAD"]
+
+        gh.git._put_named_file(os.path.join("info", "exclude"), b"/.hg\n")
 
     if bookmarks.isactivewdirparent(repo):
         bookmark = repo._bookmarks._active

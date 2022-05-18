@@ -96,6 +96,9 @@ class gitdirstate(dirstate.dirstate):
             if name == b'ignore' or name.startswith(b'ignore.'):
                 files.append(util.expandpath(path))
         patterns = []
+        # Suppress .git when located in repository root
+        if self._ui.configbool(b"hggit", b"worktree"):
+            patterns.append(br"re:^\.git$")
         # Only use .gitignore if there's no .hgignore
         if not os.access(files[0], os.R_OK):
             for fn in self._finddotgitignores():
