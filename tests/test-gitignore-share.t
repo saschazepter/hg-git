@@ -29,7 +29,7 @@ Load commonly used test logic
 
 We should also ignore the file in a shared repository:
 
-  $ hg share hgrepo sharerepo
+  $ hg share --bookmarks hgrepo sharerepo
   updating working directory
   1 files updated, 0 files merged, 0 files removed, 0 files unresolved
   $ cd sharerepo
@@ -39,3 +39,17 @@ We should also ignore the file in a shared repository:
   ignored
   $ touch ignored
   $ hg status
+
+check behaviour with worktree
+
+  $ hg up null
+  0 files updated, 0 files merged, 1 files removed, 0 files unresolved
+  $ hg --config hggit.worktree=yes up master
+  1 files updated, 0 files merged, 0 files removed, 0 files unresolved
+  (activating bookmark master)
+  $ hg st
+  ? .git
+  $ hg --config hggit.worktree=yes st
+  $ git status
+  On branch master
+  nothing to commit, working tree clean
