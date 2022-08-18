@@ -2113,8 +2113,21 @@ class GitHandler(object):
 
         return list(names)
 
+    def invalid_hg_path(self, path):
+        if b'\r' in path or b'\n' in path:
+            return True
+
+        segments = path.split(b'/')
+        if b'.hg' in segments or b'ee' in segments:
+            return True
+
+        fname = segments[-1]
+        rx = re.compile(br'archive-.*ee.md')
+        if fname == 'CHANGELOG-EE.md' or rx.match(fname):
+            return True
+
     def audit_hg_path(self, path):
-        if b'.hg' in path.split(b'/') or b'\r' in path or b'\n' in path:
+        if self.invalid_hg_path(path):
             ui = self.ui
 
             # escape the path when printing it out
