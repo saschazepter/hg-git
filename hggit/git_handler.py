@@ -1016,6 +1016,55 @@ class GitHandler(object):
         else:
             self.ui.status(_(b"no changes found\n"))
 
+        max_import = 18000
+        if total > max_import:
+            raise error.Abort(b"Refusing to import more than %d commits, "
+                              b"as this is a sign that something is wrong "
+                              b"and we may actually import beyond "
+                              b"v14.10.0-rc42-ee^, the grafting point "
+                              b"decided for heptapod#689. You may want "
+                              b"to lift this restriction after careful "
+                              b"inspection" % max_import)
+
+        # forbidden commits are the branching points (parents on master)
+        # of all v14 stable branches. This is another layer of protection
+        # against importing beyond the branching point of heptapod#689
+        # It wouldn't work in the case of a feature branch started before
+        # v14 and merged as-is in master after v15.1 (latest version imported
+        # and checked manually while doing heptapod#689), but
+        #
+        # 1. we also have the protection at 1000 commits
+        # 2. it's quite implausible such an old branch would have been
+        #    accepted without a rebase (although master could have also
+        #    been merged into it first, this has happened for some, much
+        #    closer than that to the heptapod#689 branching point)
+        # found with: `git log --all --format='%H %P %d'
+        #              | grep -E 'tag:\s+v14[.].+[.]0-rc42'`
+        forbidden_commits = {
+            b'7195dbc1e1531fe4b928aee858ee1e1070ef3806',
+            b'2596f9524a5abdf5c668fa941803299d9332b97a',
+            b'a3a124db89bdbed8c69b9ad0cd3781c5bc514098',
+            b'bbf52b48f4da037b4a382fb72d8cab5a26654e51',
+            b'f8495767c58bff696d0f20419e7ab20fd389fdb8',
+            b'36e9d9f3eb92c8700aa0fd6001389085ac5862da',
+            b'03ef2912ee9f45e63f18a6c3631bc4c2a3de528e',
+            b'dbf27167e5ba945e568e19fbdfc378dcf0691ba0',
+            b'a14946fdb3ca54681ef38c307719fb633f3aab21',
+            b'a9593d19e440c630bcef4e628f62ccf7e000d18e',
+            b'b0610d1223cc7726f419fe5c2eaf1c21bd8ae14d',
+        }
+
+        for commit in commits:
+            if commit.sha in forbidden_commits:
+                raise error.Abort(
+                    b"Refusing to import forbidden commit "
+                    b"%s, as it is before the branching point "
+                    b"of heptapod#689. This means that an "
+                    b"anterior ramification has to be "
+                    b"converted as done in the course "
+                    b"of heptapod#689 to avoid pulling "
+                    b"most of the upstream history." % commit.sha)
+
         # don't bother saving the map if we're in a clone, as Mercurial
         # deletes the repository on errors
         if self.is_clone:
@@ -1237,6 +1286,14 @@ class GitHandler(object):
                 copied = fc.renamed()
                 if copied:
                     copied_path = copied[0]
+
+            if f in (b'VERSION',
+                     b'GITLAB_WORKHORSE_VERSION',
+                     b'workhorse/VERSION'
+                     ):
+                if data.endswith(b'-ee'):
+                    self.repo.ui.warn(b"Removing ee suffix from %r\n" % f)
+                    data = data[:-3]
 
             return context.memfilectx(
                 unfiltered,
@@ -2116,6 +2173,18 @@ class GitHandler(object):
     def invalid_hg_path(self, path):
         if b'\r' in path or b'\n' in path:
             return True
+
+        if path in (b'.tool-versions',
+                    b'vendor/gems/mail-smtp_pool/Gemfile.lock',
+                    b'.vscode/extensions.json',
+                    ):
+            return True
+
+        if path in (
+                # file present in gitlab-foss despite the name of its dir
+                b'fixtures/lib/gitlab/graphql/queries/ee/author.fragment.graphql',
+        ):
+            return False
 
         segments = path.split(b'/')
         if b'.hg' in segments or b'ee' in segments:
