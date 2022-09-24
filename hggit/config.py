@@ -24,6 +24,7 @@ CONFIG_DEFAULTS = {
         b'usephases': False,
         b'retries': 3,
         b'invalidpaths': b'skip',
+        b'heptapod-rails-exclude-ee': False,
     },
 }
 

@@ -193,6 +193,8 @@ class GitHandler(object):
         # tried an unauthenticated request, gotten a realm, and are now
         # ready to prompt the user, if necessary
         self._http_auth_realm = None
+        self.heptapod_rails = self.ui.configbool(
+            b'hggit', b'heptapod-rails')
 
     @property
     def vfs(self):
@@ -1004,18 +1006,9 @@ class GitHandler(object):
         else:
             return None, None
 
-    def import_git_objects(self, remote_names, refs, heads=None):
-        filteredrefs = self.filter_min_date(refs)
-        if heads is not None:
-            filteredrefs = git2hg.filter_refs(filteredrefs, heads)
-        commits = self.get_git_incoming(filteredrefs)
-        # import each of the commits, oldest first
+    def heptapod_rails_check_commits(self, commits):
+        """Protect Heptapod Rails conversion against grave errors."""
         total = len(commits)
-        if total:
-            self.ui.status(_(b"importing %d git commits\n") % total)
-        else:
-            self.ui.status(_(b"no changes found\n"))
-
         max_import = 18000
         if total > max_import:
             raise error.Abort(b"Refusing to import more than %d commits, "
@@ -1064,6 +1057,21 @@ class GitHandler(object):
                     b"converted as done in the course "
                     b"of heptapod#689 to avoid pulling "
                     b"most of the upstream history." % commit.sha)
+
+    def import_git_objects(self, remote_names, refs, heads=None):
+        filteredrefs = self.filter_min_date(refs)
+        if heads is not None:
+            filteredrefs = git2hg.filter_refs(filteredrefs, heads)
+        commits = self.get_git_incoming(filteredrefs)
+        # import each of the commits, oldest first
+        total = len(commits)
+        if total:
+            self.ui.status(_(b"importing %d git commits\n") % total)
+        else:
+            self.ui.status(_(b"no changes found\n"))
+
+        if self.heptapod_rails:
+            self.heptapod_rails_check_commits(commits)
 
         # don't bother saving the map if we're in a clone, as Mercurial
         # deletes the repository on errors
@@ -1287,7 +1295,7 @@ class GitHandler(object):
                 if copied:
                     copied_path = copied[0]
 
-            if f in (b'VERSION',
+            if self.heptapod_rails and f in (b'VERSION',
                      b'GITLAB_WORKHORSE_VERSION',
                      b'workhorse/VERSION'
                      ):
@@ -2171,8 +2179,13 @@ class GitHandler(object):
         return list(names)
 
     def invalid_hg_path(self, path):
-        if b'\r' in path or b'\n' in path:
+        segments = path.split(b'/')
+        if b'\r' in path or b'\n' in path or b'.hg' in segments:
             return True
+
+        # remaining conditions are for Heptapod Rails, from GitLab EE repo
+        if not self.heptapod_rails:
+            return False
 
         if path in (b'.tool-versions',
                     b'vendor/gems/mail-smtp_pool/Gemfile.lock',
@@ -2186,8 +2199,7 @@ class GitHandler(object):
         ):
             return False
 
-        segments = path.split(b'/')
-        if b'.hg' in segments or b'ee' in segments:
+        if b'ee' in segments:
             return True
 
         fname = segments[-1]
