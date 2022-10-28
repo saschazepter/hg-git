@@ -216,8 +216,10 @@ And we can delete them again afterwards:
 Push empty Hg repo to empty Git repo (issue #58)
   $ hg init hgrepo2
   $ git init -q --bare repo.git
-  $ hg -R hgrepo2 push repo.git
+  $ hg -R hgrepo2 push -v repo.git
   pushing to repo.git
+  finding unexported changesets
+  exporting 0 changesets
   searching for changes
   abort: no bookmarks or tags to push to git
   (see "hg help bookmarks" for details on creating them)

@@ -8,8 +8,9 @@ import shutil
 import tempfile
 
 from dulwich.errors import HangupException, GitProtocolError, ApplyDeltaError
+from dulwich.object_store import MemoryObjectStore, OverlayObjectStore
 from dulwich.objects import Blob, Commit, Tag, Tree, parse_timezone
-from dulwich.pack import create_delta, apply_delta
+from dulwich.pack import PackData, PackInflater, create_delta, apply_delta
 from dulwich.refs import (
     ANNOTATED_TAG_SUFFIX,
     LOCAL_BRANCH_PREFIX,
@@ -608,7 +609,12 @@ class GitHandler(object):
 
     # incoming support
     def getremotechanges(self, remote, revs):
-        result = self.fetch_pack(remote.path, revs)
+        memory_store = MemoryObjectStore()
+        overlay_store = OverlayObjectStore(
+            [self.git.object_store, memory_store],
+            memory_store,
+        )
+        result = self.fetch_pack(remote.path, revs, overlay_store)
 
         # refs contains all remote refs. Prune to only those requested.
         if revs:
@@ -623,11 +629,13 @@ class GitHandler(object):
         commits = [
             c.node
             for c in self.get_git_incoming(
-                reqrefs, self.remote_names(remote.path, push=False)
+                reqrefs,
+                self.remote_names(remote.path, push=False),
+                store=overlay_store,
             )
         ]
 
-        b = overlayrepo(self, commits, result.refs)
+        b = overlayrepo(self, overlay_store, commits, result.refs)
 
         return (b, commits, lambda: None)
 
@@ -1003,10 +1011,10 @@ class GitHandler(object):
 
         return message, git_extra
 
-    def get_git_incoming(self, refs, remote_names):
+    def get_git_incoming(self, refs, remote_names, store=None):
         return git2hg.find_incoming(
             self.ui,
-            self.git.object_store,
+            store or self.git.object_store,
             self._map_git,
             refs,
             remote_names,
@@ -1559,7 +1567,7 @@ class GitHandler(object):
 
         return new_refs
 
-    def fetch_pack(self, remote, heads=None):
+    def fetch_pack(self, remote, heads=None, object_store=None):
         # The dulwich default walk only checks refs/heads/. We also want to
         # consider remotes when doing discovery, so we build our own list. We
         # can't just do 'refs/' here because the tag class doesn't have a
@@ -1583,7 +1591,11 @@ class GitHandler(object):
             dir=self.gitdir,
         )
 
-        if self.is_clone and self.gitdir.startswith(self.repo.root):
+        if (
+            object_store is None
+            and self.is_clone
+            and self.gitdir.startswith(self.repo.root)
+        ):
             # if we're in a clone, and the git directory is within the
             # repository just created, so we can use a named temporary
             # file, suitable for moving into the git repository
@@ -1605,7 +1617,15 @@ class GitHandler(object):
             )
 
             if f.tell() != 0:
-                if move:
+                if object_store is not None:
+                    # copied from Dulwich, as memory stores can't load packs :/
+                    f.seek(0)
+                    p = PackData.from_file(f, f.tell())
+                    for obj in PackInflater.for_pack_data(
+                        p, object_store.get_raw
+                    ):
+                        object_store.add_object(obj)
+                elif move:
                     self.ui.debug(b'moving git pack into %s\n' % self.gitdir)
                     # windows might have issues moving an open file?
                     f.close()
