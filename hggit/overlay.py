@@ -39,7 +39,7 @@ def _maybehex(n):
 class overlaymanifest(object):
     def __init__(self, repo, sha):
         self.repo = repo
-        self.tree = repo.handler.git.get_object(sha)
+        self.tree = repo.object_store[sha]
         self._map = None
         self._flags = None
 
@@ -76,7 +76,7 @@ class overlaymanifest(object):
             for entry in tree.items():
                 if entry.mode & 0o40000:
                     # expand directory
-                    subtree = self.repo.handler.git.get_object(entry.sha)
+                    subtree = self.repo.object_store[entry.sha]
                     addtree(subtree, dirname + entry.path + b'/')
                 else:
                     path = dirname + entry.path
@@ -206,7 +206,7 @@ class overlayfilectx(object):
         return self.fileid
 
     def data(self):
-        blob = self._repo.handler.git.get_object(_maybehex(self.fileid))
+        blob = self._repo.object_store[_maybehex(self.fileid)]
         return blob.data
 
     def isbinary(self):
@@ -223,7 +223,7 @@ class overlaychangectx(context.changectx):
             sha = sha.encode('ascii')
         else:
             sha = sha.hex()
-        self.commit = repo.handler.git.get_object(_maybehex(sha))
+        self.commit = repo.object_store[_maybehex(sha)]
         self._overlay = getattr(repo, 'gitoverlay', repo)
         self._rev = self._overlay.rev(bin(self.commit.id))
         self._maybe_filtered = maybe_filtered
@@ -328,7 +328,7 @@ class overlayrevlog(object):
         if gitrev is None:
             # we've reached a revision we have
             return self.base.parents(n)
-        commit = self.repo.handler.git.get_object(_maybehex(n))
+        commit = self.repo.object_store[_maybehex(n)]
 
         if not commit.parents:
             return [nullid, nullid]
@@ -441,8 +441,9 @@ class overlaygithandler(object):
 
 
 class overlayrepo(object):
-    def __init__(self, handler, commits, refs):
+    def __init__(self, handler, object_store, commits, refs):
         self.handler = handler
+        self.object_store = object_store
         self._activebookmark = None
 
         self.changelog = overlaychangelog(self, handler.repo.changelog)

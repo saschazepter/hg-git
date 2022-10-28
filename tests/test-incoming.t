@@ -137,6 +137,11 @@ incoming -r
   summary:     add d/gamma
   
 
+and that shouldn't cause anything to persist in the git repository
+
+  $ hg gimport
+  no changes found
+
 nothing incoming after pull
 
   $ hg pull
