@@ -656,8 +656,8 @@ class GitHandler(object):
             cl = repo.changelog
             for rev in ancestors:
                 node = cl.node(rev)
+                progress.increment(item=short(node))
                 if hex(node) not in self._map_hg:
-                    progress.increment(item=short(node))
                     extra = cl.changelogrevision(rev).extra
 
                     if extra.get(b'hg-git', None) != b'octopus':
