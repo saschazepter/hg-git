@@ -1,10 +1,13 @@
+=======================
 Hg-Git Mercurial Plugin
 =======================
 
-Homepage:
-  https://hg-git.github.io/
-Repository:
+Documentation:
+  http://hg-git.readthedocs.io/
+Mercurial repository:
   https://foss.heptapod.net/mercurial/hg-git
+Git mirror:
+  https://github.com/danchr/hg-git
 Mailing list:
   `hg-git@googlegroups.com <mailto:hg-git@googlegroups.com>`_ (`Google
   Group <https://groups.google.com/g/hg-git>`_)

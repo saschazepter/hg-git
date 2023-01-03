@@ -289,3 +289,14 @@ Wheels:
   artifacts:
     paths:
       - wheelhouse
+
+Documentation:
+  stage: current
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/sphinxdoc/sphinx
+  script:
+  - pip install mercurial
+  - pip install -e .
+  - sphinx-build -b html doc build/sphinx
+  artifacts:
+    paths:
+    - build/sphinx
