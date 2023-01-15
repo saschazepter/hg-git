@@ -1898,11 +1898,13 @@ class GitHandler(object):
                 remote_refs[remote_head] = bin(hgsha)
                 # TODO(durin42): what is this doing?
                 new_ref = REMOTE_BRANCH_PREFIX + remote_head
-                util.set_refs(self.ui, self.git, {new_ref: sha})
+                if self.git.refs.follow(new_ref)[1] != sha:
+                    util.set_refs(self.ui, self.git, {new_ref: sha})
             elif ref_name.startswith(
                 LOCAL_TAG_PREFIX
             ) and not ref_name.endswith(ANNOTATED_TAG_SUFFIX):
-                util.set_refs(self.ui, self.git, {ref_name: sha})
+                if self.git.refs.follow(ref_name)[1] != sha:
+                    util.set_refs(self.ui, self.git, {ref_name: sha})
 
             if hgsha:
                 all_remote_nodeids.append(bin(hgsha))
