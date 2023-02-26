@@ -141,3 +141,38 @@ gimport support for git.mindate
      date:        Mon Jan 01 00:00:10 2007 +0000
      summary:     add alpha
   
+
+
+#if intree
+
+Can we switch back and forth?
+
+  $ hg debugstrip --no-backup master
+  $ hg git-cleanup
+  git commit map cleaned
+  $ hg debug-move-git-repo --config git.intree=no
+  $TESTTMP/gitrepo/.git -> $TESTTMP/gitrepo/.hg/git
+  $ hg debug-move-git-repo --config git.intree=yes
+  $TESTTMP/gitrepo/.hg/git -> $TESTTMP/gitrepo/.git
+
+And what if such a repository already exists, or there's nothing to do?
+
+  $ hg gimport --config git.intree=no
+  warning: created new git repository at $TESTTMP/gitrepo/.hg/git
+  no changes found
+  $ hg debug-move-git-repo
+  abort: refusing to override an existing git repository
+  (a git repository already exists at $TESTTMP/gitrepo/.git)
+  [255]
+  $ rm -rf .hg/git
+  $ hg debug-move-git-repo
+  nothing to do; no git repository exists at $TESTTMP/gitrepo/.hg/git
+
+And the repository survived all that:
+
+  $ hg gimport
+  importing 1 git commits
+  updating bookmark master
+  new changesets 3d10b7289d79 (1 drafts)
+
+#endif
