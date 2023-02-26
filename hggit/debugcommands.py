@@ -12,6 +12,7 @@ import os
 import tempfile
 import time
 
+from mercurial import error
 from mercurial import exthelper
 from mercurial import registrar
 
@@ -140,3 +141,28 @@ def removestate(ui, repo):
     '''
     repo.ui.status(b"clearing out the git cache data\n")
     repo.githandler.clear()
+
+
+@eh.command(
+    b'debug-move-git-repo',
+    helpcategory=registrar.command.CATEGORY_MAINTENANCE,
+)
+def movegitcache(ui, repo):
+    dest = repo.githandler.gitdir
+    if repo.ui.configbool(b'git', b'intree'):
+        source = repo.vfs.join(b'git')
+    else:
+        source = repo.wjoin(b'.git')
+
+    if not os.path.isdir(source):
+        ui.status(
+            b'nothing to do; no git repository exists at %s\n' % source,
+        )
+    elif os.path.exists(dest):
+        raise error.Abort(
+            b'refusing to override an existing git repository',
+            hint=b'a git repository already exists at ' + dest,
+        )
+    else:
+        ui.status(b'%s -> %s\n' % (source, dest))
+        os.rename(source, dest)
