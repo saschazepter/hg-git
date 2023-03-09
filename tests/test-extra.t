@@ -201,3 +201,12 @@ lets you do that, though.
   o  0 aa9eb6424386df2b0638fe6f480c3767fdd0e6fd a
      branch=default hg-git-rename-source=git
   
+Make sure legacy extra is bidirectionally compatible
+  $ cd ../gitrepo
+  $ git commit -q --allow-empty -m 'empty'
+  $ cd ../hgrepo
+  $ hg pull -q --config git.debugextrainmessage=1
+  $ hg log -G -l 1 -T "{rev} {node} {desc|firstline}\n{join(extras, ' ')}\n\n"
+  o  8 9bfa18f45f66420461d0ea202ded51c00dac2bf8 empty
+  |  branch=default
+  ~
