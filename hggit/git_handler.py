@@ -1143,7 +1143,8 @@ class GitHandler(object):
             # renames detected from Git. This is because we export an extra
             # 'HG:rename-source' Git parameter when this isn't set, which will
             # break bidirectionality.
-            extra[b'hg-git-rename-source'] = b'git'
+            if not self.ui.configbool(b'git', b'debugextrainmessage', False):
+                extra[b'hg-git-rename-source'] = b'git'
         else:
             renames = hg_renames
 
