@@ -51,9 +51,7 @@ class Mode(enum.Enum):
     TOPICS = b'topic'
 
     @classmethod
-    def fromui(cls, ui):
-        mode = ui.config(b'experimental', b'hg-git-mode')
-
+    def frombytes(cls, mode):
         try:
             return cls._value2member_map_[mode]
         except KeyError:
@@ -61,6 +59,12 @@ class Mode(enum.Enum):
                 b'unknown mode %s' % mode,
                 hint=b'expected one of: ' + b', '.join(sorted(Mode.values())),
             )
+
+    @classmethod
+    def fromui(cls, ui):
+        return cls.frombytes(
+            ui.config(b'experimental', b'hg-git-mode', b'bookmarks')
+        )
 
     @classmethod
     def values(cls):
