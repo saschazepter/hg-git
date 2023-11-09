@@ -63,21 +63,21 @@ Load commonly used test logic
 
   $ hg clone gitrepo hgrepo
   importing 8 git commits
-  new changesets ff7a2f2d8d70:307506d6ae8a (10 drafts)
+  new changesets ff7a2f2d8d70:7e7db9646d3b (10 drafts)
   updating to bookmark master
   6 files updated, 0 files merged, 0 files removed, 0 files unresolved
   $ cd hgrepo
   $ hg log --graph --style compact | sed 's/\[.*\]//g'
-  @    9:7,8   307506d6ae8a   2007-01-01 00:00 +0000   test
+  @    9:7,8   7e7db9646d3b   2007-01-01 00:00 +0000   test
   |\     Merge branches 'branch3' and 'branch4'
   | |
-  | o    8:3,4   2b07220e422e   2007-01-01 00:00 +0000   test
+  | o    8:3,4   c5dc28b158a6   2007-01-01 00:00 +0000   test
   | |\     Merge branches 'branch3' and 'branch4'
   | | |
-  o | |    7:5,6   ccf2d65d982c   2007-01-01 00:00 +0000   test
+  o | |    7:5,6   714e426a14f7   2007-01-01 00:00 +0000   test
   |\ \ \     Merge branches 'branch1' and 'branch2'
   | | | |
-  | o | |    6:1,2   690b40256117   2007-01-01 00:00 +0000   test
+  | o | |    6:1,2   36ff88b67b32   2007-01-01 00:00 +0000   test
   | |\ \ \     Merge branches 'branch1' and 'branch2'
   | | | | |
   o | | | |  5:0   e459c0629ca4   2007-01-01 00:00 +0000   test
@@ -99,9 +99,9 @@ Load commonly used test logic
        add alpha
   
   $ hg gverify -r 9
-  verifying rev 307506d6ae8a against git commit b32ff845df61df998206b630e4370a44f9b36845
+  verifying rev 7e7db9646d3b against git commit b32ff845df61df998206b630e4370a44f9b36845
   $ hg gverify -r 8
-  abort: no git commit found for rev 2b07220e422e
+  abort: no git commit found for rev c5dc28b158a6
   (if this is an octopus merge, verify against the last rev)
   [255]
 
