@@ -1311,34 +1311,6 @@ class GitHandler(object):
         p1, p2 = (nullid, nullid)
         octopus = False
 
-        if len(gparents) > 1:
-            # merge, possibly octopus
-            def commit_octopus(p1, p2):
-                ctx = context.memctx(
-                    unfiltered,
-                    (p1, p2),
-                    text,
-                    list(files) + findconvergedfiles(p1, p2),
-                    getfilectx,
-                    author,
-                    date,
-                    {b'hg-git': b'octopus'},
-                )
-                # See comment below about setting substate to None.
-                ctx.substate = None
-                with util.forcedraftcommits():
-                    return hex(unfiltered.commitctx(ctx))
-
-            octopus = len(gparents) > 2
-            p2 = gparents.pop()
-            p1 = gparents.pop()
-            while len(gparents) > 0:
-                p2 = commit_octopus(p1, p2)
-                p1 = gparents.pop()
-        else:
-            if gparents:
-                p1 = gparents.pop()
-
         # if named branch, add to extra
         if hg_branch:
             extra[b'branch'] = hg_branch
@@ -1361,6 +1333,34 @@ class GitHandler(object):
             extra[b'encoding'] = commit.encoding
         if commit.gpgsig:
             extra[b'gpgsig'] = commit.gpgsig
+
+        if len(gparents) > 1:
+            # merge, possibly octopus
+            def commit_octopus(p1, p2):
+                ctx = context.memctx(
+                    unfiltered,
+                    (p1, p2),
+                    text,
+                    list(files) + findconvergedfiles(p1, p2),
+                    getfilectx,
+                    author,
+                    date,
+                    {**extra, b'hg-git': b'octopus'},
+                )
+                # See comment below about setting substate to None.
+                ctx.substate = None
+                with util.forcedraftcommits():
+                    return hex(unfiltered.commitctx(ctx))
+
+            octopus = len(gparents) > 2
+            p2 = gparents.pop()
+            p1 = gparents.pop()
+            while len(gparents) > 0:
+                p2 = commit_octopus(p1, p2)
+                p1 = gparents.pop()
+        else:
+            if gparents:
+                p1 = gparents.pop()
 
         if octopus:
             extra[b'hg-git'] = b'octopus-done'
