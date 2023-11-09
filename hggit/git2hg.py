@@ -81,88 +81,59 @@ def get_public(ui, refs, remote_names):
     return to_publish
 
 
-def find_incoming(ui, git_object_store, git_map, refs, remote):
-    '''find what commits need to be imported
+def _get_unseen_commits(done, git_map, git_object_store, todo):
+    '''get all unseen commits reachable from todo in topological order
 
-    git_object_store: is a dulwich object store.
-    git_map: is a map with keys being Git commits that have already been
-             imported
-    refs: is a map of refs to SHAs that we're interested in.
+    'unseen' means not reachable from the done set and not in the git map.
+    Mutates todo and the done set in the process.'''
+    commits = []
+    while todo:
+        sha = todo[-1]
+        if sha in done or sha in git_map:
+            todo.pop()
+            continue
+        assert isinstance(sha, bytes)
+        obj = git_object_store[sha]
+        assert isinstance(obj, Commit)
+        for p in obj.parents:
+            if p not in done and p not in git_map:
+                todo.append(p)
+                # process parents of a commit before processing the
+                # commit itself, and come back to this commit later
+                break
+        else:
+            commits.append(sha)
+            done.add(sha)
+            todo.pop()
 
-    '''
+    return commits
 
-    public = get_public(ui, refs, remote)
-    done = set()
 
-    # sort by commit date
+def _get_heads(git_object_store, refs):
+    '''get a list of all the head shas'''
+
+    todo = []
+    seenheads = set()
+    for ref, sha in refs.items():
+        # refs could contain refs on the server that we haven't pulled down
+        # the objects for; also make sure it's a sha and not a symref
+        if ref != b'HEAD' and sha in git_object_store:
+            obj = git_object_store[sha]
+            while isinstance(obj, Tag):
+                obj_type, sha = obj.object
+                obj = git_object_store[sha]
+            if isinstance(obj, Commit) and sha not in seenheads:
+                seenheads.add(sha)
+                todo.append(sha)
+
     def commitdate(sha):
+        """Return the commit date of a commit"""
         obj = git_object_store[sha]
         return obj.commit_time - obj.commit_timezone
 
-    # get a list of all the head shas
-    def get_heads(refs):
-        todo = []
-        seenheads = set()
-        for ref, sha in refs.items():
-            # refs could contain refs on the server that we haven't pulled down
-            # the objects for; also make sure it's a sha and not a symref
-            if ref != b'HEAD' and sha in git_object_store:
-                obj = git_object_store[sha]
-                while isinstance(obj, Tag):
-                    obj_type, sha = obj.object
-                    obj = git_object_store[sha]
-                if isinstance(obj, Commit) and sha not in seenheads:
-                    seenheads.add(sha)
-                    todo.append(sha)
+    todo.sort(key=commitdate, reverse=True)
 
-        todo.sort(key=commitdate, reverse=True)
-        return todo
-
-    def get_unseen_commits(todo):
-        '''get all unseen commits reachable from todo in topological order
-
-        'unseen' means not reachable from the done set and not in the git map.
-        Mutates todo and the done set in the process.'''
-        commits = []
-        while todo:
-            sha = todo[-1]
-            if sha in done or sha in git_map:
-                todo.pop()
-                continue
-            assert isinstance(sha, bytes)
-            obj = git_object_store[sha]
-            assert isinstance(obj, Commit)
-            for p in obj.parents:
-                if sha in public:
-                    public.add(p)
-
-                if p not in done and p not in git_map:
-                    todo.append(p)
-                    # process parents of a commit before processing the
-                    # commit itself, and come back to this commit later
-                    break
-            else:
-                commits.append(sha)
-                done.add(sha)
-                todo.pop()
-
-        return commits
-
-    todo = get_heads(refs)
-    commits = get_unseen_commits(todo)
-
-    for sha in reversed(commits):
-        for p in git_object_store[sha].parents:
-            if sha in public:
-                public.add(p)
-
-    return [
-        GitIncomingCommit(
-            sha,
-            phases.public if sha in public else phases.draft,
-        )
-        for sha in commits
-    ]
+    return todo
 
 
 class GitIncomingCommit:
@@ -184,6 +155,37 @@ class GitIncomingCommit:
 
     def __bytes__(self):
         return self.sha
+
+
+def find_incoming(ui, git_object_store, git_map, refs, remote):
+    '''find what commits need to be imported
+
+    git_object_store: is a dulwich object store.
+    git_map: is a map with keys being Git commits that have already been
+             imported
+    refs: is a map of refs to SHAs that we're interested in.
+
+    '''
+
+    done = set()
+
+    todo = _get_heads(git_object_store, refs)
+    commits = _get_unseen_commits(done, git_map, git_object_store, todo)
+
+    public = get_public(ui, refs, remote)
+
+    for sha in reversed(commits):
+        for p in git_object_store[sha].parents:
+            if sha in public:
+                public.add(p)
+
+    return [
+        GitIncomingCommit(
+            sha,
+            phases.public if sha in public else phases.draft,
+        )
+        for sha in commits
+    ]
 
 
 def extract_hg_metadata(message, git_extra):
