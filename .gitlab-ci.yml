@@ -17,6 +17,7 @@ stages:
   script:
     - adduser -D test
     - chown -R test *
+    - pip install hg-evolve
     - su test -c contrib/ci.sh
     - mv tests/.coverage coverage-$CI_JOB_ID
   artifacts: &test-artifacts
