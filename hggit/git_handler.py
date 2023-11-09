@@ -208,6 +208,8 @@ class GitHandler(object):
 
         self._clients = {}
 
+        self.mode = config.Mode.fromui(self.ui)
+
         # the HTTP authentication realm -- this specifies that we've
         # tried an unauthenticated request, gotten a realm, and are now
         # ready to prompt the user, if necessary
@@ -245,10 +247,6 @@ class GitHandler(object):
         if self._remote_refs is None:
             self.load_remote_refs()
         return self._remote_refs
-
-    @property
-    def mode(self):
-        return config.Mode.fromui(self.ui)
 
     @hgutil.propertycache
     def git(self):
@@ -312,17 +310,27 @@ class GitHandler(object):
         map_git_real = {}
         map_hg_real = {}
         if os.path.exists(self.vfs.join(self.map_file)):
-            for line in self.vfs(self.map_file):
+            for i, line in enumerate(self.vfs(self.map_file)):
                 # format is <40 hex digits> <40 hex digits>\n
+                if i == 0:
+                    # the first line, if unusual, encodes a mode
+                    if len(line) == 82:
+                        self.mode = config.Mode.BOOKMARKS
+                    else:
+                        self.mode = config.Mode.frombytes(line[:-1])
+                        continue
+
                 if len(line) != 82:
-                    raise ValueError(
-                        _(b'corrupt mapfile: incorrect line length %d')
-                        % len(line)
+                    raise error.Abort(
+                        _(b'corrupt mapfile: line %d has incorrect length %d')
+                        % (i + 1, len(line))
                     )
+
                 gitsha = line[:40]
                 hgsha = line[41:81]
                 map_git_real[gitsha] = hgsha
                 map_hg_real[hgsha] = gitsha
+
         self._map_git_real = map_git_real
         self._map_hg_real = map_hg_real
 
@@ -332,11 +340,15 @@ class GitHandler(object):
         )
 
         with self.repo.lock():
-            with self.vfs(self.map_file, b'wb+', atomictemp=True) as fp:
+            with self.vfs(self.map_file, b'wb', atomictemp=True) as fp:
                 self._write_map_to(fp)
 
     def _write_map_to(self, fp):
         bwrite = fp.write
+
+        if self.mode is not config.Mode.BOOKMARKS:
+            bwrite(b'%s\n' % self.mode)
+
         for hgsha, gitsha in self._map_hg.items():
             bwrite(b"%s %s\n" % (gitsha, hgsha))
 
