@@ -461,12 +461,9 @@ class GitHandler(object):
             return dh + 1
 
     def export_commits(self):
-        try:
-            self.export_git_objects()
-            self.export_hg_tags()
-            return self.update_references()
-        finally:
-            self.save_map()
+        self.export_git_objects()
+        self.export_hg_tags()
+        return self.update_references()
 
     def get_refs(self, remote):
         exportable = self.export_commits()
@@ -698,12 +695,22 @@ class GitHandler(object):
         )
 
         mapsavefreq = self.ui.configint(b'hggit', b'mapsavefrequency')
+
         with self.repo.ui.makeprogress(b'exporting', total=total) as progress:
-            for i, ctx in enumerate(export, 1):
-                progress.increment(item=short(ctx.node()))
-                self.export_hg_commit(ctx.node(), exporter)
-                if mapsavefreq and i % mapsavefreq == 0:
-                    self.save_map()
+            try:
+                for i, ctx in enumerate(export, 1):
+                    progress.increment(item=short(ctx.node()))
+
+                    objects = list(self.export_hg_commit(ctx.node(), exporter))
+
+                    # unfortunately, more than one pack per commit
+                    # breaks due to missing tree objects
+                    self.git.object_store.add_objects(objects)
+
+                    if mapsavefreq and i % mapsavefreq == 0:
+                        self.save_map()
+            finally:
+                self.save_map()
 
     # convert this commit into git objects
     # go through the manifest, convert all blobs/trees we don't have
@@ -759,10 +766,6 @@ class GitHandler(object):
             hgsha = hex(parent.node())
             git_sha = self.map_git_get(hgsha)
             if git_sha is not None:
-                if git_sha not in self.git.object_store:
-                    raise error.ProgrammingError(
-                        b'%s is not present in the local git cache' % git_sha
-                    )
                 commit.parents.append(git_sha)
 
         commit.message, extra = self.get_git_message_and_extra(ctx)
@@ -775,23 +778,16 @@ class GitHandler(object):
 
         for obj in exporter.update_changeset(ctx):
             if obj.id not in self.git.object_store:
-                self.git.object_store.add_object(obj)
+                yield (obj, None)
 
-        tree_sha = exporter.root_tree_sha
+        commit.tree = exporter.root_tree_sha
 
-        if tree_sha not in self.git.object_store:
-            raise error.ProgrammingError(
-                b'%s is not present in the local git cache' % tree_sha
-            )
-
-        commit.tree = tree_sha
-
-        if commit.id not in self.git.object_store:
-            self.git.object_store.add_object(commit)
         self.map_set(commit.id, ctx.hex())
 
+        if commit.id not in self.git.object_store:
+            yield (commit, None)
+
         util.swap_out_encoding(oldenc)
-        return commit.id
 
     @staticmethod
     def get_valid_git_username_email(name):
