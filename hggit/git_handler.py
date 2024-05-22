@@ -704,6 +704,9 @@ class GitHandler(object):
                 self.export_hg_commit(ctx.node(), exporter)
                 if mapsavefreq and i % mapsavefreq == 0:
                     self.save_map()
+                    self.git.object_store.pack_loose_objects()
+
+        self.git.object_store.pack_loose_objects()
 
     # convert this commit into git objects
     # go through the manifest, convert all blobs/trees we don't have
