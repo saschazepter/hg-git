@@ -718,7 +718,8 @@ class GitHandler(object):
                     self.save_map()
                     packer.pack()
 
-            packer.pack(synchronous=True)
+            with GitProgress(self.ui) as progress:
+                packer.pack(synchronous=True, progress=progress.progress)
 
     # convert this commit into git objects
     # go through the manifest, convert all blobs/trees we don't have
