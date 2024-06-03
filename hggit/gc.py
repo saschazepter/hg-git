@@ -3,6 +3,7 @@
 import multiprocessing
 import queue
 import threading
+import time
 import typing
 
 from dulwich.object_store import PackBasedObjectStore
@@ -47,7 +48,9 @@ class Worker(threading.Thread):
         self.shutdown_flag.set()
 
 
-def _process_batch(ui, object_store, shas):
+def _process_batch(ui, object_store, shas, progress=None):
+    start = time.time()
+
     ui.note(b'packing %d loose objects...\n' % len(shas))
     objects = {(object_store._get_loose_object(sha), None) for sha in shas}
 
@@ -58,7 +61,11 @@ def _process_batch(ui, object_store, shas):
     for obj, path in objects:
         object_store._remove_loose_object(obj.id)
 
-    ui.debug(b'packed %d loose objects!\n' % len(shas))
+    end = time.time()
+
+    ui.debug(
+        b'packed %d loose objects in %.2f seconds\n' % (len(shas), end - start)
+    )
 
 
 class GCPacker:
