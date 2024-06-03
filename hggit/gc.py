@@ -56,7 +56,7 @@ def _process_batch(ui, object_store, shas, progress=None):
 
     # some progress would be nice here, but the API isn't conductive
     # to it
-    object_store.add_objects(list(objects))
+    object_store.add_objects(list(objects), progress=progress)
 
     for obj, path in objects:
         object_store._remove_loose_object(obj.id)
@@ -116,7 +116,7 @@ class GCPacker:
             for thread in self.workers:
                 thread.start()
 
-    def pack(self, synchronous=False):
+    def pack(self, synchronous=False, progress=None):
         # remove any objects already scheduled for packing, as we
         # perform packing asynchronously, and we may have other
         # threads concurrently packing
@@ -125,7 +125,7 @@ class GCPacker:
         self.seen |= todo
 
         if synchronous or self.queue is None:
-            _process_batch(self.ui, self.object_store, todo)
+            _process_batch(self.ui, self.object_store, todo, progress)
         else:
             self.queue.put((self.ui, self.object_store, todo))
 
