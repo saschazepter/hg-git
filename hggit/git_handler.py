@@ -84,6 +84,12 @@ class GitProgress(object):
         self._progress = None
         self.msgbuf = b''
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.flush()
+
     def progress(self, message):
         # 'Counting objects: 33640, done.\n'
         # 'Compressing objects:   0% (1/9955)   \r
@@ -1654,10 +1660,10 @@ class GitHandler(object):
 
             return [x for x in filteredrefs.values() if x not in self.git]
 
-        progress = GitProgress(self.ui)
-
         try:
-            with util.add_pack(self.git.object_store) as f:
+            with GitProgress(self.ui) as progress, util.add_pack(
+                self.git.object_store
+            ) as f:
                 ret = self._call_client(
                     remote,
                     'fetch_pack',
@@ -1678,8 +1684,6 @@ class GitHandler(object):
             raise error.Abort(
                 _(b"git remote error: ") + pycompat.sysbytes(str(e))
             )
-        finally:
-            progress.flush()
 
     def _call_client(self, remote, method, *args, **kwargs):
         if not isinstance(remote, bytes):
