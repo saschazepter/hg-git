@@ -2819,8 +2819,11 @@ class TextTestRunner(unittest.TextTestRunner):
             self._result.addSuccess(t)
 
         if self._runner.options.xunit:
-            with open(self._runner.options.xunit, "wb") as xuf:
-                self._writexunit(self._result, xuf)
+            xunitpath = os.path.join(
+                self._runner._outputdir, _sys2bytes(self._runner.options.xunit)
+            )
+            with open(xunitpath, "wb") as xuf:
+                self._writexunit(self._result)
 
         if self._runner.options.json:
             jsonpath = os.path.join(self._runner._outputdir, b'report.json')
@@ -2858,7 +2861,11 @@ class TextTestRunner(unittest.TextTestRunner):
                 self.stream.writeln('Errored %s: %s' % (test.name, msg))
 
             if self._runner.options.xunit:
-                with open(self._runner.options.xunit, "wb") as xuf:
+                xunitpath = os.path.join(
+                    self._runner._outputdir,
+                    _sys2bytes(self._runner.options.xunit),
+                )
+                with open(xunitpath, "wb") as xuf:
                     self._writexunit(self._result, xuf)
 
             if self._runner.options.json:
@@ -3485,7 +3492,7 @@ class TestRunner:
         elif 'HGTEST_SLOW' in os.environ:
             del os.environ['HGTEST_SLOW']
 
-        self._coveragefile = os.path.join(self._testdir, b'.coverage')
+        self._coveragefile = os.path.join(self._outputdir, b'.coverage')
 
         if self.options.exceptions:
             exceptionsdir = os.path.join(self._outputdir, b'exceptions')
@@ -4188,12 +4195,17 @@ class TestRunner:
         # output.
         os.chdir(self._hgroot)
         covdir = os.path.join(_bytes2sys(self._installdir), '..', 'coverage')
-        cov = coverage(data_file=os.path.join(covdir, 'cov'))
+        cov = coverage(data_file=_bytes2sys(self._coveragefile))
+
+        cov.combine(
+            data_paths=[os.path.join(covdir, p) for p in os.listdir(covdir)]
+        )
 
         # Map install directory paths back to source directory.
         cov.config.paths['srcdir'] = ['.', _bytes2sys(self._pythondir)]
 
         cov.combine()
+        cov.save()
 
         omit = [
             _bytes2sys(os.path.join(x, b'*'))
