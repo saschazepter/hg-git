@@ -4,6 +4,9 @@ stages:
   - compat
   - archives
 
+variables:
+  CI_CLEVER_CLOUD_FLAVOR: M
+
 .base:
   image: registry.heptapod.net:443/mercurial/hg-git/ci/$CI_COMMIT_HG_BRANCH:hg-$HG-py$PYTHON
   timeout: 20m
@@ -11,7 +14,6 @@ stages:
     - name: registry.heptapod.net:443/mercurial/hg-git/git-server
       alias: git-server
   variables:
-    CI_CLEVER_CLOUD_FLAVOR: XS
     CI_TEST_GIT_NETWORKING: 1
   script:
     - adduser -D test
@@ -31,8 +33,6 @@ stages:
 Latest:
   extends: .base
   stage: current
-  variables:
-    CI_CLEVER_CLOUD_FLAVOR: M
   parallel:
     matrix:
       - &latest-versions
@@ -54,7 +54,6 @@ Latest:
 Supported:
   extends: .base
   stage: compat
-  retry: 1
   parallel:
     matrix:
       - &supported-versions
@@ -76,9 +75,7 @@ Alpine:
   image:
     name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/alpine:$ALPINE
   variables:
-    CI_CLEVER_CLOUD_FLAVOR: XS
   timeout: 20m
-  retry: 1
   script:
     - apk add gnupg git unzip openssh mercurial py3-pip py3-pygments py3-setuptools_scm
     - |
