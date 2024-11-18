@@ -18,13 +18,13 @@ stages:
     - adduser -D test
     - chown -R test *
     - su test -c contrib/ci.sh
-    - mv tests/.coverage coverage-$CI_JOB_ID
+    - mv out/.coverage coverage-$CI_JOB_ID
   artifacts: &test-artifacts
     expire_in: 1 day
     paths:
       - coverage-$CI_JOB_ID
     reports:
-      junit: tests-$CI_JOB_ID.xml
+      junit: out/tests-$CI_JOB_ID.xml
 
 # First, test with the latest and greatest Mercurial, across the
 # versions Python supported. We generally assume that if e.g. CPython
@@ -88,7 +88,7 @@ Alpine:
     - adduser -D test
     - chown -R test *
     - SETUPTOOLS_SCM_PRETEND_VERSION=1 PYTHON=3 su test -c contrib/ci.sh
-    - mv tests/.coverage coverage-$CI_JOB_ID
+    - mv out/.coverage coverage-$CI_JOB_ID
   artifacts: *test-artifacts
   parallel:
     matrix:
