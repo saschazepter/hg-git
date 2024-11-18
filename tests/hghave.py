@@ -423,7 +423,9 @@ def has_dulwich():
         return False
 
 
-@checkvers("dulwich", "Dulwich >= %s", ['%d.%d.%d' % vers for vers in ()])
+@checkvers(
+    "dulwich", "Dulwich >= %s", ['%d.%d.%d' % vers for vers in ((0, 22, 0),)]
+)
 def has_dulwich_range(v):
     import dulwich
 
