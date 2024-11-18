@@ -73,9 +73,9 @@ import uuid
 import xml.dom.minidom as minidom
 
 
-if sys.version_info < (3, 5, 0):
+if sys.version_info < (3, 8, 0):
     print(
-        '%s is only supported on Python 3.5+, not %s'
+        '%s is only supported on Python 3.8+, not %s'
         % (sys.argv[0], '.'.join(str(v) for v in sys.version_info[:3]))
     )
     sys.exit(70)  # EX_SOFTWARE from `man 3 sysexit`
@@ -114,36 +114,73 @@ try:  # is pygments installed
 except ImportError:
     pass
 
+progress_type = {}
+
 if pygmentspresent:
+    _T_ERROR = token.string_to_tokentype("Token.Generic.Error")
+    _T_FAILED = token.string_to_tokentype("Token.Generic.Failed")
+    _T_FNAME = token.string_to_tokentype("Token.Generic.FName")
+    _T_IGNORED = token.string_to_tokentype("Token.Generic.Ignored")
+    _T_SKIPPED = token.string_to_tokentype("Token.Generic.Skipped")
+    _T_SNAME = token.string_to_tokentype("Token.Generic.SName")
+    _T_SKIPPED_DOT = token.string_to_tokentype("Token.Generic.SkippedDot")
+    _T_SUCCESS = token.string_to_tokentype("Token.Generic.Success")
+    _T_TIMEDOUT = token.string_to_tokentype("Token.Generic.TimedOut")
 
     class TestRunnerStyle(style.Style):
         default_style = ""
-        skipped = token.string_to_tokentype("Token.Generic.Skipped")
-        failed = token.string_to_tokentype("Token.Generic.Failed")
-        skippedname = token.string_to_tokentype("Token.Generic.SName")
-        failedname = token.string_to_tokentype("Token.Generic.FName")
         styles = {
-            skipped: '#e5e5e5',
-            skippedname: '#00ffff',
-            failed: '#7f0000',
-            failedname: '#ff0000',
+            _T_ERROR: '#cd00cd',
+            _T_FAILED: '#7f0000',
+            _T_FNAME: '#ff0000',
+            _T_IGNORED: '#cdcd00',
+            _T_SKIPPED: '#e5e5e5',
+            _T_SNAME: '#00ffff',
+            _T_SKIPPED_DOT: '#00ffff',
+            _T_SUCCESS: '#00cd00',
+            _T_TIMEDOUT: '#ff00ff',
         }
 
     class TestRunnerLexer(lexer.RegexLexer):
         testpattern = r'[\w-]+\.(t|py)(#[a-zA-Z0-9_\-\.]+)?'
         tokens = {
             'root': [
-                (r'^Skipped', token.Generic.Skipped, 'skipped'),
-                (r'^Failed ', token.Generic.Failed, 'failed'),
-                (r'^ERROR: ', token.Generic.Failed, 'failed'),
+                (r'^Skipped', _T_SKIPPED, 'skipped'),
+                (r'^Failed ', _T_FAILED, 'failed'),
+                (r'^ERROR: ', _T_FAILED, 'failed'),
             ],
             'skipped': [
-                (testpattern, token.Generic.SName),
-                (r':.*', token.Generic.Skipped),
+                (testpattern, _T_SNAME),
+                (r':.*', _T_SKIPPED),
             ],
             'failed': [
-                (testpattern, token.Generic.FName),
-                (r'(:| ).*', token.Generic.Failed),
+                (testpattern, _T_FNAME),
+                (r'(:| ).*', _T_FAILED),
+            ],
+        }
+
+    progress_type['.'] = _T_SUCCESS
+    progress_type['s'] = _T_SKIPPED_DOT
+    progress_type['i'] = _T_IGNORED
+    progress_type['!'] = _T_FAILED
+    progress_type['E'] = _T_ERROR
+    progress_type['t'] = _T_TIMEDOUT
+
+    class progressLexer(lexer.RegexLexer):
+        testpattern = r'[\w-]+\.(t|py)(#[a-zA-Z0-9_\-\.]+)?'
+        tokens = {
+            'root': [
+                (r'^Skipped', _T_SKIPPED, 'skipped'),
+                (r'^Failed ', _T_FAILED, 'failed'),
+                (r'^ERROR: ', _T_FAILED, 'failed'),
+            ],
+            'skipped': [
+                (testpattern, _T_SNAME),
+                (r':.*', _T_SKIPPED),
+            ],
+            'failed': [
+                (testpattern, _T_FNAME),
+                (r'(:| ).*', _T_FAILED),
             ],
         }
 
@@ -222,6 +259,7 @@ if WINDOWS:
 
 # For Windows support
 wifexited = getattr(os, "WIFEXITED", lambda x: False)
+
 
 # Whether to use IPv6
 def checksocketfamily(name, port=20058):
@@ -336,7 +374,7 @@ if 'java' in sys.platform:
 
 default_defaults = {
     'jobs': ('HGTEST_JOBS', multiprocessing.cpu_count()),
-    'timeout': ('HGTEST_TIMEOUT', 360),
+    'timeout': ('HGTEST_TIMEOUT', 360 if not WINDOWS else 360 * 4),
     'slowtimeout': ('HGTEST_SLOWTIMEOUT', 1500),
     'port': ('HGTEST_PORT', 20059),
     'shell': ('HGTEST_SHELL', 'sh'),
@@ -407,6 +445,18 @@ def getparser():
         "--blacklist",
         action="append",
         help="skip tests listed in the specified blacklist file",
+    )
+    selection.add_argument(
+        "--shard-total",
+        type=int,
+        default=None,
+        help="total number of shard to use (enable sharding)",
+    )
+    selection.add_argument(
+        "--shard-index",
+        type=int,
+        default=None,
+        help="index of this shard [1-N]",
     )
     selection.add_argument(
         "--changed",
@@ -585,6 +635,13 @@ def getparser():
         "--ipv6",
         action="store_true",
         help="prefer IPv6 to IPv4 for network related tests",
+    )
+    hgconf.add_argument(
+        "--hg-wheel",
+        default=None,
+        metavar="WHEEL_PATH",
+        dest="wheel",
+        help="install mercurial from the given wheel",
     )
     hgconf.add_argument(
         "--pure",
@@ -840,6 +897,32 @@ def parseargs(args, parser):
     if options.showchannels:
         options.nodiff = True
 
+    if options.shard_total is not None:
+        if options.shard_index is None:
+            parser.error("--shard-total requires --shard-index to be set")
+
+    if options.shard_index is not None:
+        if options.shard_total is None:
+            parser.error("--shard-index requires --shard-total to be set")
+        elif options.shard_index <= 0:
+            msg = "--shard-index must be > 0 (%d)"
+            msg %= options.shard_index
+            parser.error(msg)
+        elif options.shard_index > options.shard_total:
+            msg = (
+                "--shard-index must be <= than --shard-total (%d not in [1,%d])"
+            )
+            msg %= (options.shard_index, options.shard_total)
+            parser.error(msg)
+
+    if options.shard_total is not None and options.order_by_runtime:
+        msg = "cannot use --order-by-runtime when sharding"
+        parser.error(msg)
+
+    if options.shard_total is not None and options.random:
+        msg = "cannot use --random when sharding"
+        parser.error(msg)
+
     return options
 
 
@@ -944,6 +1027,20 @@ def highlightmsg(msg, color):
         return msg
     assert pygmentspresent
     return pygments.highlight(msg, runnerlexer, runnerformatter)
+
+
+def highlight_progress(progress, color):
+    if not color:
+        return progress
+    assert pygmentspresent
+    token = progress_type.get(progress)
+    if token is None:
+        return progress
+    style = runnerformatter.style_string.get(str(token))
+    if style is None:
+        return progress
+    else:
+        return style[0] + progress + style[1]
 
 
 def terminate(proc):
@@ -2246,6 +2343,7 @@ class TestResult(base_class):
         # sense to map it into skip some day.
         self.ignored = []
 
+        self._dot_printed = 0
         self.times = []
         self._firststarttime = None
         # Data stored for the benefit of generating xunit reports.
@@ -2265,6 +2363,15 @@ class TestResult(base_class):
         else:  # 'always', for testing purposes
             self.color = pygmentspresent
 
+    def _write_dot(self, progress):
+        """write an item of the "dot" progress"""
+        formated = highlight_progress(progress, self.color)
+        self.stream.write(formated)
+        self._dot_printed += 1
+        if not self._dot_printed % 75:
+            self.stream.write(f' [{self._dot_printed}]\n'.rjust(8))
+        self.stream.flush()
+
     def onStart(self, test):
         """Can be overriden by custom TestResult"""
 
@@ -2279,24 +2386,33 @@ class TestResult(base_class):
         else:
             with iolock:
                 if reason == "timed out":
-                    self.stream.write('t')
+                    self._write_dot('t')
                 else:
                     if not self._options.nodiff:
                         self.stream.write('\n')
                         # Exclude the '\n' from highlighting to lex correctly
                         formatted = 'ERROR: %s output changed\n' % test
                         self.stream.write(highlightmsg(formatted, self.color))
-                    self.stream.write('!')
+                    self._write_dot('!')
 
                 self.stream.flush()
 
     def addSuccess(self, test):
         with iolock:
-            super(TestResult, self).addSuccess(test)
+            # bypass the TextTestResult method as do deal with the output ourself
+            super(base_class, self).addSuccess(test)
+            if self.showAll:
+                self._write_status(test, "ok")
+            elif self.dots:
+                self._write_dot('.')
         self.successes.append(test)
 
     def addError(self, test, err):
-        super(TestResult, self).addError(test, err)
+        super(base_class, self).addError(test, err)
+        if self.showAll:
+            self._write_status(test, "ERROR")
+        elif self.dots:
+            self._write_dot('E')
         if self._options.first:
             self.stop()
 
@@ -2307,8 +2423,7 @@ class TestResult(base_class):
             if self.showAll:
                 self.stream.writeln('skipped %s' % reason)
             else:
-                self.stream.write('s')
-                self.stream.flush()
+                self._write_dot('s')
 
     def addIgnore(self, test, reason):
         self.ignored.append((test, reason))
@@ -2317,10 +2432,9 @@ class TestResult(base_class):
                 self.stream.writeln('ignored %s' % reason)
             else:
                 if reason not in ('not retesting', "doesn't match keyword"):
-                    self.stream.write('i')
+                    self._write_dot('i')
                 else:
                     self.testsRun += 1
-                self.stream.flush()
 
     def addOutputMismatch(self, test, ret, got, expected):
         """Record a mismatch in test output for a particular test."""
@@ -2449,7 +2563,7 @@ class TestSuite(unittest.TestSuite):
         loadtest=None,
         showchannels=False,
         *args,
-        **kwargs
+        **kwargs,
     ):
         """Create a new instance that can run tests with a configuration.
 
@@ -3081,7 +3195,11 @@ class TestRunner:
                 import statprof
 
                 statprof.start()
-            result = self._run(testdescs)
+            result = self._run(
+                testdescs,
+                shard_index=options.shard_index,
+                shard_total=options.shard_total,
+            )
             if options.profile_runner:
                 statprof.stop()
                 statprof.display()
@@ -3090,7 +3208,7 @@ class TestRunner:
         finally:
             os.umask(oldmask)
 
-    def _run(self, testdescs):
+    def _run(self, testdescs, shard_index=None, shard_total=None):
         testdir = getcwdb()
         # assume all tests in same folder for now
         if testdescs:
@@ -3150,7 +3268,12 @@ class TestRunner:
 
         # detect and enforce an alternative way to specify rust extension usage
         if (
-            not (self.options.pure or self.options.rust or self.options.no_rust)
+            not (
+                self.options.wheel
+                or self.options.pure
+                or self.options.rust
+                or self.options.no_rust
+            )
             and os.environ.get("HGWITHRUSTEXT") == "cpython"
         ):
             self.options.rust = True
@@ -3186,15 +3309,49 @@ class TestRunner:
 
         else:
             self._installdir = os.path.join(self._hgtmp, b"install")
-            self._bindir = os.path.join(self._installdir, b"bin")
+            if WINDOWS:
+                # The wheel variant will install things in "Scripts".
+                # So we can as well always install things here.
+                self._bindir = os.path.join(self._installdir, b"Scripts")
+            else:
+                self._bindir = os.path.join(self._installdir, b"bin")
             self._hgcommand = b'hg'
-            self._pythondir = os.path.join(self._installdir, b"lib", b"python")
+
+            if self.options.wheel and not WINDOWS:
+                # pip installing a wheel does not have an --install-lib flag
+                # so we have to guess where the file will be installed.
+                #
+                # In addition, that location is not really stable, so we are
+                # using awful symlink trrick later in `_installhg`
+                v_info = sys.version_info
+                suffix = os.path.join(
+                    b"lib",
+                    b"python%d.%d" % (v_info.major, v_info.minor),
+                    b"site-packages",
+                )
+            elif self.options.wheel and WINDOWS:
+                # for some reason, Windows use an even different scheme:
+                #
+                # <prefix>/lib/site-packages/
+                suffix = os.path.join(
+                    b"lib",
+                    b"site-packages",
+                )
+            else:
+                suffix = os.path.join(b"lib", b"python")
+            self._pythondir = os.path.join(self._installdir, suffix)
 
         # Force the use of hg.exe instead of relying on MSYS to recognize hg is
         # a python script and feed it to python.exe.  Legacy stdio is force
         # enabled by hg.exe, and this is a more realistic way to launch hg
         # anyway.
-        if WINDOWS and not self._hgcommand.endswith(b'.exe'):
+        #
+        # We do not do it when using wheels and they do not install a .exe.
+        if (
+            WINDOWS
+            and not self.options.wheel
+            and not self._hgcommand.endswith(b'.exe')
+        ):
             self._hgcommand += b'.exe'
 
         real_hg = os.path.join(self._bindir, self._hgcommand)
@@ -3289,14 +3446,15 @@ class TestRunner:
 
         # Setting PYTHONPATH with an activated venv causes the modules installed
         # in it to be ignored.  Therefore, include the related paths in sys.path
-        # in PYTHONPATH.
-        virtual_env = osenvironb.get(b"VIRTUAL_ENV")
-        if virtual_env:
-            virtual_env = os.path.join(virtual_env, b'')
-            for p in sys.path:
-                p = _sys2bytes(p)
-                if p.startswith(virtual_env):
-                    pypath.append(p)
+        # in PYTHONPATH.  If the executable is run directly without activation,
+        # any modules installed in it would also be ignored, so include them for
+        # the same reason.
+
+        for p in sys.path:
+            if p.startswith(sys.exec_prefix):
+                path = _sys2bytes(p)
+                if path not in pypath:
+                    pypath.append(path)
 
         # We have to augment PYTHONPATH, rather than simply replacing
         # it, in case external libraries are only available via current
@@ -3306,6 +3464,10 @@ class TestRunner:
         if oldpypath:
             pypath.append(oldpypath)
         osenvironb[IMPL_PATH] = sepb.join(pypath)
+
+        os.environ["HGTEST_BASE_HGMODULEPOLICY"] = os.environ.get(
+            "HGMODULEPOLICY", ""
+        )
 
         if self.options.pure:
             os.environ["HGTEST_RUN_TESTS_PURE"] = "--pure"
@@ -3353,6 +3515,14 @@ class TestRunner:
         )
         vlog("# Writing to directory", _bytes2sys(self._outputdir))
 
+        if shard_total is not None:
+            slot = shard_index - 1
+            testdescs = [
+                t
+                for (idx, t) in enumerate(testdescs)
+                if (idx % shard_total == slot)
+            ]
+
         try:
             return self._runtests(testdescs) or 0
         finally:
@@ -3397,7 +3567,6 @@ class TestRunner:
                 os.path.basename(t).startswith(b'test-')
                 and (t.endswith(b'.py') or t.endswith(b'.t'))
             ):
-
                 m = testcasepattern.match(os.path.basename(t))
                 if m is not None:
                     t_basename, casestr = m.groups()
@@ -3608,7 +3777,7 @@ class TestRunner:
             usechg=bool(self.options.with_chg or self.options.chg),
             chgdebug=self.options.chg_debug,
             useipv6=useipv6,
-            **kwds
+            **kwds,
         )
         t.should_reload = True
         return t
@@ -3629,10 +3798,7 @@ class TestRunner:
     def _usecorrectpython(self):
         """Configure the environment to use the appropriate Python in tests."""
         # Tests must use the same interpreter as us or bad things will happen.
-        if WINDOWS:
-            pyexe_names = [b'python', b'python3', b'python.exe']
-        else:
-            pyexe_names = [b'python', b'python3']
+        pyexe_names = [b'python', b'python3']
 
         # os.symlink() is a thing with py3 on Windows, but it requires
         # Administrator rights.
@@ -3673,7 +3839,8 @@ class TestRunner:
                     f.write(b'%s "$@"\n' % esc_executable)
 
             if WINDOWS:
-                # adjust the path to make sur the main python finds it own dll
+                # adjust the path to make sur the main python finds itself and
+                # its own dll
                 path = os.environ['PATH'].split(os.pathsep)
                 main_exec_dir = os.path.dirname(sysexecutable)
                 extra_paths = [_bytes2sys(self._custom_bin_dir), main_exec_dir]
@@ -3709,16 +3876,43 @@ class TestRunner:
                 os.symlink(real_exec, target_exec)
             self._createdfiles.append(target_exec)
 
-    def _installhg(self):
-        """Install hg into the test environment.
+    def _install_hg_cmd_wheel(self):
+        wheel_path = self.options.wheel
+        assert wheel_path
 
-        This will also configure hg with the appropriate testing settings.
-        """
-        vlog("# Performing temporary installation of HG")
-        installerrs = os.path.join(self._hgtmp, b"install.err")
-        compiler = ''
-        if self.options.compiler:
-            compiler = '--compiler ' + self.options.compiler
+        # TODO: actually use these flag later, to double check the wheel we
+        # installed match our intend (in `_checkhglib`)
+        if self.options.pure:
+            assert False, b"--pure"
+        elif self.options.rust:
+            assert False, b"--rust"
+        elif self.options.no_rust:
+            assert False, b"--no-rust"
+
+        script = _sys2bytes(os.path.realpath(sys.argv[0]))
+        exe = _sys2bytes(sysexecutable)
+        hgroot = os.path.dirname(os.path.dirname(script))
+        self._hgroot = hgroot
+        os.chdir(hgroot)
+        cmd = [
+            exe,
+            b"-m",
+            b"pip",
+            b"install",
+            wheel_path,
+            b"--force",
+            b"--ignore-installed",
+            b"--prefix",
+            self._installdir,
+        ]
+        if not WINDOWS:
+            # windows does not have this flag apparently.
+            cmd.append(b"--break-system-packages")
+
+        return cmd
+
+    def _install_hg_cmd_setup(self):
+        # Run installer in hg root
         setup_opts = b""
         if self.options.pure:
             setup_opts = b"--pure"
@@ -3727,51 +3921,88 @@ class TestRunner:
         elif self.options.no_rust:
             setup_opts = b"--no-rust"
 
-        # Run installer in hg root
-        compiler = _sys2bytes(compiler)
         script = _sys2bytes(os.path.realpath(sys.argv[0]))
         exe = _sys2bytes(sysexecutable)
         hgroot = os.path.dirname(os.path.dirname(script))
         self._hgroot = hgroot
         os.chdir(hgroot)
-        nohome = b'--home=""'
-        if WINDOWS:
+        cmd = [
+            exe,
+            b"setup.py",
+        ]
+        if setup_opts:
+            cmd.append(setup_opts)
+        cmd.extend(
+            [
+                b"clean",
+                b"--all",
+                b"build",
+            ]
+        )
+        if self.options.compiler:
+            cmd.append("--compiler")
+            cmd.append(_sys2bytes(self.options.compiler))
+        cmd.extend(
+            [
+                b"--build-base=%s" % os.path.join(self._hgtmp, b"build"),
+                b"install",
+                b"--force",
+                b"--prefix=%s" % self._installdir,
+                b"--install-lib=%s" % self._pythondir,
+                b"--install-scripts=%s" % self._bindir,
+            ]
+        )
+        if not WINDOWS:
             # The --home="" trick works only on OS where os.sep == '/'
             # because of a distutils convert_path() fast-path. Avoid it at
             # least on Windows for now, deal with .pydistutils.cfg bugs
             # when they happen.
-            nohome = b''
-        cmd = (
-            b'"%(exe)s" setup.py %(setup_opts)s clean --all'
-            b' build %(compiler)s --build-base="%(base)s"'
-            b' install --force --prefix="%(prefix)s"'
-            b' --install-lib="%(libdir)s"'
-            b' --install-scripts="%(bindir)s" %(nohome)s >%(logfile)s 2>&1'
-            % {
-                b'exe': exe,
-                b'setup_opts': setup_opts,
-                b'compiler': compiler,
-                b'base': os.path.join(self._hgtmp, b"build"),
-                b'prefix': self._installdir,
-                b'libdir': self._pythondir,
-                b'bindir': self._bindir,
-                b'nohome': nohome,
-                b'logfile': installerrs,
-            }
-        )
+            cmd.append(b"--home=")
+
+        return cmd
+
+    def _installhg(self):
+        """Install hg into the test environment.
+
+        This will also configure hg with the appropriate testing settings.
+        """
+        vlog("# Performing temporary installation of HG")
+        install_env = original_env.copy()
+        if self.options.wheel is None:
+            cmd = self._install_hg_cmd_setup()
+        else:
+            cmd = self._install_hg_cmd_wheel()
+            install_env["PYTHONUSERBASE"] = _bytes2sys(self._installdir)
+
+        installerrs = os.path.join(self._hgtmp, b"install.err")
+        if self.options.pure:
+            install_env.pop('HGWITHRUSTEXT', None)
+        elif self.options.no_rust:
+            install_env.pop('HGWITHRUSTEXT', None)
 
         # setuptools requires install directories to exist.
-        def makedirs(p):
-            try:
-                os.makedirs(p)
-            except FileExistsError:
-                pass
+        os.makedirs(self._pythondir, exist_ok=True)
+        os.makedirs(self._bindir, exist_ok=True)
+        if self.options.wheel is not None and not WINDOWS:
+            # the wheel instalation location is not stable, so try to deal with
+            # that to funnel it back where we need its.
+            #
+            # (mostly deals with Debian shenanigans)
+            assert self._pythondir.endswith(b'site-packages')
+            lib_dir = os.path.dirname(self._pythondir)
+            dist_dir = os.path.join(lib_dir, b'dist-packages')
+            os.symlink(b'./site-packages', dist_dir)
+            os.symlink(b'.', os.path.join(self._installdir, b'local'))
 
-        makedirs(self._pythondir)
-        makedirs(self._bindir)
-
-        vlog("# Running", cmd.decode("utf-8"))
-        if subprocess.call(_bytes2sys(cmd), shell=True, env=original_env) == 0:
+        vlog("# Running", cmd)
+        with open(installerrs, "wb") as logfile:
+            r = subprocess.call(
+                cmd,
+                env=install_env,
+                stdout=logfile,
+                stderr=subprocess.STDOUT,
+            )
+        if r == 0:
             if not self.options.verbose:
                 try:
                     os.remove(installerrs)
@@ -3957,17 +4188,12 @@ class TestRunner:
         # output.
         os.chdir(self._hgroot)
         covdir = os.path.join(_bytes2sys(self._installdir), '..', 'coverage')
-        cov = coverage(
-            data_file=os.path.join(_bytes2sys(self._outputdir), '.coverage'),
-        )
+        cov = coverage(data_file=os.path.join(covdir, 'cov'))
 
         # Map install directory paths back to source directory.
         cov.config.paths['srcdir'] = ['.', _bytes2sys(self._pythondir)]
 
-        cov.combine(data_paths=[
-            os.path.join(covdir, p) for p in os.listdir(covdir)
-        ])
-        cov.save()
+        cov.combine()
 
         omit = [
             _bytes2sys(os.path.join(x, b'*'))
