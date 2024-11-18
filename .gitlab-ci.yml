@@ -40,28 +40,27 @@ variables:
 .window_runtests_template: &windows_runtests
     <<: *all
     when: manual  # we don't have any Windows runners anymore at the moment
-    stage: tests
+    stage: current
     before_script:
       - C:/hgdev/MinGW/msys/1.0/bin/sh.exe --login -c 'cd "$OLDPWD" && ls -1 tests/test-check-*.* > C:/hgdev/tmp/check-tests.txt'
 
     script:
         - echo "Entering script section"
-        - echo "python used, $Env:PYTHON"
-        - Invoke-Expression "$Env:PYTHON -V"
-        - Invoke-Expression "$Env:PYTHON -m black --version"
+        - echo "python used, $Env:PYTHON_DIR"
+        - Invoke-Expression "$Env:PYTHON_DIR/python.exe -V"
         - echo "$Env:RUNTEST_ARGS"
         - echo "$Env:TMP"
         - echo "$Env:TEMP"
 
-        - C:/hgdev/MinGW/msys/1.0/bin/sh.exe --login -c 'cd "$OLDPWD" && HGTESTS_ALLOW_NETIO="$TEST_HGTESTS_ALLOW_NETIO" $PYTHON tests/run-tests.py --color=always $RUNTEST_ARGS'
+        - C:/hgdev/MinGW/msys/1.0/bin/sh.exe --login -c 'cd "$OLDPWD" && PATH=$PYTHON_DIR:$PATH contrib/ci.sh && mv tests/.coverage coverage-$CI_JOB_ID'
 
-windows:
+Windows:
     <<: *windows_runtests
     tags:
       - windows
     variables:
         RUNTEST_ARGS: "-j 8 --blacklist C:/hgdev/tmp/check-tests.txt"
-        PYTHON: C:\hgdev\venvs\hg-git-py39-x64\Scripts\python.exe
+        PYTHON_DIR: C:/hgdev/venvs/hg-git-py39-x64/Scripts
 
 
 
