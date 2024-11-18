@@ -40,7 +40,7 @@ variables:
 .window_runtests_template: &windows_runtests
     <<: *all
     when: manual  # we don't have any Windows runners anymore at the moment
-    stage: tests
+    stage: compat
     before_script:
       - C:/hgdev/MinGW/msys/1.0/bin/sh.exe --login -c 'cd "$OLDPWD" && ls -1 tests/test-check-*.* > C:/hgdev/tmp/check-tests.txt'
 
@@ -53,9 +53,9 @@ variables:
         - echo "$Env:TMP"
         - echo "$Env:TEMP"
 
-        - C:/hgdev/MinGW/msys/1.0/bin/sh.exe --login -c 'cd "$OLDPWD" && HGTESTS_ALLOW_NETIO="$TEST_HGTESTS_ALLOW_NETIO" $PYTHON tests/run-tests.py --color=always $RUNTEST_ARGS'
+        - C:/hgdev/MinGW/msys/1.0/bin/sh.exe --login -c 'cd "$OLDPWD" && contrib/ci.sh mv tests/.coverage coverage-$CI_JOB_ID'
 
-windows:
+Windows:
     <<: *windows_runtests
     tags:
       - windows
