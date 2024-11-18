@@ -9,4 +9,5 @@ hg version -v --config extensions.hggit=./hggit
 exec python$PYTHON tests/run-tests.py \
      --color=always \
      --cover \
-     --xunit $PWD/tests-$CI_JOB_ID.xml
+     --xunit $PWD/tests-$CI_JOB_ID.xml \
+     "$@"
