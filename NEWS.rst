@@ -8,6 +8,7 @@ This is a minor release, focusing on bugs and compatibility.
 * Add support for `pretxnchangegroup` and `prechangegroup` hooks on
   push.
 * Invoke the `changegroup` hook outside the transaction.
+* Pass `git=1` rather than `git=True` to hooks.
 
 hg-git 1.1.5 (unreleased)
 =========================
