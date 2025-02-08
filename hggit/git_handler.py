@@ -1389,9 +1389,9 @@ class GitHandler(object):
 
         util.swap_out_encoding(oldenc)
 
-        with self.repo.lock(), self.repo.transaction(b"phase") as tr:
+        with unfiltered.lock(), unfiltered.transaction(b"phase") as tr:
             phases.advanceboundary(
-                self.repo,
+                unfiltered,
                 tr,
                 phase,
                 [node],
