@@ -19,6 +19,7 @@ commit hooks can see env vars
   > preoutgoing = python:testlib.hooks.showargs
   > prechangegroup = python:testlib.hooks.showargs
   > changegroup = python:testlib.hooks.showargs
+  > pretxnchangegroup = python:testlib.hooks.showargs
   > incoming = python:testlib.hooks.showargs
   > EOF
   $ fn_commit hg a
@@ -170,6 +171,12 @@ On pull:
   adding changesets
   adding manifests
   adding file changes
+  | pretxnchangegroup.txnname=pull
+  file://$TESTTMP/hgrepo-copy
+  | pretxnchangegroup.source=pull
+  | pretxnchangegroup.url=file:$TESTTMP/hgrepo-copy
+  | pretxnchangegroup.node=d4097d98a3905be88e8a566039b1fdcca06e0d2e
+  | pretxnchangegroup.node_last=d4097d98a3905be88e8a566039b1fdcca06e0d2e
   added 1 changesets with 1 changes to 1 files (+1 heads)
   new changesets d4097d98a390
   | changegroup.txnname=pull
