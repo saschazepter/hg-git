@@ -30,9 +30,13 @@ def abort_push_on_keyerror():
     try:
         yield
     except KeyError as e:
+        key = (
+            e.args[0][:12]
+            if isinstance(e.args[0], bytes)
+            else e.args[0].encode('utf8')
+        )
         raise error.Abort(
-            b'cannot push git commit %s as it is not present locally'
-            % e.args[0][:12],
+            b'cannot push git commit %s as it is not present locally' % key,
             hint=(
                 b'please try pulling first, or as a fallback run git-cleanup '
                 b'to re-export the missing commits'
