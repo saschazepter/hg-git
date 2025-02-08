@@ -5,6 +5,9 @@ This is a minor release, focusing on bugs and compatibility.
 
 * Fix an error on pull with commits missing on Mercurial side. We'd
   try to advance phase boundaries for them, which failed.
+* Add support for `pretxnchangegroup` and `prechangegroup` hooks on
+  push.
+* Invoke the `changegroup` hook outside the transaction.
 
 hg-git 1.1.5 (unreleased)
 =========================

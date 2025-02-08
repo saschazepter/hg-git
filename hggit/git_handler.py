@@ -385,7 +385,7 @@ class GitHandler(object):
     def import_commits(self, remote_name):
         remote_names = [remote_name] if remote_name is not None else []
         refs = self.git.refs.as_dict()
-        self.import_git_objects(b'gimport', remote_names, refs)
+        self.import_git_objects(b'gimport', None, remote_names, refs)
 
     def fetch(self, remote, heads):
         result = self.fetch_pack(remote.path, heads)
@@ -396,6 +396,7 @@ class GitHandler(object):
         if result.refs:
             imported = self.import_git_objects(
                 b'pull',
+                remote.path,
                 remote_names,
                 result.refs,
                 heads=heads,
@@ -1038,7 +1039,7 @@ class GitHandler(object):
         else:
             return None, None
 
-    def import_git_objects(self, command, remote_names, refs, heads=None):
+    def import_git_objects(self, command, path, remote_names, refs, heads=None):
         self.repo.hook(
             b'gitimport',
             source=command,
@@ -1076,7 +1077,15 @@ class GitHandler(object):
             # commits in a transaction, while ensuring that we always
             # get at least one chunk
             for offset in range(0, max(total, 1), chunksize):
-                with self.get_transaction(b"gimport"):
+                with self.get_transaction(b"gimport") as tr:
+                    tr.hookargs.setdefault(b'url', path)
+                    tr.hookargs[b'git'] = True
+                    self.repo.hook(
+                        b'prechangegroup',
+                        throw=True,
+                        **pycompat.strkwargs(tr.hookargs),
+                    )
+
                     cl = self.repo.unfiltered().changelog
                     oldtiprev = cl.tiprev()
 
@@ -1095,16 +1104,22 @@ class GitHandler(object):
                     self.update_remote_branches(remote_names, refs)
 
                     if oldtiprev != lastrev:
-                        first = cl.node(oldtiprev + 1)
-                        last = cl.node(lastrev)
+                        first = hex(cl.node(oldtiprev + 1))
+                        last = hex(cl.node(lastrev))
+                        tr.hookargs[b'node'] = first
+                        tr.hookargs[b'node_last'] = last
+                        hookargs = dict(tr.hookargs)
 
                         self.repo.hook(
-                            b"changegroup",
-                            source=b'push',
-                            git=True,
-                            node=hex(first),
-                            node_last=hex(last),
+                            b'pretxnchangegroup',
+                            throw=True,
+                            **pycompat.strkwargs(hookargs),
                         )
+
+                if oldtiprev != lastrev:
+                    self.repo.hook(
+                        b"changegroup", **pycompat.strkwargs(hookargs)
+                    )
 
         # TODO if the tags cache is used, remove any dangling tag references
         return total

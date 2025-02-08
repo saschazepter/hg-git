@@ -75,6 +75,9 @@ Hooks on pull?
   | gitimport.refs={b'HEAD': b'1dab31e7bc9691ba42a2fe7b14680694770bc527', b'refs/heads/master': b'1dab31e7bc9691ba42a2fe7b14680694770bc527'}
   | gitimport.heads=None
   importing 2 git commits
+  | prechangegroup.txnname=gimport
+  | prechangegroup.url=$TESTTMP/repo.git
+  | prechangegroup.git=True
   : pretxncommit
   | incoming.git=True
   | incoming.source=pull
@@ -86,11 +89,19 @@ Hooks on pull?
   | incoming.node=892115eea5c32152e09ae4013c9a119d7b534049
   | incoming.git_node=1dab31e7bc9691ba42a2fe7b14680694770bc527
   updating bookmark master
-  | changegroup.source=push
+  | pretxnchangegroup.txnname=gimport
+  | pretxnchangegroup.url=$TESTTMP/repo.git
+  | pretxnchangegroup.git=True
+  | pretxnchangegroup.bookmark_moved=1
+  | pretxnchangegroup.node=382ad5fa1d7727210384d40fa1539af52ca632c5
+  | pretxnchangegroup.node_last=892115eea5c32152e09ae4013c9a119d7b534049
+  new changesets 382ad5fa1d77:892115eea5c3 (2 drafts)
+  | changegroup.txnname=gimport
+  | changegroup.url=$TESTTMP/repo.git
   | changegroup.git=True
+  | changegroup.bookmark_moved=1
   | changegroup.node=382ad5fa1d7727210384d40fa1539af52ca632c5
   | changegroup.node_last=892115eea5c32152e09ae4013c9a119d7b534049
-  new changesets 382ad5fa1d77:892115eea5c3 (2 drafts)
   updating to active bookmark master
   2 files updated, 0 files merged, 0 files removed, 0 files unresolved
 
