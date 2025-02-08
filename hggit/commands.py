@@ -176,7 +176,7 @@ def tag(orig, ui, repo, *names, **opts):
     names = [t.strip() for t in names]
 
     if len(names) != len(set(names)):
-        raise error.Abort(_('tag names must be unique'))
+        raise error.Abort(_(b'tag names must be unique'))
 
     with repo.wlock(), repo.lock():
         target = hex(repo.lookup(opts[b'rev']))
