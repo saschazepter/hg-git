@@ -1516,7 +1516,7 @@ class GitHandler(object):
 
             if len(change_totals) > 0:
                 self.ui.status(
-                    _(b"added %d commits with %d trees" b" and %d blobs\n")
+                    _(b"added %d commits with %d trees and %d blobs\n")
                     % (
                         change_totals.get(Commit, 0),
                         change_totals.get(Tree, 0),
@@ -1877,9 +1877,7 @@ class GitHandler(object):
                 raise error.Abort(b"the name '%s' already exists" % tag)
 
             if not check_ref_format(LOCAL_TAG_PREFIX + tag):
-                raise error.Abort(
-                    b"the name '%s' is not a valid git " b"tag" % tag
-                )
+                raise error.Abort(b"the name '%s' is not a valid git tag" % tag)
 
         self.export_commits()
 
