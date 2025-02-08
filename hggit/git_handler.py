@@ -513,7 +513,7 @@ class GitHandler(object):
     def push(self, remote, revs, bookmarks, force):
         self.repo.hook(
             b"preoutgoing",
-            git=True,
+            git=b'1',
             source=b'push',
             url=remote,
         )
@@ -677,7 +677,7 @@ class GitHandler(object):
 
         self.ui.note(_(b"exporting %d changesets\n") % total)
 
-        self.repo.hook(b'gitexport', nodes=[c.hex() for c in export], git=True)
+        self.repo.hook(b'gitexport', nodes=[c.hex() for c in export], git=b'1')
 
         # By only exporting deltas, the assertion is that all previous objects
         # for all other changesets are already present in the Git repository.
@@ -1043,7 +1043,7 @@ class GitHandler(object):
         self.repo.hook(
             b'gitimport',
             source=command,
-            git=True,
+            git=b'1',
             names=remote_names,
             refs=refs,
             heads=heads,
@@ -1079,7 +1079,7 @@ class GitHandler(object):
             for offset in range(0, max(total, 1), chunksize):
                 with self.get_transaction(b"gimport") as tr:
                     tr.hookargs.setdefault(b'url', path)
-                    tr.hookargs[b'git'] = True
+                    tr.hookargs[b'git'] = b'1'
                     self.repo.hook(
                         b'prechangegroup',
                         throw=True,
@@ -1418,7 +1418,7 @@ class GitHandler(object):
 
         self.repo.hook(
             b'incoming',
-            git=True,
+            git=b'1',
             source=command,
             node=cs,
             git_node=commit.id,
@@ -1475,7 +1475,7 @@ class GitHandler(object):
             self.repo.hook(
                 b"prechangegroup",
                 source=b'push',
-                git=True,
+                git=b'1',
                 url=remote,
                 changes=changes,
             )
@@ -1501,7 +1501,7 @@ class GitHandler(object):
                         self.repo.hook(
                             b"outgoing",
                             source=b'push',
-                            git=True,
+                            git=b'1',
                             url=remote,
                             node=self.map_hg_get(sha),
                             git_node=sha,
