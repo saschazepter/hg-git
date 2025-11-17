@@ -56,7 +56,7 @@ def _process_batch(ui, object_store, shas):
     object_store.add_objects(list(objects))
 
     for obj, path in objects:
-        object_store._remove_loose_object(obj.id)
+        object_store.delete_loose_object(obj.id)
 
     ui.debug(b'packed %d loose objects!\n' % len(shas))
 
