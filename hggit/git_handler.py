@@ -41,7 +41,7 @@ from mercurial.utils import dateutil, urlutil
 from . import _ssh, gc, git2hg, hg2git, util
 from .overlay import overlayrepo
 
-REMOTE_BRANCH_PREFIX = b"refs/remotes/"
+REMOTE_BRANCH_PREFIX = b'refs/remotes/'
 
 RE_GIT_AUTHOR = re.compile(rb"^(.*?) ?\<(.*?)(?:\>(.*))?$")
 
