@@ -55,8 +55,13 @@ def _process_batch(ui, object_store, shas):
     # to it
     object_store.add_objects(list(objects))
 
+    # Compatibility fix for dulwich >= 0.23.0
+    delete = getattr(object_store, 'delete_loose_object', None)
+    if delete is None:
+        delete = object_store._remove_loose_object
+
     for obj, path in objects:
-        object_store._remove_loose_object(obj.id)
+        delete(obj.id)
 
     ui.debug(b'packed %d loose objects!\n' % len(shas))
 
