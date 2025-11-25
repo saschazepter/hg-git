@@ -20,6 +20,10 @@ def generate_ssh_vendor(ui):
         def run_command(
             self, host, command, username=None, port=None, **kwargs
         ):
+            # on dulwich <= 0.23, command is a string
+            # on dulwich >= 0.24, command is bytes
+            if isinstance(command, bytes):
+                command = command.decode()
             assert isinstance(command, str)
             command = command.encode(SSHGitClient.DEFAULT_ENCODING)
             sshcmd = ui.config(b"ui", b"ssh", b"ssh")
