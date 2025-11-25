@@ -40,8 +40,8 @@ stages:
 
 .numbered_mercurial_versions: &numbered_mercurial_versions
   - "6.6"
-  - "6.7"
-  - "6.8"
+  # - "6.7"
+  # - "6.8"
   - "6.9"
   - "7.0"
   - "7.1"
@@ -203,8 +203,8 @@ CI images:
         HG:
           # should be *all_mercurial_versions, but there is no flatten operator
           - "6.6"
-          - "6.7"
-          - "6.8"
+          # - "6.7"
+          # - "6.8"
           - "6.9"
           - "7.0"
           - "7.1"
