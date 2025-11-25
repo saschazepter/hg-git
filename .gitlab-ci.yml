@@ -32,7 +32,8 @@ stages:
     - $(hg debuginstall --template '{pythonexe}\n') -m pip list --verbose
     # the following command is in case that the system python is different from the mercurial's one
     - pip list --verbose
-    - exit 1
+    # let's see if we can control the dulwich version in this way
+    - pip install --break-system-packages dulwich==0.22.8
     - adduser -D test
     # In the following chown command, let's use "." and not "*", because we want
     # to change ownership also on the ".hg" directory and the other hidden
