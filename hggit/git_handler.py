@@ -1,4 +1,5 @@
 import collections
+import inspect
 import itertools
 import os
 import re
@@ -2391,6 +2392,10 @@ class GitHandler(object):
                 urlobj.host,
                 urlobj.user,
             )
+            # fix for dulwich >= 0.24.something compatibility
+            # see: https://foss.heptapod.net/mercurial/hg-git/-/merge_requests/260/diffs#cfd91af1d2ec0cb63ecc2da85f594b7cabb98016_2395_2335
+            if inspect.isgenerator(auth):
+                auth = next(auth, None)
 
             if self._http_auth_realm:
                 # since we've tried an unauthenticated request, and
