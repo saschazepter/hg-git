@@ -200,7 +200,10 @@ CI images:
   parallel:
     matrix:
       - PYTHON: *python_versions
-        HG: *all_mercurial_versions
+        HG:
+          - *numbered_mercurial_versions
+          - "stable"
+          - "default"
 
 # Builds the image used by tests/test-networking.t
 Git service image:
