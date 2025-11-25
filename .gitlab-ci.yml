@@ -30,10 +30,10 @@ stages:
     # - echo "Path to python used by mercurial: ${PYTHON_HG}"
     # from the point of view of mercurial, what python modules are installed, and where? (we are interested in dulwich, mainly)
     - $(hg debuginstall --template '{pythonexe}\n') -m pip list --verbose
-    # the following command is in case that the system python is different from the mercurial's one
-    - pip list --verbose
     # let's see if we can control the dulwich version in this way
     - pip install --break-system-packages dulwich==0.22.8
+    # what modules are installed now?
+    - $(hg debuginstall --template '{pythonexe}\n') -m pip list --verbose
     - adduser -D test
     # In the following chown command, let's use "." and not "*", because we want
     # to change ownership also on the ".hg" directory and the other hidden
