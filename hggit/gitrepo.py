@@ -9,15 +9,15 @@ from mercurial import (
     pycompat,
     wireprotov1peer,
 )
-from mercurial.interfaces import repository
 from mercurial.utils import urlutil
 
+from . import compat
 from . import util
 
 eh = exthelper.exthelper()
 
 
-class gitrepo(repository.peer):
+class gitrepo(compat.IPeer):
     def __init__(self, ui, path=None, create=False, intents=None, **kwargs):
         if create:  # pragma: no cover
             raise error.Abort(b'Cannot create a git repository.')
