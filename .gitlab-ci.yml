@@ -24,12 +24,12 @@ stages:
     #   echo "-----"
     #   done
     # how was mercurial installed?
-    # - hg debuginstall
+    - hg debuginstall
     # grab the path to the python version used by mercurial
-    - PYTHON_HG=$(hg debuginstall --template '{pythonexe}\n')
+    # - PYTHON_HG=$(hg debuginstall --template '{pythonexe}\n')
     # - echo "Path to python used by mercurial: ${PYTHON_HG}"
     # from the point of view of mercurial, what python modules are installed, and where? (we are interested in dulwich, mainly)
-    - "${PYTHON_HG}" -m pip list --verbose
+    - $(hg debuginstall --template '{pythonexe}\n') -m pip list --verbose
     # the following command is in case that the system python is different from the mercurial's one
     - pip list --verbose
     - exit 1
