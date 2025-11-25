@@ -2127,8 +2127,18 @@ class GitHandler(object):
         )
 
         for change in changes:
-            oldfile, oldmode, oldsha = change.old
-            newfile, newmode, newsha = change.new
+            # compatibility with dulwich >= 0.24.0
+            # source: https://foss.heptapod.net/mercurial/hg-git/-/issues/451
+            if change.old:
+                oldfile, oldmode, oldsha = change.old
+            else:
+                # if we used oldsha here, it would made the linter complain that
+                # it is never used
+                oldfile, oldmode, _ = (None, None, None)
+            if change.new:
+                newfile, newmode, newsha = change.new
+            else:
+                newfile, newmode, newsha = (None, None, None)
             # actions are described by the following table ('no' means 'does
             # not exist'):
             #    old        new     |    action
