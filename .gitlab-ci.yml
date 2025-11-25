@@ -1,7 +1,6 @@
 stages:
   - images
-  - current
-  - compat
+  - tests
   - archives
 
 .base:
@@ -15,6 +14,8 @@ stages:
     CI_CLEVER_CLOUD_FLAVOR: XS
     CI_TEST_GIT_NETWORKING: 1
   script:
+    # install a specific dulwich version (in a way I do not like)
+    - pip install --break-system-packages dulwich=="$DULWICH"
     - adduser -D test
     # In the following chown command, let's use "." and not "*", because we want
     # to change ownership also on the ".hg" directory and the other hidden
@@ -32,46 +33,52 @@ stages:
     reports:
       junit: tests-$CI_JOB_ID.xml
 
+.python_versions: &python_versions
+  - "3.9"
+  - "3.13"
+  - "3.14"
+
+.numbered_mercurial_versions: &numbered_mercurial_versions
+  - "6.6"
+  - "6.7"
+  - "6.8"
+  - "6.9"
+  - "7.0"
+  - "7.1"
+
+.named_mercurial_versions: &named_mercurial_versions
+  - "stable"
+  - "default"
+
+.all_mercurial_versions: &all_mercurial_versions
+  [ *numbered_mercurial_versions, *named_mercurial_versions ]
+
+.dulwich_versions: &dulwich_versions
+  - "0.21.7"
+  - "0.22.8"
+  - "0.23.2"
+  - "0.24.10"
+  - ">0" # latest version
+
 # First, test with the latest and greatest Mercurial, across the
 # versions Python supported. We generally assume that if e.g. CPython
 # 3.6 and 3.9 work, anything in between will work as well.
-Latest:
+AllVersions:
   extends: .base
-  stage: current
+  stage: tests
   variables:
     CI_CLEVER_CLOUD_FLAVOR: M
   parallel:
     matrix:
-      - &latest-versions
-        PYTHON:
-          - "3.9"
-          - "3.13"
-        HG:
-          - "6.9"
+      - PYTHON: *python_versions
+        HG: *numbered_mercurial_versions
+        DULWICH: *dulwich_versions
 
-# This is the authoritative list of versions of Mercurial that this
-# extension is supported and tested with; it should be kept in sync
-# with __init__.py.
-#
-# Versions prior to the version that ships in the latest Ubuntu LTS
-# release (4.5.3 for 18.04; 5.3.1 for 20.04) may be dropped if they
-# interfere with new development.
-Supported:
-  extends: .base
-  stage: compat
-  parallel:
-    matrix:
-      - &supported-versions
-        PYTHON: "3.9"
-        HG:
-          - "6.6"
-          - "6.7"
-          - "6.8"
 
 # Test that it is possible to use and run hg-git on versions of Alpine
 # that include Dulwich, and with the oldest Dulwich supported.
 Alpine:
-  stage: compat
+  stage: tests
   image:
     name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/alpine:$ALPINE
   variables:
@@ -113,7 +120,7 @@ Alpine:
 # Test that the tests pass against the current branches
 Development:
   extends: .base
-  stage: compat
+  stage: tests
   rules: &upcoming-rules
     # allow opting out of upcoming releases on legacy branches
     - if: '$CI_SKIP_UPCOMING'
@@ -132,12 +139,9 @@ Development:
       allow_failure: true
   parallel:
     matrix:
-      - &development-versions
-        PYTHON:
+      - PYTHON:
           - "3.13"
-        HG:
-          - "stable"
-          - "default"
+        HG: *named_mercurial_versions
 
 Coverage:
   stage: .post
@@ -195,9 +199,8 @@ CI images:
       --destination registry.heptapod.net:443/mercurial/hg-git/ci/$CI_COMMIT_HG_BRANCH:hg-$HG-py$PYTHON
   parallel:
     matrix:
-      - *latest-versions
-      - *supported-versions
-      - *development-versions
+      - PYTHON: *python_versions
+        HG: *all_mercurial_versions
 
 # Builds the image used by tests/test-networking.t
 Git service image:
