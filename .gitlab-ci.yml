@@ -201,7 +201,13 @@ CI images:
     matrix:
       - PYTHON: *python_versions
         HG:
-          - *numbered_mercurial_versions
+          # should be *all_mercurial_versions, but there is no flatten operator
+          - "6.6"
+          - "6.7"
+          - "6.8"
+          - "6.9"
+          - "7.0"
+          - "7.1"
           - "stable"
           - "default"
 
