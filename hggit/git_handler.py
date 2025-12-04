@@ -309,17 +309,18 @@ class GitHandler(object):
         map_git_real = {}
         map_hg_real = {}
         if os.path.exists(self.vfs.join(self.map_file)):
-            for line in self.vfs(self.map_file):
-                # format is <40 hex digits> <40 hex digits>\n
-                if len(line) != 82:
-                    raise ValueError(
-                        _(b'corrupt mapfile: incorrect line length %d')
-                        % len(line)
-                    )
-                gitsha = line[:40]
-                hgsha = line[41:81]
-                map_git_real[gitsha] = hgsha
-                map_hg_real[hgsha] = gitsha
+            with self.vfs(self.map_file) as f:
+                for line in f:
+                    # format is <40 hex digits> <40 hex digits>\n
+                    if len(line) != 82:
+                        raise ValueError(
+                            _(b'corrupt mapfile: incorrect line length %d')
+                            % len(line)
+                        )
+                    gitsha = line[:40]
+                    hgsha = line[41:81]
+                    map_git_real[gitsha] = hgsha
+                    map_hg_real[hgsha] = gitsha
         self._map_git_real = map_git_real
         self._map_hg_real = map_hg_real
 
