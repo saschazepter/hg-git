@@ -103,8 +103,7 @@ def git_cleanup(ui, repo):
                 new_map.append(b'%s %s\n' % (gitsha, hgsha))
             else:
                 ui.note(b'dropping GIT:%s -> HG:%s\n' % (gitsha, hgsha))
-    with repo.githandler.store_repo.wlock():
-        f = gh.vfs(gh.map_file, b'wb')
+    with repo.githandler.store_repo.wlock(), gh.vfs(gh.map_file, b'wb') as f:
         f.writelines(new_map)
 
     for ref, gitsha in gh.git.refs.as_dict().items():
