@@ -103,8 +103,8 @@ class gitdirstate(dirstate.dirstate):
                 fn = self.pathto(fn)
                 if not os.path.exists(fn):
                     continue
-                fp = open(fn, 'rb')
-                pats, warnings = gignorepats(None, fp, root=d)
+                with open(fn, 'rb') as fp:
+                    pats, warnings = gignorepats(None, fp, root=d)
                 for warning in warnings:
                     self._ui.warn(b"%s: %s\n" % (fn, warning))
                 patterns.extend(pats)
