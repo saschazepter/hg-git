@@ -95,13 +95,14 @@ def git_cleanup(ui, repo):
     '''clean up Git commit map after history editing'''
     new_map = []
     gh = repo.githandler
-    for line in gh.vfs(gh.map_file):
-        gitsha, hgsha = line.strip().split(b' ', 1)
-        if hgsha in repo:
-            ui.debug(b'keeping GIT:%s -> HG:%s\n' % (gitsha, hgsha))
-            new_map.append(b'%s %s\n' % (gitsha, hgsha))
-        else:
-            ui.note(b'dropping GIT:%s -> HG:%s\n' % (gitsha, hgsha))
+    with gh.vfs(gh.map_file) as f:
+        for line in f:
+            gitsha, hgsha = line.strip().split(b' ', 1)
+            if hgsha in repo:
+                ui.debug(b'keeping GIT:%s -> HG:%s\n' % (gitsha, hgsha))
+                new_map.append(b'%s %s\n' % (gitsha, hgsha))
+            else:
+                ui.note(b'dropping GIT:%s -> HG:%s\n' % (gitsha, hgsha))
     with repo.githandler.store_repo.wlock():
         f = gh.vfs(gh.map_file, b'wb')
         f.writelines(new_map)
