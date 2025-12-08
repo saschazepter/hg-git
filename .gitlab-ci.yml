@@ -198,7 +198,7 @@ CI images:
       - *supported-versions
       - *development-versions
 
-# Builds the image used by tests/test-networking.t
+# Builds the image used by tests/test-networking.t and tests/test-serve-ci.t
 Git service image:
   stage: images
   tags:
