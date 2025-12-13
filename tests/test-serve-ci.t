@@ -29,7 +29,7 @@ Create a silly SSH configuration:
 
   $ cat >> $HGRCPATH << EOF
   > [ui]
-  > ssh = ssh -o UserKnownHostsFile=$TESTDIR/known_hosts -o StrictHostKeyChecking=no -i $TESTTMP/id_ed25519
+  > ssh = ssh -o WarnWeakCrypto=no -o UserKnownHostsFile=$TESTDIR/known_hosts -o StrictHostKeyChecking=no -i $TESTTMP/id_ed25519
   > EOF
   $ cp $RUNTESTDIR/../contrib/docker/git-server/ssh/id_ed25519 $TESTTMP
   $ chmod 0600 $TESTTMP/id_ed25519
