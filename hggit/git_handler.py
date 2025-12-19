@@ -13,7 +13,6 @@ from dulwich.pack import apply_delta
 from dulwich.refs import (
     LOCAL_BRANCH_PREFIX,
     LOCAL_TAG_PREFIX,
-    PEELED_TAG_SUFFIX,
 )
 from dulwich.repo import Repo, check_ref_format
 from dulwich import client
@@ -44,6 +43,7 @@ from . import gc
 from . import git2hg
 from . import hg2git
 from . import util
+from .compat import PEELED_TAG_SUFFIX
 from .overlay import overlayrepo
 
 REMOTE_BRANCH_PREFIX = b'refs/remotes/'

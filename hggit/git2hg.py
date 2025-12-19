@@ -8,7 +8,6 @@ from dulwich.objects import Commit, Tag
 from dulwich.refs import (
     LOCAL_BRANCH_PREFIX,
     LOCAL_TAG_PREFIX,
-    PEELED_TAG_SUFFIX,
 )
 from mercurial.i18n import _
 
@@ -17,6 +16,7 @@ from mercurial import error, util as hgutil
 from mercurial import phases
 
 from . import config
+from .compat import PEELED_TAG_SUFFIX
 
 
 def get_public(ui, refs, remote_names):

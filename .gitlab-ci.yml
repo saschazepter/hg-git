@@ -110,7 +110,7 @@ Alpine:
       - ALPINE: "3.19"
         DULWICH:
           - "0.22.1"
-          - "0.24.9"
+          - "0.25.2"
 
 # Test that the tests pass against the current branches
 Development:
