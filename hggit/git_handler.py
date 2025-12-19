@@ -11,9 +11,9 @@ from dulwich.errors import HangupException, GitProtocolError, ApplyDeltaError
 from dulwich.objects import Blob, Commit, Tag, Tree, parse_timezone
 from dulwich.pack import apply_delta
 from dulwich.refs import (
-    ANNOTATED_TAG_SUFFIX,
     LOCAL_BRANCH_PREFIX,
     LOCAL_TAG_PREFIX,
+    PEELED_TAG_SUFFIX,
 )
 from dulwich.repo import Repo, check_ref_format
 from dulwich import client
@@ -1640,8 +1640,8 @@ class GitHandler(object):
             # pull tags pointing to known revisions, including
             # annotated tags
             for ref, sha in refs.items():
-                if ref.endswith(ANNOTATED_TAG_SUFFIX) and sha in self._map_git:
-                    actual_ref = ref[: -len(ANNOTATED_TAG_SUFFIX)]
+                if ref.endswith(PEELED_TAG_SUFFIX) and sha in self._map_git:
+                    actual_ref = ref[: -len(PEELED_TAG_SUFFIX)]
                     filteredrefs.setdefault(actual_ref, refs[actual_ref])
 
             return [x for x in filteredrefs.values() if x not in self.git]
@@ -1857,7 +1857,7 @@ class GitHandler(object):
         repotags = self.repo.tags()
         new_refs = {}
         for k in refs:
-            if k.endswith(ANNOTATED_TAG_SUFFIX) or not k.startswith(
+            if k.endswith(PEELED_TAG_SUFFIX) or not k.startswith(
                 LOCAL_TAG_PREFIX
             ):
                 continue
@@ -2038,7 +2038,7 @@ class GitHandler(object):
 
         for ref_name, sha in refs.items():
             if (
-                ref_name.endswith(ANNOTATED_TAG_SUFFIX)
+                ref_name.endswith(PEELED_TAG_SUFFIX)
                 or sha not in self.git.object_store
             ):
                 # the sha points to a peeled tag; we should either
