@@ -32,8 +32,8 @@ This plugin is implemented entirely in Python — there are no Git
 binary dependencies, and you do not need to have Git installed on your
 system. The only dependencies are:
 
-* Mercurial 6.6
-* Dulwich 0.22.1
+* Mercurial 6.6,<7.2
+* Dulwich 0.22.1,<0.25
 * Python 3.9
 
 Please note that these are the earliest versions known to work; later
