@@ -137,7 +137,7 @@ def islocal(path):
 
 
 # defend against tracebacks if we specify -r in 'hg pull'
-@eh.wrapfunction(hg, 'addbranchrevs')
+@eh.wrapfunction(urlutil, 'add_branch_revs')
 def safebranchrevs(orig, lrepo, otherrepo, branches, revs, **kwargs):
     revs, co = orig(lrepo, otherrepo, branches, revs, **kwargs)
     if isinstance(otherrepo, gitrepo):
