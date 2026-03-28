@@ -18,7 +18,7 @@ services:
       dockerfile: contrib/docker/Dockerfile.alpine
       args:
         # Edit these to change the versions to test
-        HG: 7.1
+        HG: 7.2
         PYTHON: 3.14
     container_name: hg-git-tests
     volumes:
