@@ -126,7 +126,13 @@ class gitrepo(peer.Peer):
     def get_cached_bundle_inline(self, path):
         pass
 
-instance = gitrepo
+def instance(ui, path, create=False, *args, **kwargs):
+    if create and islocal(path):
+        from mercurial import localrepo
+
+        return localrepo.instance(ui, path, create, *args, **kwargs)
+
+    return gitrepo(ui, path, create, *args, **kwargs)
 
 def islocal(path):
     if util.isgitsshuri(path):
