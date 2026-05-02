@@ -6,6 +6,7 @@ from mercurial import exthelper
 
 from mercurial.node import bin, hex
 
+from . import compat
 
 eh = exthelper.exthelper()
 
@@ -73,7 +74,7 @@ def _addpartsfromopts(orig, ui, repo, bundler, source, outgoing, opts):
 
 @eh.extsetup
 def install_server_support(ui):
-    @bundle2.parthandler(BUNDLEPART_MAP)
+    @compat.parthandler(BUNDLEPART_MAP)
     def handlebundlemap(op, inpart):
         ui.debug(b'unbundling git map\n')
 
@@ -105,7 +106,7 @@ def install_server_support(ui):
 
         addpartrevgitmap(repo, bundler, outgoing)
 
-    @bundle2.parthandler(BUNDLEPART_TAGS)
+    @compat.parthandler(BUNDLEPART_TAGS)
     def handlebundletags(op, inpart):
         with io.BytesIO() as buf:
             while not inpart.consumed:
