@@ -20,3 +20,11 @@ except ImportError:
     from dulwich.refs import PEELED_TAG_SUFFIX
 
     assert PEELED_TAG_SUFFIX  # silence pyflakes
+
+try:
+    # hg >= 7.2
+    from mercurial.bundle2_part_handlers import parthandler
+except ImportError:
+    from mercurial.bundle2 import parthandler
+
+    assert parthandler  # silence pyflakes
