@@ -44,7 +44,7 @@ Latest:
     matrix:
       - &latest-versions
         PYTHON:
-          - "3.10"
+          - "3.9"
           - "3.14"
         HG:
           - "7.1"
@@ -62,7 +62,7 @@ Supported:
   parallel:
     matrix:
       - &supported-versions
-        PYTHON: "3.10"
+        PYTHON: "3.9"
         HG:
           - "6.6"
           - "6.7"

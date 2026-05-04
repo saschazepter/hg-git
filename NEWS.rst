@@ -5,12 +5,12 @@ This is a feature release, although without the actual features.
 
 * Fix an error on pull with commits missing on Mercurial side. We'd
   try to advance phase boundaries for them, which failed.
-* Drop support for Python 3.9 & Dulwich 0.21
+* Drop support for Dulwich 0.21.
 * Add support for Dulwich 0.24 and Mercurial 7.1.
 * Suppress pointless warning when pushing deleted tags. (#446)
 
 This release requires Mercurial 6.6, or later, Dulwich 0.22.1 or later
-and Python 3.10 or later.
+and Python 3.9 or later.
 
 A huge thanks goes to @ced, @reconzo-abhijith and @muxator for
 contributing to this release!
