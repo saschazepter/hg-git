@@ -4,6 +4,7 @@ import os
 import re
 import shutil
 import types
+from typing import Optional
 
 from dulwich.client import HTTPUnauthorized
 from dulwich.errors import HangupException, GitProtocolError, ApplyDeltaError
@@ -1629,7 +1630,7 @@ class GitHandler(object):
         # Compare the following:
         # - 0.24.2 (without "depth"): https://github.com/jelmer/dulwich/blob/dulwich-0.24.2/dulwich/repo.py#L590
         # - 0.24.3 (with "depth")   : https://github.com/jelmer/dulwich/blob/dulwich-0.24.3/dulwich/repo.py#L601
-        def determine_wants(refs, depth: int | None = None):
+        def determine_wants(refs, depth: Optional[int] = None):
             if refs is None:
                 return None
             filteredrefs = git2hg.filter_refs(refs, heads)
