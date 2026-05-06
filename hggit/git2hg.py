@@ -6,10 +6,10 @@ import itertools
 from dulwich import config as dul_config
 from dulwich.objects import Commit, Tag
 from dulwich.refs import (
+    ANNOTATED_TAG_SUFFIX,
     LOCAL_BRANCH_PREFIX,
     LOCAL_TAG_PREFIX,
 )
-from dulwich.protocol import PEELED_TAG_SUFFIX
 from mercurial.i18n import _
 
 from mercurial.node import bin, short
@@ -306,7 +306,7 @@ def filter_refs(refs, heads):
                     raise error.RepoLookupError(msg)
     else:
         for ref, sha in refs.items():
-            if not ref.endswith(PEELED_TAG_SUFFIX) and (
+            if not ref.endswith(ANNOTATED_TAG_SUFFIX) and (
                 ref.startswith(LOCAL_BRANCH_PREFIX)
                 or ref.startswith(LOCAL_TAG_PREFIX)
                 or ref == b'HEAD'
