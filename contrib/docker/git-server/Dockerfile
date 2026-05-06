@@ -1,4 +1,4 @@
-FROM alpine:3.23
+FROM alpine:latest
 
 # "--no-cache" is new in Alpine 3.3 and it avoid using
 # "--update + rm -rf /var/cache/apk/*" (to remove cache)

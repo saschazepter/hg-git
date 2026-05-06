@@ -9,15 +9,14 @@ from mercurial import (
     pycompat,
     wireprotov1peer,
 )
-from mercurial.interfaces import repository
+from mercurial.exchanges import peer
 from mercurial.utils import urlutil
 
 from . import util
 
 eh = exthelper.exthelper()
 
-
-class gitrepo(repository.peer):
+class gitrepo(peer.Peer):
     def __init__(self, ui, path=None, create=False, intents=None, **kwargs):
         if create:  # pragma: no cover
             raise error.Abort(b'Cannot create a git repository.')
@@ -121,9 +120,19 @@ class gitrepo(repository.peer):
     def _submitone(self, op, args):
         return None
 
+    def clonebundles(self):
+        pass
 
-instance = gitrepo
+    def get_cached_bundle_inline(self, path):
+        pass
 
+def instance(ui, path, create=False, *args, **kwargs):
+    if create and islocal(path):
+        from mercurial import localrepo
+
+        return localrepo.instance(ui, path, create, *args, **kwargs)
+
+    return gitrepo(ui, path, create, *args, **kwargs)
 
 def islocal(path):
     if util.isgitsshuri(path):
@@ -134,7 +143,7 @@ def islocal(path):
 
 
 # defend against tracebacks if we specify -r in 'hg pull'
-@eh.wrapfunction(hg, 'addbranchrevs')
+@eh.wrapfunction(urlutil, 'add_branch_revs')
 def safebranchrevs(orig, lrepo, otherrepo, branches, revs, **kwargs):
     revs, co = orig(lrepo, otherrepo, branches, revs, **kwargs)
     if isinstance(otherrepo, gitrepo):

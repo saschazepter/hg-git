@@ -16,6 +16,7 @@ from mercurial import (
     localrepo,
 )
 from mercurial.utils import urlutil
+from mercurial.cmd_impls import clone
 
 # local modules
 from . import gitrepo
@@ -94,8 +95,8 @@ class RepoFactory:
         return fn(ui, path, *args, **kwargs)
 
 
-@eh.wrapfunction(hg, 'defaultdest')
-def defaultdest(orig, source):
+@eh.wrapfunction(clone, 'default_dest')
+def default_dest(orig, source):
     if source.endswith(b'.git'):
         return orig(source[:-4])
 
