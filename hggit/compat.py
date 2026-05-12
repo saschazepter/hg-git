@@ -28,3 +28,11 @@ except ImportError:
     from mercurial.bundle2 import parthandler
 
     assert parthandler  # silence pyflakes
+
+try:
+    # hg >= 7.2
+    from mercurial.exchanges.peer import Peer
+except ImportError:
+    from mercurial.interfaces.repository import peer as Peer
+
+    assert Peer  # silence pyflakes
