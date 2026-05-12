@@ -36,3 +36,16 @@ except ImportError:
     from mercurial.interfaces.repository import peer as Peer
 
     assert Peer  # silence pyflakes
+
+import mercurial.utils.urlutil as _urlutil  # do not re-export urlutil
+
+if hasattr(_urlutil, 'add_branch_revs'):
+    # hg >= 7.2
+    from mercurial.utils import urlutil as add_branch_revs_mod
+
+    add_branch_revs_function_name = 'add_branch_revs'
+else:
+    from mercurial import hg as add_branch_revs_mod
+
+    add_branch_revs_function_name = 'addbranchrevs'
+    assert add_branch_revs_mod  # silence pyflakes

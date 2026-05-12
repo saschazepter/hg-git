@@ -5,7 +5,6 @@ from mercurial import (
     error,
     exchange,
     exthelper,
-    hg,
     pycompat,
     wireprotov1peer,
 )
@@ -150,7 +149,9 @@ def islocal(path):
 
 
 # defend against tracebacks if we specify -r in 'hg pull'
-@eh.wrapfunction(hg, 'addbranchrevs')
+@eh.wrapfunction(
+    compat.add_branch_revs_mod, compat.add_branch_revs_function_name
+)
 def safebranchrevs(orig, lrepo, otherrepo, branches, revs, **kwargs):
     revs, co = orig(lrepo, otherrepo, branches, revs, **kwargs)
     if isinstance(otherrepo, gitrepo):
