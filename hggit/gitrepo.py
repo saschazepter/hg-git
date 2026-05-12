@@ -9,15 +9,17 @@ from mercurial import (
     pycompat,
     wireprotov1peer,
 )
-from mercurial.interfaces import repository
 from mercurial.utils import urlutil
 
-from . import util
+from . import (
+    compat,
+    util,
+)
 
 eh = exthelper.exthelper()
 
 
-class gitrepo(repository.peer):
+class gitrepo(compat.Peer):
     def __init__(self, ui, path=None, create=False, intents=None, **kwargs):
         if create:  # pragma: no cover
             raise error.Abort(b'Cannot create a git repository.')
@@ -120,6 +122,20 @@ class gitrepo(repository.peer):
 
     def _submitone(self, op, args):
         return None
+
+    def clonebundles(self):
+        """Trivial implementation of abstract hg >= 7.2 method.
+
+        No harm for hg <= 7.1.2
+        """
+        pass
+
+    def get_cached_bundle_inline(self, path):
+        """Trivial implementation of abstract hg >= 7.2 method.
+
+        No harm for hg <= 7.1.2
+        """
+        pass
 
 
 instance = gitrepo
