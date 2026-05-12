@@ -49,3 +49,11 @@ else:
 
     add_branch_revs_function_name = 'addbranchrevs'
     assert add_branch_revs_mod  # silence pyflakes
+
+try:
+    # hg >= 7.2
+    from mercurial.cmd_impls.clone import default_dest
+except ImportError:
+    from mercurial.hg import defaultdest as default_dest
+
+    assert default_dest  # silence pyflakes
