@@ -18,6 +18,7 @@ from mercurial import (
 from mercurial.utils import urlutil
 
 # local modules
+from . import compat
 from . import gitrepo
 from . import util
 
@@ -94,8 +95,8 @@ class RepoFactory:
         return fn(ui, path, *args, **kwargs)
 
 
-@eh.wrapfunction(hg, 'defaultdest')
-def defaultdest(orig, source):
+@eh.wrapfunction(compat, 'default_dest')
+def default_dest(orig, source):
     if source.endswith(b'.git'):
         return orig(source[:-4])
 
