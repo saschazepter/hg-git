@@ -7,10 +7,11 @@ except ImportError:
     sys.exit(80)
 
 import os, tempfile, unittest, shutil
-from mercurial import ui, hg, commands, pycompat
+from mercurial import ui, hg, pycompat
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.path.pardir))
 
+from hggit import compat
 from hggit.git_handler import GitHandler
 
 
@@ -18,7 +19,7 @@ class TestUrlParsing(object):
     def setUp(self):
         # create a test repo location.
         self.tmpdir = tempfile.mkdtemp('hg-git_url-test').encode('utf-8')
-        commands.init(ui.ui(), self.tmpdir)
+        compat.commands_init(ui.ui(), self.tmpdir)
         repo = hg.repository(ui.ui(), self.tmpdir)
         self.handler = GitHandler(repo, ui.ui())
 
