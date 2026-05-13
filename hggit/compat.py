@@ -1,3 +1,6 @@
+import inspect
+
+import mercurial.commands  # TODO: do not re-export mercurial.commands (use "as _commands"?)
 from dulwich.object_store import PackBasedObjectStore
 
 
@@ -57,3 +60,16 @@ except ImportError:
     from mercurial.hg import defaultdest as default_dest
 
     assert default_dest  # silence pyflakes
+
+if inspect.getfullargspec(mercurial.commands.init).args == []:
+    # hg >= 7.2
+    #
+    # this accesses the private function _init(), and assumes that:
+    #
+    # >>> inspect.getfullargspec(mercurial.commands._init)
+    # FullArgSpec(args=['ui', 'dest'], varargs=None, varkw='opts', defaults=(b'.',), kwonlyargs=[], kwonlydefaults=None, annotations={})
+    from mercurial.commands import _init as commands_init
+else:
+    from mercurial.commands import init as commands_init
+
+    assert commands_init  # silence pyflakes
