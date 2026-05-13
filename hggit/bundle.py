@@ -1,3 +1,4 @@
+import inspect
 import io
 
 from mercurial import bundle2
@@ -57,19 +58,46 @@ def addpartrevgittags(repo, bundler, outgoing):
         bundler.newpart(BUNDLEPART_TAGS, data=chunks, mandatory=False)
 
 
-@eh.wrapfunction(bundle2, '_addpartsfromopts')
-def _addpartsfromopts(orig, ui, repo, bundler, source, outgoing, opts):
-    orig(ui, repo, bundler, source, outgoing, opts)
+if inspect.getfullargspec(bundle2._addpartsfromopts).args == [
+    'repo',
+    'bundler',
+    'source',
+    'outgoing',
+    'opts',
+]:
+    # hg >= 7.2
+    #
+    # hg 7.2 removed the "ui" argument from _addpartsfromopts() in
+    # 63c4874dacb6 ("bundle: remove unused argument").
+    @eh.wrapfunction(bundle2, '_addpartsfromopts')
+    def _addpartsfromopts(orig, repo, bundler, source, outgoing, opts):
+        orig(repo, bundler, source, outgoing, opts)
 
-    if opts.get(CAPABILITY_MAP, False) or ui.configbool(
-        b'experimental', b'hg-git-bundle'
-    ):
-        addpartrevgitmap(repo, bundler, outgoing)
+        if opts.get(CAPABILITY_MAP, False) or repo.ui.configbool(
+            b'experimental', b'hg-git-bundle'
+        ):
+            addpartrevgitmap(repo, bundler, outgoing)
 
-    if opts.get(CAPABILITY_TAGS, False) or ui.configbool(
-        b'experimental', b'hg-git-bundle'
-    ):
-        addpartrevgittags(repo, bundler, outgoing)
+        if opts.get(CAPABILITY_TAGS, False) or repo.ui.configbool(
+            b'experimental', b'hg-git-bundle'
+        ):
+            addpartrevgittags(repo, bundler, outgoing)
+
+else:
+    # hg <= 7.1.2 still has the "ui" argument
+    @eh.wrapfunction(bundle2, '_addpartsfromopts')
+    def _addpartsfromopts(orig, ui, repo, bundler, source, outgoing, opts):
+        orig(ui, repo, bundler, source, outgoing, opts)
+
+        if opts.get(CAPABILITY_MAP, False) or ui.configbool(
+            b'experimental', b'hg-git-bundle'
+        ):
+            addpartrevgitmap(repo, bundler, outgoing)
+
+        if opts.get(CAPABILITY_TAGS, False) or ui.configbool(
+            b'experimental', b'hg-git-bundle'
+        ):
+            addpartrevgittags(repo, bundler, outgoing)
 
 
 @eh.extsetup
