@@ -73,3 +73,14 @@ else:
     from mercurial.commands import init as commands_init
 
     assert commands_init  # silence pyflakes
+
+try:
+    # hg >= 7.2
+    from mercurial.exchanges import bundle_caps as bundle_caps_mod
+
+    get_repo_caps_function_name = 'get_repo_caps'
+except ImportError:
+    import mercurial.bundle2 as bundle_caps_mod
+
+    get_repo_caps_function_name = 'getrepocaps'
+    assert bundle_caps_mod  # silence pyflakes
