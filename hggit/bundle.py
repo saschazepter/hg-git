@@ -17,8 +17,8 @@ BUNDLEPART_MAP = b'exp-hg-git-map'
 BUNDLEPART_TAGS = b'exp-hg-git-tags'
 
 
-@eh.wrapfunction(bundle2, 'getrepocaps')
-def getrepocaps(orig, repo, **kwargs):
+@eh.wrapfunction(compat.bundle_caps_mod, compat.get_repo_caps_function_name)
+def get_repo_caps(orig, repo, **kwargs):
     caps = orig(repo, **kwargs)
 
     if repo.ui.configbool(b'experimental', b'hg-git-serve'):
