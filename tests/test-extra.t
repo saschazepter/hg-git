@@ -158,9 +158,19 @@ lets you do that, though.
   >>> c.parents = [b'$commit_sha']
   >>> c.tree = b'$tree_sha'
   >>> c.message = b'extra commit\n'
-  >>> c.extra.extend([(b'zzz:zzz', b'data:zzz'), (b'aaa:aaa', b'data:aaa'),
+  >>> c._extra.extend([(b'zzz:zzz', b'data:zzz'), (b'aaa:aaa', b'data:aaa'),
   ...                 (b'HG:extra', b'hgaaa:dataaaa'),
   ...                 (b'HG:extra', b'hgzzz:datazzz')])
+  ... # In the above line, please note that Dulwich deprecated Commit.extra in
+  ... # 0.21.3, and removed it in 1.0.0 (the relevant file there is
+  ... # dulwich/objects.py).
+  ... #
+  ... # The private member _extra has been present since before our earliest
+  ... # supported version, and it is still present in Dulwich 1.2.x.
+  ... #
+  ... # To keep compatibility with all Dulwich versions (albeit in a fragile
+  ... # way), we will rely on _extra, since the construct is only used in this
+  ... # test and not in any other hg-git code.
   >>> repo.object_store.add_object(c)
   >>> repo.refs.set_if_equals(b'refs/heads/master', None, c.id)
   True
