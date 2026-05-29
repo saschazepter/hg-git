@@ -89,7 +89,8 @@ Alpine:
         apk add build-base python3-dev
         pip3 install "urllib3<=2.0" dulwich==$DULWICH
       fi
-    - pip3 install coverage
+    # The version constraint should be kept in sync with contrib/docker/installhg.sh.
+    - pip3 install 'coverage<7.13.0'
     - adduser -D test
     - chown -R test *
     - SETUPTOOLS_SCM_PRETEND_VERSION=1 PYTHON=3 su test -c contrib/ci.sh
