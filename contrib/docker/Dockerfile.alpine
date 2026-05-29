@@ -1,5 +1,6 @@
 ARG PYTHON=3
-FROM python:$PYTHON-alpine
+ARG PYTHON_IMAGE=python
+FROM $PYTHON_IMAGE:$PYTHON-alpine
 
 ARG HG=stable
 ARG PYTHON=3

@@ -154,6 +154,7 @@ CI images:
     - >
       /kaniko/executor --context $CI_PROJECT_DIR
       --dockerfile $CI_PROJECT_DIR/contrib/docker/Dockerfile.alpine
+      --build-arg PYTHON_IMAGE=$CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/python
       --build-arg PYTHON=$PYTHON
       --build-arg HG=$HG
       --single-snapshot
