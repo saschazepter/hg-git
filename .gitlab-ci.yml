@@ -105,6 +105,8 @@ Alpine:
 Development:
   extends: .base
   stage: compat
+  variables:
+    CI_SKIP_UPCOMING: 1
   rules: &upcoming-rules
     # allow opting out of upcoming releases on legacy branches
     - if: '$CI_SKIP_UPCOMING'
