@@ -75,16 +75,19 @@ Alpine:
   script:
     - >-
       apk add gnupg git unzip openssh mercurial
-      py3-coverage py3-pygments py3-setuptools_scm
+      py3-pip py3-coverage py3-pygments py3-setuptools_scm
       py3-urllib3
     - |
       if test -z "$DULWICH"
       then
         apk add py3-dulwich
       else
-        apk add build-base python3-dev py3-pip
+        apk add build-base python3-dev
         pip install --break-system-packages dulwich==$DULWICH
       fi
+    # The version constraint should be kept in sync with contrib/docker/installhg.sh.
+    # This is just a version check, the package is already installed above.
+    - "pip install --dry-run --break-system-packages 'coverage<7.13.0' | grep 'Requirement already satisfied: coverage'"
     - adduser -D test
     - chown -R test *
     - SETUPTOOLS_SCM_PRETEND_VERSION=1 PYTHON=3 su test -c contrib/ci.sh
@@ -187,7 +190,7 @@ CI images:
       - *supported-versions
       - *development-versions
 
-# Builds the image used by tests/test-networking.t
+# Builds the image used by tests/test-networking.t and tests/test-serve-ci.t
 Git service image:
   stage: images
   tags:
