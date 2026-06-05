@@ -255,7 +255,10 @@ Upload:
   stage: .post
   rules: *wheel-rules
   script:
-    - pip install twine
+    # Twine 6.2.0 removed support for --skip-existing for indexes other than
+    # PyPI. For now, we stick with an older version of twine. See #462 for
+    # long-term solutions.
+    - pip install 'twine<6.2.0'
     - twine upload --disable-progress-bar --verbose --skip-existing dist/*
 
 Release:
