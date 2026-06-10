@@ -102,12 +102,13 @@ class RepoFactory:
         return fn(ui, path, *args, **kwargs)
 
 
-@eh.wrapfunction(hg, 'defaultdest')
-def defaultdest(orig, source):
-    if source.endswith(b'.git'):
-        return orig(source[:-4])
-
-    return orig(source)
+# This function was not tested? I removed it with no consequences
+# @eh.wrapfunction(hg, 'defaultdest')
+# def defaultdest(orig, source):
+#     if source.endswith(b'.git'):
+#         return orig(source[:-4])
+#
+#     return orig(source)
 
 
 @eh.wrapfunction(hg, 'peer')
