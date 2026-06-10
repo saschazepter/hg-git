@@ -76,7 +76,7 @@ class RepoFactory:
 
         p = url.localpath()
         # detect git ssh urls (which mercurial thinks is a file-like path)
-        if isgitdir(p) or util.isgitsshuri(p) or p.endswith(b'.git'):
+        if isgitdir(p) or util.isgitsshuri(p): # or p.endswith(b'.git'):  # fixes test-localrepo.t. Bug introduced in b73926656513
             fn = gitrepo.instance
         else:
             fn = self.__orig.instance
@@ -86,6 +86,14 @@ class RepoFactory:
     def make_peer(self, ui, path, *args, **kwargs):
         p = path.url.localpath()
         # detect git ssh urls (which mercurial thinks is a file-like path)
+        #
+        # the final p.endswith(b'.git') is necessary to be able to clone git
+        # repositories over http://host/repo.git, without having to use
+        # git+http://host/repo.git.
+        #
+        # I think it should be removed. Why add this magic? It the source is a
+        # git repo, just use git+http or git+ssh. But if we do that, we would
+        # break tests/test-serve-dulwich.t
         if isgitdir(p) or util.isgitsshuri(p) or p.endswith(b'.git'):
             fn = gitrepo.instance
         elif hasattr(self.__orig, 'make_peer'):

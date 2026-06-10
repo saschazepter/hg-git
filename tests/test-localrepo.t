@@ -22,9 +22,9 @@ If the directory name does not end with ".git", all should work as expected
   ff7a2f2d8d70
   $ cd ..
 
-It should also work if the directory name ends with ".git", but it does not.
+It should also work if the directory name ends with ".git"
   $ mv hgrepo hgrepo.git
   $ cd hgrepo.git
   $ hg log -T "{node|short}\n"
-  abort: repository '$TESTTMP/hgrepo.git' is not local
-  [10]
+  ff7a2f2d8d70
+  $ cd ..
