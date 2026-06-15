@@ -4,7 +4,8 @@ set -e
 
 BUILDDEPENDS="curl jq coreutils gcc gettext musl-dev"
 RUNDEPENDS="git git-daemon unzip openssh gnupg"
-PIPDEPENDS="black coverage dulwich pyflakes pygments pylint setuptools_scm"
+# The version constraints should be kept in sync with setup.cfg and .gitlab-ci.yml.
+PIPDEPENDS="black<26 coverage<7.13.0 dulwich>=0.22.1,<0.25.0 pyflakes pygments pylint setuptools_scm"
 
 PIP="python -m pip --no-cache-dir"
 
