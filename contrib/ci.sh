@@ -12,4 +12,4 @@ exec python$PYTHON tests/run-tests.py \
      --cover \
      --xunit $PWD/tests-$CI_JOB_ID.xml \
      --jobs 1 \
-     tests/test-debug-ci-corruption.t
+     tests/test-debug-ci-corruption-*.t
