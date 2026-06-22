@@ -14,9 +14,9 @@ files. We also have 10 tags.
   $ git init gitrepo
   Initialized empty Git repository in $TESTTMP/gitrepo/.git/
   $ cd gitrepo
-  $ for i in $(seq 10)
+  $ for i in $(seq 100)
   > do
-  >   for f in $(seq 10)
+  >   for f in $(seq 100)
   >   do
   >     n=$(expr $i \* $f)
   >     echo $n > $f
