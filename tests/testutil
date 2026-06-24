@@ -28,12 +28,16 @@ echo "hggit=$(echo $(dirname $TESTDIR))/hggit" >> $HGRCPATH
 echo '[subrepos]' >> $HGRCPATH
 echo 'git:allowed = yes' >> $HGRCPATH
 
-# silence warning from recent git
 cat >> $TESTTMP/.gitconfig <<EOF
+# silence warning about upcoming default branch name change
 [init]
 defaultBranch = master
+# allow local repositories as submodules
 [protocol.file]
 allow = always
+# disable background maintenance, which has a race condition in Git 2.54.0
+[maintenance]
+autoDetach = false
 EOF
 
 # Standard checks for external dependencies

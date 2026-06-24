@@ -1,4 +1,4 @@
-FROM alpine:3.12
+FROM alpine:3.23
 
 # "--no-cache" is new in Alpine 3.3 and it avoid using
 # "--update + rm -rf /var/cache/apk/*" (to remove cache)
@@ -36,7 +36,6 @@ RUN chmod 644 /git-server/.ssh/authorized_keys
 RUN chown -R git /git-server/.ssh
 
 # setup nginx
-RUN mkdir /run/nginx
 COPY htpasswd /git-server/htpasswd
 COPY nginx.conf /git-server/nginx.conf
 
