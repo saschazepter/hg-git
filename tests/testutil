@@ -40,10 +40,11 @@ debugstrip = strip
 EOF
 fi
 
-# silence warning from recent git
 cat >> $TESTTMP/.gitconfig <<EOF
+# silence warning about upcoming default branch name change
 [init]
 defaultBranch = master
+# allow local repositories as submodules
 [protocol.file]
 allow = always
 EOF
