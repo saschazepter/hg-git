@@ -9,7 +9,7 @@ stages:
   timeout: 30m
   retry: 1
   services:
-    - name: registry.heptapod.net:443/mercurial/hg-git/git-server
+    - name: registry.heptapod.net:443/mercurial/hg-git/tests-git-server/$CI_COMMIT_HG_BRANCH
       alias: git-server
   variables:
     CI_CLEVER_CLOUD_FLAVOR: XS
@@ -246,7 +246,7 @@ Git service image:
       --dockerfile $CI_PROJECT_DIR/contrib/docker/git-server/Dockerfile
       --single-snapshot
       --cleanup
-      --destination registry.heptapod.net:443/mercurial/hg-git/git-server
+      --destination registry.heptapod.net:443/mercurial/hg-git/tests-git-server/$CI_COMMIT_HG_BRANCH
 
 Wheels:
   image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/python
