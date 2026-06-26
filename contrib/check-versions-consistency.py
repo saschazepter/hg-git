@@ -14,6 +14,7 @@
 #
 # - <BASE>/.gitlab-ci.yml
 # - <BASE>/README.rst
+# - <BASE>/contrib/docker/installhg.sh
 # - <BASE>/hggit/__init__.py
 # - <BASE>/setup.cfg
 #
@@ -29,7 +30,9 @@
 # - extracts the (python, dulwich) versions constraints from `setup.cfg` and
 #   checks that they are compatible with the range of versions used in the CI;
 # - checks that `README.rst` reports as minimum required versions the same
-#   versions that are concretely used in the CI.
+#   versions that are concretely used in the CI;
+# - verifies that the version specifier used for dulwich in installhg.sh is the
+#   same as the one listed in setup.cfg.
 #
 # Linted with ruff 0.15.19:
 #     ruff check --select=ALL --ignore=D,E501 check-versions-consistency.py
@@ -37,6 +40,7 @@
 import logging
 import pathlib
 import re
+import shlex
 import sys
 import types
 from collections.abc import Generator
@@ -215,6 +219,42 @@ class SetupCfgSpecifiers:
         return getattr(self, item)
 
 
+class InstallhgError(Exception):
+    pass
+
+
+class InstallhgSpecifiers:
+    def __init__(self, installhg_path: pathlib.Path) -> None:
+        self.path = installhg_path.resolve(strict=True)
+        (self.pipdepends, self.line_num) = self._find_first_pipdepends()
+        self.specifiers = self._extract_specifiers()
+
+    def _find_first_pipdepends(self) -> tuple[str, int]:
+        PIPDEPENDS_MARKER = "PIPDEPENDS="  # noqa: N806
+        with self.path.open() as f:
+            for line_num, line in enumerate(f, start=1):
+                if line.startswith(PIPDEPENDS_MARKER):
+                    return (line.rstrip(), line_num)
+        msg = f'Could not find a line starting with "{PIPDEPENDS_MARKER}" in {self.path}"'
+        raise InstallhgError(msg)
+
+    def _extract_specifiers(self) -> dict[str, SpecifierSet]:
+        REQUIRED_FIRST_TWO_TOKENS = ["PIPDEPENDS", "="]  # noqa: N806
+        tokens = list(shlex.shlex(self.pipdepends))
+        if len(tokens) > 3:  # noqa: PLR2004
+            msg = f'"{self.path}:{self.line_num}" should contain exactly 3 tokens. It contains {len(tokens)}: {tokens}'
+            raise InstallhgError(msg)
+        if tokens[:2] != REQUIRED_FIRST_TWO_TOKENS:
+            msg = f'"{self.path}:{self.line_num}" the first two tokens should exacly be {REQUIRED_FIRST_TWO_TOKENS}. They are: {tokens[:2]}'
+            raise InstallhgError(msg)
+        pipdepends_values = shlex.split(tokens[2])
+        if len(pipdepends_values) != 1:
+            msg = f'"{self.path}:{self.line_num}" expected a single value here: {pipdepends_values}'
+            raise InstallhgError(msg)
+        requirements = (Requirement(s) for s in pipdepends_values[0].split(" "))
+        return {r.name: r.specifier for r in requirements}
+
+
 def check_ci_versions_contained_in_setup_cfg_versions(
     component_name: ComponentPythonDulwich,
     gitlab_ci: GitlabCiVersions,
@@ -260,6 +300,27 @@ def check_min_ci_versions_match_min_readme_versions(
     return 0
 
 
+def check_setup_cfg_versions_against_installhg(
+    component_name: Literal["dulwich"],
+    setup_cfg_specs: SetupCfgSpecifiers,
+    installhg_specs: InstallhgSpecifiers,
+) -> Literal[0, 1]:
+    if (
+        setup_cfg_specs[component_name]
+        != installhg_specs.specifiers[component_name]
+    ):
+        logger.error(
+            "%s, specifies versions %s for %s, while %s specifies %s",
+            setup_cfg_specs.path.name,
+            setup_cfg_specs[component_name],
+            component_name,
+            installhg_specs.path.name,
+            installhg_specs.specifiers[component_name],
+        )
+        return 1
+    return 0
+
+
 def main(argv: list[str]) -> int:  # noqa: ARG001
     error_count = 0
     ci_versions = GitlabCiVersions(SCRIPT_DIR / ".." / ".gitlab-ci.yml")
@@ -284,6 +345,16 @@ def main(argv: list[str]) -> int:  # noqa: ARG001
         "%s specifies the following dependencies contraints: %s",
         setup_cfg_specs.path.name,
         setup_cfg_specs,
+    )
+
+    installhg_specs = InstallhgSpecifiers(
+        SCRIPT_DIR / ".." / "contrib" / "docker" / "installhg.sh",
+    )
+    logger.info(
+        "%s specifies the following dependencies contraints at line %d: %s",
+        installhg_specs.path.name,
+        installhg_specs.line_num,
+        installhg_specs.specifiers,
     )
 
     if ci_versions.hg != hggit_attributes.tested_with:
@@ -330,12 +401,19 @@ def main(argv: list[str]) -> int:  # noqa: ARG001
         setup_cfg_specs,
     )
 
+    error_count += check_setup_cfg_versions_against_installhg(
+        "dulwich",
+        setup_cfg_specs,
+        installhg_specs,
+    )
+
     if error_count == 0:
         logger.info(
-            "SUCCESS: versions specified in %s, %s, %s and __init__.py are consistent",
+            "SUCCESS: versions specified in %s, %s, %s, %s and __init__.py are consistent",
             ci_versions.path.name,
             setup_cfg_specs.path.name,
             readme_versions.path.name,
+            installhg_specs.path.name,
         )
         return 0
     logger.error("There were %d errors", error_count)
