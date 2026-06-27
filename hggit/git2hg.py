@@ -15,8 +15,8 @@ from mercurial.node import bin, short
 from mercurial import error, util as hgutil
 from mercurial import phases
 
+from . import compat
 from . import config
-from .compat import PEELED_TAG_SUFFIX
 
 
 def get_public(ui, refs, remote_names):
@@ -306,7 +306,7 @@ def filter_refs(refs, heads):
                     raise error.RepoLookupError(msg)
     else:
         for ref, sha in refs.items():
-            if not ref.endswith(PEELED_TAG_SUFFIX) and (
+            if not ref.endswith(compat.PEELED_TAG_SUFFIX) and (
                 ref.startswith(LOCAL_BRANCH_PREFIX)
                 or ref.startswith(LOCAL_TAG_PREFIX)
                 or ref == b'HEAD'
