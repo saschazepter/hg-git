@@ -103,7 +103,13 @@ def default_dest(orig, source):
     return orig(source)
 
 
-@eh.wrapfunction(hg, 'peer')
+@compat.wrap_first_function(
+    eh,
+    [
+        'mercurial.repo.factory:peer',  # hg >= 7.2
+        'mercurial.hg:peer',
+    ],
+)
 def peer(orig, uiorrepo, *args, **opts):
     newpeer = orig(uiorrepo, *args, **opts)
     if isinstance(newpeer, gitrepo.gitrepo):
@@ -112,7 +118,13 @@ def peer(orig, uiorrepo, *args, **opts):
     return newpeer
 
 
-@eh.wrapfunction(hg, 'clone')
+@compat.wrap_first_function(
+    eh,
+    [
+        'mercurial.cmd_impls.clone:clone',  # hg >= 7.2
+        'mercurial.hg:clone',
+    ],
+)
 def clone(orig, *args, **opts):
     srcpeer, destpeer = orig(*args, **opts)
 
@@ -134,7 +146,13 @@ def isurllocal(orig, path):
     return orig(path) and not util.isgitsshuri(path._origpath)
 
 
-@eh.wrapfunction(hg, 'islocal')
+@compat.wrap_first_function(
+    eh,
+    [
+        'mercurial.repo.factory:is_local',  # hg >= 7.2
+        'mercurial.hg:islocal',
+    ],
+)
 def islocal(orig, path):
     # recognise git scp-style paths when cloning
     return orig(path) and not util.isgitsshuri(path)
