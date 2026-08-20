@@ -1,3 +1,4 @@
+import importlib
 import inspect
 
 import mercurial.commands  # TODO: do not re-export mercurial.commands (use "as _commands"?)
@@ -84,3 +85,19 @@ except ImportError:
 
     get_repo_caps_function_name = 'getrepocaps'
     assert bundle_caps_mod  # silence pyflakes
+
+
+def wrap_first_function(eh, function_refs):
+    for function_ref in function_refs:
+        module_name, function_name = function_ref.split(':')
+        try:
+            module = importlib.import_module(module_name)
+        except ImportError:
+            continue
+        try:
+            getattr(module, function_name)
+        except AttributeError:
+            continue
+        return eh.wrapfunction(module, function_name)
+    else:
+        assert False
