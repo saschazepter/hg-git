@@ -14,8 +14,9 @@ from dulwich.refs import (
     ANNOTATED_TAG_SUFFIX,
     LOCAL_BRANCH_PREFIX,
     LOCAL_TAG_PREFIX,
+    check_ref_format,
 )
-from dulwich.repo import Repo, check_ref_format
+from dulwich.repo import Repo
 from dulwich import client
 from dulwich import config as dul_config
 from dulwich import diff_tree
